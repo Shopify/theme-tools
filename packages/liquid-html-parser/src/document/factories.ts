@@ -353,15 +353,18 @@ export function makeHtmlRawNode(
 }
 
 export function makeHtmlComment(
-  body: string,
-  start: number,
-  end: number,
+  children: (LiquidNode | TextNode)[],
+  blockStartPosition: Position,
+  blockEndPosition: Position,
   source: string,
 ): HtmlComment {
   return {
     type: NodeTypes.HtmlComment,
-    body,
-    position: { start, end },
+    body: source.slice(blockStartPosition.end, blockEndPosition.start).trim(),
+    children,
+    blockStartPosition,
+    blockEndPosition,
+    position: { start: blockStartPosition.start, end: blockEndPosition.end },
     source,
   };
 }

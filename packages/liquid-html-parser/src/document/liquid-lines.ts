@@ -39,6 +39,7 @@ import { envelopeFromLine } from '../shared';
 import { isBranchName, finalizeBranch } from './liquid-blocks';
 import { ChildFilterMode, filterChildren } from './tree-builder';
 import { rawMarkupKindForTag } from './liquid-raw';
+import { findRawLineBodyEnd } from './raw-body';
 
 /**
  * Interface capturing what line-based parsing free functions need from
@@ -153,19 +154,15 @@ export function parseLineBlockTag(
     reason = e instanceof Error ? e.message : 'unknown error';
   }
 
-  const endTagLength = 3 + envelope.tagName.length; // 'end' + tagName
-
   if (def.branches.length === 0) {
-    const { children, endNameOffset } = parseLineBlockBody(parser, envelope.tagName, ctx);
-    const endPosition: Position = { start: endNameOffset, end: endNameOffset + endTagLength };
+    const { children, endPosition } = parseLineBlockBody(parser, envelope.tagName, ctx);
     if (markupParsed) {
       return makeLiquidTagNamed(envelope, markup, children, endPosition, { start: '', end: '' });
     }
     return makeLiquidTagBaseCase(envelope, children, endPosition, { start: '', end: '' }, reason);
   }
 
-  const { branches, endNameOffset } = parseLineBranchedBody(parser, envelope.tagName, def, ctx);
-  const endPosition: Position = { start: endNameOffset, end: endNameOffset + endTagLength };
+  const { branches, endPosition } = parseLineBranchedBody(parser, envelope.tagName, def, ctx);
   if (markupParsed) {
     return makeLiquidTagNamed(envelope, markup, branches, endPosition, { start: '', end: '' });
   }
@@ -175,7 +172,7 @@ export function parseLineBlockTag(
 // lineRawTag := tagName LF line* "end" tagName
 export function parseLineRawTag(
   parser: LineParserDelegate,
-  _def: TagDefinitionRaw,
+  def: TagDefinitionRaw,
   envelope: LiquidTagEnvelope,
   ctx: LiquidLineContext,
 ): LiquidRawTag {
@@ -196,43 +193,11 @@ export function parseLineRawTag(
       ? ctx.lines[ctx.index - 1].lineEnd + 1
       : envelope.blockStartPosition.end;
 
-  // `comment`/`doc` bodies balance nested opens of the same tag before
-  // matching their end line, mirroring the document-path scan in
-  // liquid-raw.ts (Ruby comment.rb v5.13.0 `comment_tag_depth`). A nested
-  // `raw` block is carved out: `raw` is first-match and does not nest, so an
-  // `endcomment`/`comment` word sitting on a line inside a raw body must not
-  // affect the depth. Every other raw tag (`raw`, `javascript`, `schema`,
-  // `style`) keeps the original first-match scan and stays byte-identical.
-  const balanced = tagName === 'comment' || tagName === 'doc';
-  let endLineIndex = -1;
-  if (balanced) {
-    let depth = 0;
-    for (let i = ctx.index; i < ctx.lines.length; i++) {
-      const name = ctx.lines[i].tagName;
-      if (name === 'raw') {
-        // Skip past the nested raw block; its body lines never affect depth.
-        i++;
-        while (i < ctx.lines.length && ctx.lines[i].tagName !== 'endraw') i++;
-        continue;
-      }
-      if (name === tagName) {
-        depth++;
-      } else if (name === endTagName) {
-        if (depth === 0) {
-          endLineIndex = i;
-          break;
-        }
-        depth--;
-      }
-    }
-  } else {
-    for (let i = ctx.index; i < ctx.lines.length; i++) {
-      if (ctx.lines[i].tagName === endTagName) {
-        endLineIndex = i;
-        break;
-      }
-    }
-  }
+  const endLineIndex =
+    findRawLineBodyEnd(parser.getSource(), ctx.lines, ctx.index, tagName, def.body, (name) => {
+      const inner = parser.lineEnv.tagForName(name);
+      return inner?.kind === TagKind.Raw ? inner.body : undefined;
+    }) ?? -1;
 
   if (endLineIndex === -1) {
     throw new LiquidHTMLASTParsingError(
@@ -282,7 +247,7 @@ export function parseLineBlockBody(
   parser: LineParserDelegate,
   parentName: string,
   ctx: LiquidLineContext,
-): { children: LiquidStatement[]; endNameOffset: number } {
+): { children: LiquidStatement[]; endPosition: Position } {
   const children: LiquidStatement[] = [];
 
   while (ctx.index < ctx.lines.length) {
@@ -290,7 +255,8 @@ export function parseLineBlockBody(
 
     if (line.tagName === `end${parentName}`) {
       ctx.index++;
-      return { children, endNameOffset: line.nameOffset };
+      const endPosition = { start: line.nameOffset, end: line.nameOffset + line.tagName.length };
+      return { children, endPosition };
     }
 
     ctx.index++;
@@ -298,8 +264,9 @@ export function parseLineBlockBody(
   }
 
   if (parser.lineAllowUnclosedDocumentNode) {
-    const endNameOffset = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
-    return { children, endNameOffset };
+    // An unclosed block ends where its last line does, as at the top level.
+    const end = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
+    return { children, endPosition: { start: end, end } };
   }
 
   throw new LiquidHTMLASTParsingError(
@@ -316,7 +283,7 @@ export function parseLineBranchedBody(
   parentName: string,
   def: TagDefinitionBlock,
   ctx: LiquidLineContext,
-): { branches: LiquidBranch[]; endNameOffset: number } {
+): { branches: LiquidBranch[]; endPosition: Position } {
   const branches: LiquidBranch[] = [];
   const bodyStart = ctx.index > 0 ? ctx.lines[ctx.index - 1].lineEnd : 0;
   let currentBranch: LiquidBranchUnnamed | LiquidBranchNamed = makeLiquidBranchUnnamed(
@@ -338,7 +305,8 @@ export function parseLineBranchedBody(
       );
       branches.push(currentBranch);
       ctx.index++;
-      return { branches, endNameOffset: line.nameOffset };
+      const endPosition = { start: line.nameOffset, end: line.nameOffset + line.tagName.length };
+      return { branches, endPosition };
     }
 
     if (isBranchName(line.tagName) && def.branches.includes(line.tagName)) {
@@ -371,16 +339,16 @@ export function parseLineBranchedBody(
   }
 
   if (parser.lineAllowUnclosedDocumentNode) {
-    const endNameOffset = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
+    const end = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
     finalizeBranch(
       currentBranch,
       currentChildren,
-      endNameOffset,
+      end,
       parser.getSource(),
       parser.lineParseHtml ? ChildFilterMode.StripEdges : ChildFilterMode.Syntactic,
     );
     branches.push(currentBranch);
-    return { branches, endNameOffset };
+    return { branches, endPosition: { start: end, end } };
   }
 
   throw new LiquidHTMLASTParsingError(

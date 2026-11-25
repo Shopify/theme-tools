@@ -1,0 +1,6 @@
+check: UnsupportedDocTag
+severity: error
+cases:
+  - name: "should not report an error when `doc` tag is used within snippets"
+    files:
+      "file://snippets/file.liquid": "{% doc %} @param param1 - Example param {% enddoc %}{{ 'hello' }}"
