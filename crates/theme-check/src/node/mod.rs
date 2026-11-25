@@ -89,61 +89,6 @@ pub fn posix_resolve(base: &str, p: &str) -> String {
     }
 }
 
-/// Node `path.relative(from, to)` (posix) for absolute paths.
-fn posix_relative(from: &str, to: &str) -> String {
-    let (from, to) = (posix_resolve("/", from), posix_resolve("/", to));
-    if from == to {
-        return String::new();
-    }
-    // Without the leading `/`.
-    let (f, t) = (&from.as_bytes()[1..], &to.as_bytes()[1..]);
-    let length = f.len().min(t.len());
-    let mut last_common_sep: isize = -1;
-    let mut i = 0;
-    while i < length && f[i] == t[i] {
-        if f[i] == b'/' {
-            last_common_sep = i as isize;
-        }
-        i += 1;
-    }
-    if i == length {
-        if t.len() > length {
-            if t[i] == b'/' {
-                return to[1 + i + 1..].to_string();
-            }
-            if i == 0 {
-                return to[1..].to_string();
-            }
-        } else if f.len() > length {
-            if f[i] == b'/' {
-                last_common_sep = i as isize;
-            } else if i == 0 {
-                last_common_sep = 0;
-            }
-        }
-    }
-    let mut out = String::new();
-    for j in (last_common_sep + 1) as usize..=f.len() {
-        if j == f.len() || f[j] == b'/' {
-            out.push_str(if out.is_empty() { ".." } else { "/.." });
-        }
-    }
-    out + &to[(1 + last_common_sep) as usize..]
-}
-
-/// `URI.file(fsPath).toString()`: all but `[A-Za-z0-9-._~/]` percent-encoded.
-fn encoded_file_uri(fs_path: &str) -> String {
-    let mut out = String::from("file://");
-    for b in fs_path.bytes() {
-        if b.is_ascii_alphanumeric() || b"-._~/".contains(&b) {
-            out.push(b as char);
-        } else {
-            out.push_str(&format!("%{b:02X}"));
-        }
-    }
-    out
-}
-
 // ---------------------------------------------------------------------------------------------
 // getTheme
 
@@ -369,7 +314,6 @@ pub(crate) fn run<R>(
     let offenses = check_theme(
         &core,
         &theme,
-        root,
         &config.root_uri,
         mode,
         &Uris(&Disk),
@@ -392,14 +336,12 @@ pub(crate) fn run<R>(
 }
 
 /// The rest of `themeCheckRun`: core `check(theme, config, dependencies)` with theme-check-node's
-/// dependencies, on `threads` threads as in [`crate::runner::check`]. `root` is the one the run
-/// was given, and `root_uri` the config's. `None` if `cancelled` returned true before the graph
-/// or a file.
+/// dependencies, on `threads` threads as in [`crate::runner::check`]. `root_uri` is the config's.
+/// `None` if `cancelled` returned true before the graph or a file.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn check_theme(
     core: &Config,
     theme: &[SourceCode],
-    root: &str,
     root_uri: &str,
     mode: Mode,
     fs: &dyn FileSystem,
@@ -423,12 +365,11 @@ pub(crate) fn check_theme(
     );
     deps.schema_validator = Some(JsonValidator::new(schemas));
     deps.json_validator = Some(JsonValidator::new(schemas));
-    let root_key = format!("/{}", encoded_file_uri(root));
     deps.doc_definition_keys = Some(
         theme
             .iter()
             .enumerate()
-            .map(|(i, f)| (posix_relative(&root_key, &format!("/{}", f.uri)), i))
+            .map(|(i, f)| (path::relative(&f.uri, root_uri), i))
             .collect(),
     );
     let mut css_class_uris: HashSet<String> = theme
@@ -582,23 +523,8 @@ mod tests {
     #[test]
     fn node_conventions() {
         // Expected values from Node 24.
-        assert_eq!(
-            posix_relative("/file:/a/b", "/file:/a/b/snippets/x.liquid"),
-            "snippets/x.liquid"
-        );
-        assert_eq!(
-            posix_relative("/file:/a%20b", "/file:/a b/snippets/x.liquid"),
-            "../a b/snippets/x.liquid"
-        );
-        assert_eq!(posix_relative("/a/b", "/a"), "..");
-        assert_eq!(posix_relative("/a/bc", "/a/b"), "../b");
-        assert_eq!(posix_relative("/", "/a"), "a");
         assert_eq!(posix_resolve("/x/y", "../z/"), "/x/z");
         assert_eq!(posix_join("/x", ".theme-check.yml"), "/x/.theme-check.yml");
-        assert_eq!(
-            encoded_file_uri("/a b/(c)~é"),
-            "file:///a%20b/%28c%29~%C3%A9"
-        );
         let mut v = vec![
             "b", "B", "a_", "a-", "a", "A", "a.b", "a/b", "_", "1", "a\u{1}b", "ab",
         ];

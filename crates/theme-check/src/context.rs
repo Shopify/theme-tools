@@ -315,7 +315,7 @@ pub struct Deps<'a> {
     /// ValidScopedCSSClass's per-run CSS classes. `None`: no `getCSSClassesForURI`.
     pub(crate) scoped_css_classes: OnceLock<Option<ScopedCssClasses>>,
     /// theme-check-node's `docDefinitions`: theme file index by
-    /// `path.relative(URI.file(root).toString(), uri)`. `None`: the test-helper's lookup.
+    /// `relative(uri, rootUri)`. `None`: the test-helper's lookup.
     pub doc_definition_keys: Option<HashMap<String, usize>>,
     /// theme-check-node's `cssClassesForURI` keys (theme `.liquid` files and `assets/*.css`);
     /// other uris have no classes. `None`: the test-helper's (any uri).
