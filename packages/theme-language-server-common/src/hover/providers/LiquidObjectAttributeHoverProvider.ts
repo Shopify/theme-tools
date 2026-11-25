@@ -1,7 +1,7 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
-import { TypeSystem, Unknown, Untyped, isArrayType } from '../../TypeSystem';
+import { TypeSystem, Unknown, Untyped, getBaseType, isArrayType } from '../../TypeSystem';
 import { render } from '../../docset';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
@@ -32,8 +32,9 @@ export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
 
     const objectMap = await this.typeSystem.objectMap(uri, ancestors[0]);
     const parentType = await this.typeSystem.inferType(node, ancestors[0], uri);
+    const parentBaseType = getBaseType(parentType);
 
-    if (isArrayType(parentType) || parentType === 'string' || parentType === Untyped) {
+    if (isArrayType(parentType) || parentBaseType === 'string' || parentType === Untyped) {
       const nodeType = await this.typeSystem.inferType(
         { ...parentNode, lookups: parentNode.lookups.slice(0, lookupIndex + 1) },
         ancestors[0],
@@ -44,7 +45,7 @@ export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
       if (isArrayType(nodeType) || nodeType === Unknown) return null;
 
       // We want want `## first: `nodeType` with the docs of the nodeType
-      const entry = { ...(objectMap[nodeType] ?? {}), name: currentNode.value };
+      const entry = { ...(objectMap[getBaseType(nodeType)] ?? {}), name: currentNode.value };
 
       return {
         contents: {
@@ -54,12 +55,12 @@ export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
       };
     }
 
-    const parentEntry = objectMap[parentType];
+    const parentEntry = objectMap[parentBaseType];
     if (!parentEntry) {
       return null;
     }
 
-    const parentTypeProperties = objectMap[parentType]?.properties || [];
+    const parentTypeProperties = parentEntry.properties || [];
     const entry = parentTypeProperties.find((p) => p.name === currentNode.value);
     if (!entry) {
       return null;

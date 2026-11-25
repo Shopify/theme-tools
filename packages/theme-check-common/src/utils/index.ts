@@ -6,3 +6,5 @@ export * from './types';
 export * from './memo';
 export * from './indexBy';
 export * from './block';
+export * from './styles';
+export * from './traversal';

@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-browser",
-  "version": "2.20.2",
+  "version": "3.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -19,15 +19,15 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
     "dev": "tsc --watch",
     "test": "vitest",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-language-server-common": "2.20.2",
+    "@shopify/theme-language-server-common": "workspace:3.0.2",
     "vscode-languageserver": "^8.0.2"
   }
 }

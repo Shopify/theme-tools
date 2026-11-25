@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-browser",
-  "version": "3.24.0",
+  "version": "4.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
@@ -19,13 +19,13 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
     "test": "vitest",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "3.24.0"
+    "@shopify/theme-check-common": "workspace:4.0.2"
   }
 }

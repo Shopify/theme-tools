@@ -3,16 +3,6 @@ import { containOffense } from './contain-offense';
 import { OfferFixAssertion } from './chai-offer-fix-assertion';
 import { SuggestAssertion } from './chai-suggest-assertion';
 
-// Undocumented, but chai/utils has `.eql` for deep equality checks
-declare global {
-  export namespace Chai {
-    interface ChaiUtils {
-      /** deep equality */
-      eql: (a: any, b: any) => boolean;
-    }
-  }
-}
-
 /**
  * Setup chai extensions
  *
@@ -30,7 +20,21 @@ chaiAssertions.forEach(({ name, fn }) => {
  */
 expect.extend({ containOffense });
 
-process.on('unhandledRejection', (reason) => {
+/**
+ * Vitest runs setup files before every test file, and test files can share one
+ * process. Mark the process so each worker installs the logger only once.
+ */
+const unhandledRejectionLoggerInstalled = Symbol.for('theme-tools.unhandledRejectionLogger');
+installUnhandledRejectionLogger();
+
+function installUnhandledRejectionLogger() {
+  if (Reflect.get(process, unhandledRejectionLoggerInstalled)) return;
+
+  Reflect.set(process, unhandledRejectionLoggerInstalled, true);
+  process.on('unhandledRejection', logUnhandledRejection);
+}
+
+function logUnhandledRejection(reason: unknown) {
   console.error(reason);
   debugger;
-});
+}

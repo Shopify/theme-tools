@@ -1,0 +1,13 @@
+check: ValidSchema
+severity: error
+cases:
+  - name: should not complain when a schema is invalid outside of sections
+    files:
+      file.liquid: |2
+            {% schema %}
+            {
+          "shouldBeString": 420,
+          "shouldBeNumber": true,
+          "shouldBeIntegerLessThan51": 51
+        }
+            {% endschema %}

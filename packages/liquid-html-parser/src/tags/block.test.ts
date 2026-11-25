@@ -1,0 +1,285 @@
+import { describe, expect, it } from 'vitest';
+import { blockTag } from './block';
+import { TagKind, type Parser } from '../environment';
+import { tokenizeMarkup } from '../markup/tokenizer';
+import { MarkupParser } from '../markup/parser';
+import { NodeTypes } from '../types';
+import { LiquidHTMLASTParsingError } from '../errors';
+
+const OFFSET = 100;
+const PADDING = 'x'.repeat(OFFSET);
+
+function parser(markup: string): MarkupParser {
+  return new MarkupParser(tokenizeMarkup(markup, OFFSET), PADDING + markup);
+}
+
+const stubParser = {} as Parser;
+
+describe('blockTag', () => {
+  it.each([
+    "'card' ",
+    "'card',  title: 'Hello',\n color: 'red' ",
+    "'card', products: ['classic-crewneck', 'cozy-beanie'] ",
+  ])('retains the full source for absolute markup positions: %s', (markup) => {
+    const result = blockTag.parse('block', parser(markup), stubParser);
+    expect(result.source).toBe(PADDING + markup);
+    expect(result.position).toEqual({ start: OFFSET, end: OFFSET + markup.length });
+    expect(result.source.slice(result.position.start, result.position.end)).toBe(markup);
+  });
+
+  it('has block kind', () => {
+    expect(blockTag.kind).toBe(TagKind.Block);
+  });
+
+  it('has no branches', () => {
+    expect(blockTag.branches).toEqual([]);
+  });
+
+  it('parses block with name only', () => {
+    const result = blockTag.parse('block', parser("'name'"), stubParser);
+    expect(result).toMatchObject({
+      type: NodeTypes.BlockMarkup,
+      name: { type: NodeTypes.String, value: 'name' },
+      args: [],
+    });
+  });
+
+  it('parses block with named args', () => {
+    const result = blockTag.parse('block', parser("'name', key: value"), stubParser);
+    expect(result).toMatchObject({
+      type: NodeTypes.BlockMarkup,
+      name: { type: NodeTypes.String, value: 'name' },
+    });
+    expect(result.args).toHaveLength(1);
+    expect(result.args[0]).toMatchObject({
+      type: NodeTypes.NamedArgument,
+      name: 'key',
+      value: { type: NodeTypes.VariableLookup, name: 'value' },
+    });
+  });
+
+  it('parses content as an ordinary named argument', () => {
+    const result = blockTag.parse('block', parser("'name', content: captured_content"), stubParser);
+    expect(result.args).toMatchObject([
+      {
+        type: NodeTypes.NamedArgument,
+        name: 'content',
+        value: { type: NodeTypes.VariableLookup, name: 'captured_content' },
+      },
+    ]);
+  });
+
+  it('rejects filtered named arguments', () => {
+    expect(() =>
+      blockTag.parse(
+        'block',
+        parser("'card', product: collections.frontpage.products | first"),
+        stubParser,
+      ),
+    ).toThrow("Unexpected token in 'block' tag: |");
+  });
+
+  describe('array-literal named args (block-only)', () => {
+    it('parses an array of strings', () => {
+      const result = blockTag.parse('block', parser("'name', items: ['a', 'b']"), stubParser);
+      expect(result.args).toHaveLength(1);
+      expect(result.args[0]).toMatchObject({
+        type: NodeTypes.NamedArgument,
+        name: 'items',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [
+            { type: NodeTypes.String, value: 'a' },
+            { type: NodeTypes.String, value: 'b' },
+          ],
+        },
+      });
+    });
+
+    it('parses an array of numbers', () => {
+      const result = blockTag.parse('block', parser("'name', items: [1, 2]"), stubParser);
+      expect(result.args[0]).toMatchObject({
+        name: 'items',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [
+            { type: NodeTypes.Number, value: '1' },
+            { type: NodeTypes.Number, value: '2' },
+          ],
+        },
+      });
+    });
+
+    it('parses a mixed array with a variable element', () => {
+      const result = blockTag.parse('block', parser("'name', items: ['a', x]"), stubParser);
+      expect(result.args[0]).toMatchObject({
+        name: 'items',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [
+            { type: NodeTypes.String, value: 'a' },
+            { type: NodeTypes.VariableLookup, name: 'x', lookups: [] },
+          ],
+        },
+      });
+    });
+
+    it('parses an empty array', () => {
+      const result = blockTag.parse('block', parser("'name', items: []"), stubParser);
+      expect(result.args[0]).toMatchObject({
+        name: 'items',
+        value: { type: 'BlockArrayLiteral', elements: [] },
+      });
+    });
+
+    it('tolerates a trailing comma inside the array', () => {
+      const result = blockTag.parse('block', parser("'name', items: ['a',]"), stubParser);
+      expect(result.args[0]).toMatchObject({
+        name: 'items',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [{ type: NodeTypes.String, value: 'a' }],
+        },
+      });
+    });
+
+    it('preserves an unsupported dotted block.settings.* name for downstream diagnostics', () => {
+      const result = blockTag.parse(
+        'block',
+        parser("'name', block.settings.collections: ['a', 'b']"),
+        stubParser,
+      );
+      expect(result.args[0]).toMatchObject({
+        type: NodeTypes.NamedArgument,
+        name: 'block.settings.collections',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [
+            { type: NodeTypes.String, value: 'a' },
+            { type: NodeTypes.String, value: 'b' },
+          ],
+        },
+      });
+    });
+
+    it('[some_var] is a 1-element array literal', () => {
+      const result = blockTag.parse('block', parser("'name', items: [some_var]"), stubParser);
+      expect(result.args).toHaveLength(1);
+      expect(result.args[0]).toMatchObject({
+        name: 'items',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [{ type: NodeTypes.VariableLookup, name: 'some_var', lookups: [] }],
+        },
+      });
+    });
+
+    it("['product'] is a 1-element array literal", () => {
+      const result = blockTag.parse('block', parser("'name', items: ['product']"), stubParser);
+      expect(result.args).toHaveLength(1);
+      expect(result.args[0]).toMatchObject({
+        name: 'items',
+        value: {
+          type: 'BlockArrayLiteral',
+          elements: [{ type: NodeTypes.String, value: 'product' }],
+        },
+      });
+    });
+
+    it('["x"].y throws (leading bracket is an array)', () => {
+      expect(() =>
+        blockTag.parse('block', parser('\'name\', items: ["x"].y'), stubParser),
+      ).toThrow();
+    });
+
+    it('rejects a 2D array with a leading nested array', () => {
+      expect(() => blockTag.parse('block', parser("'name', items: [[1,2],3]"), stubParser)).toThrow(
+        LiquidHTMLASTParsingError,
+      );
+    });
+
+    it('rejects a 2D array with a trailing nested array', () => {
+      expect(() => blockTag.parse('block', parser("'name', items: [1,[2,3]]"), stubParser)).toThrow(
+        LiquidHTMLASTParsingError,
+      );
+    });
+
+    it('throws on [[1]] (nested array, parity with Ruby)', () => {
+      expect(() => blockTag.parse('block', parser("'name', items: [[1]]"), stubParser)).toThrow(
+        LiquidHTMLASTParsingError,
+      );
+    });
+
+    it('throws on an unterminated array literal', () => {
+      expect(() => blockTag.parse('block', parser("'name', items: ['a'"), stubParser)).toThrow();
+    });
+  });
+
+  it('parses block with a trailing comma and no args', () => {
+    const result = blockTag.parse('block', parser("'name',"), stubParser);
+    expect(result).toMatchObject({
+      type: NodeTypes.BlockMarkup,
+      name: { type: NodeTypes.String, value: 'name' },
+      args: [],
+    });
+  });
+
+  it('parses private block names', () => {
+    const result = blockTag.parse('block', parser("'_private_hero'"), stubParser);
+    expect(result.name.value).toBe('_private_hero');
+  });
+
+  it('rejects a missing block type', () => {
+    expect(() => blockTag.parse('block', parser(''), stubParser)).toThrow(
+      "in 'block' - missing block type",
+    );
+  });
+
+  it('rejects an unquoted block type', () => {
+    expect(() => blockTag.parse('block', parser('card'), stubParser)).toThrow(
+      "in 'block' - file name must be a string literal",
+    );
+  });
+
+  it('rejects invalid block type names', () => {
+    expect(() => blockTag.parse('block', parser("'foo/bar'"), stubParser)).toThrow(
+      "in 'block' - 'foo/bar' is not a valid block type",
+    );
+    expect(() => blockTag.parse('block', parser("'-card'"), stubParser)).toThrow(
+      "in 'block' - '-card' is not a valid block type",
+    );
+  });
+
+  it('parses a canonical app block path', () => {
+    const path =
+      'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000';
+    const result = blockTag.parse('block', parser(`'${path}'`), stubParser);
+    expect(result.name.value).toBe(path);
+  });
+
+  it('rejects malformed app block paths', () => {
+    const uuid = '00000000-0000-4000-8000-000000000000';
+    const invalidPaths = [
+      `shopify://apps/example_app/snippets/example-block/${uuid}`,
+      `shopify://apps//blocks/example-block/${uuid}`,
+      `shopify://apps/example_app/blocks//${uuid}`,
+      'shopify://apps/example_app/blocks/example-block/not-a-uuid',
+      'shopify://apps/example_app/blocks/example-block/deadbeef',
+      `shopify://apps/example_app/blocks/example-block/${uuid}/extra`,
+      `shopify://apps-evil/example_app/blocks/example-block/${uuid}`,
+      `shopify://apps/example_app/blocks/example-block/${uuid}\n`,
+    ];
+
+    for (const path of invalidPaths) {
+      expect(() => blockTag.parse('block', parser(`'${path}'`), stubParser)).toThrow(
+        `in 'block' - '${path}' is not a valid block type`,
+      );
+    }
+  });
+
+  it('rejects markup without a comma before args', () => {
+    expect(() => blockTag.parse('block', parser("'name' key: value"), stubParser)).toThrow(
+      "Unexpected token in 'block' tag: key",
+    );
+  });
+});

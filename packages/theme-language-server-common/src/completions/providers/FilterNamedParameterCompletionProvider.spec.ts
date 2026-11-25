@@ -6,7 +6,8 @@ import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { CURSOR } from '../params';
+
+const CURSOR = '█';
 
 describe('Module: ObjectCompletionProvider', async () => {
   let provider: CompletionsProvider;

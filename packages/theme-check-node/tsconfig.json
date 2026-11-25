@@ -8,12 +8,13 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "paths": {
       "@shopify/theme-check-common": ["../theme-check-common/src"],
-      "@shopify/theme-check-docs-updater": ["../theme-check-docs-updater/src"]
+      "@shopify/theme-check-docs-updater": ["../theme-check-docs-updater/src"],
+      "@shopify/theme-graph": ["../theme-graph/src"]
     }
   },
   "references": [
     { "path": "../theme-check-common" },
-    { "path": "../theme-check-docs-updater" }
+    { "path": "../theme-check-docs-updater" },
+    { "path": "../theme-graph" }
   ]
 }
-

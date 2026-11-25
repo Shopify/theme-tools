@@ -139,6 +139,13 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
 
       async onCodePathEnd() {
         for (const [grandparent, stacks] of stacksByGrandparent) {
+          // First pass: match opens/closes within each condition identifier.
+          // Collect unmatched nodes with their identifier for cross-identifier balancing.
+          const unmatchedByIdentifier = new Map<
+            ConditionIdentifer,
+            (HtmlElement | HtmlDanglingMarkerClose)[]
+          >();
+
           for (const identifier of stacks.identifiers) {
             const openNodes = stacks.open.get(identifier) ?? [];
             const closeNodes = stacks.close.get(identifier) ?? [];
@@ -154,24 +161,30 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
             //   Then we're going to push on open and pop when the close match.
             // If a close doesn't match,
             //   Then we'll push it onto the stack and everything after won't match.
-            const stack = [] as (HtmlElement | HtmlDanglingMarkerClose)[];
-            for (const node of nodes) {
-              if (node.type === NodeTypes.HtmlElement) {
-                stack.push(node);
-              } else if (
-                stack.length > 0 &&
-                getName(node) === getName(stack.at(-1)!) &&
-                stack.at(-1)!.type === NodeTypes.HtmlElement &&
-                node.type === NodeTypes.HtmlDanglingMarkerClose
-              ) {
-                stack.pop();
-              } else {
-                stack.push(node);
-              }
-            }
+            unmatchedByIdentifier.set(identifier, balanceOpenCloseTags(nodes));
+          }
 
-            // At the end, whatever is left in the stack is a reported offense.
-            for (const node of stack) {
+          // Second pass: try to balance unmatched opens from one condition
+          // identifier against unmatched closes from sibling condition identifiers
+          // within the same grandparent.
+          //
+          // This handles patterns where an open tag is inside one condition
+          // (e.g. `{% if forloop.first %}`) and the matching close is inside a
+          // sibling condition (e.g. `{% if forloop.last %}`).
+          const allUnmatched = ([] as (HtmlElement | HtmlDanglingMarkerClose)[])
+            .concat(...unmatchedByIdentifier.values())
+            .sort((a, b) => a.position.start - b.position.start);
+
+          const crossBalancedStack = balanceOpenCloseTags(allUnmatched);
+
+          // Build a set of nodes still unmatched after cross-identifier balancing.
+          // Nodes NOT in this set were resolved and should not be reported.
+          const crossBalancedRemaining = new Set(crossBalancedStack);
+
+          for (const [identifier, unmatched] of unmatchedByIdentifier) {
+            for (const node of unmatched) {
+              if (!crossBalancedRemaining.has(node)) continue;
+
               if (node.type === NodeTypes.HtmlDanglingMarkerClose) {
                 context.report({
                   message: `Closing tag does not have a matching opening tag for condition \`${identifier}\` in ${
@@ -282,6 +295,27 @@ function negateIdentifier(conditionIdentifier: ConditionIdentifer): ConditionIde
   return conditionIdentifier.startsWith('-')
     ? conditionIdentifier.slice(1)
     : `-${conditionIdentifier}`;
+}
+
+function balanceOpenCloseTags(
+  sortedNodes: (HtmlElement | HtmlDanglingMarkerClose)[],
+): (HtmlElement | HtmlDanglingMarkerClose)[] {
+  const stack: (HtmlElement | HtmlDanglingMarkerClose)[] = [];
+  for (const node of sortedNodes) {
+    if (node.type === NodeTypes.HtmlElement) {
+      stack.push(node);
+    } else if (
+      stack.length > 0 &&
+      getName(node) === getName(stack.at(-1)!) &&
+      stack.at(-1)!.type === NodeTypes.HtmlElement &&
+      node.type === NodeTypes.HtmlDanglingMarkerClose
+    ) {
+      stack.pop();
+    } else {
+      stack.push(node);
+    }
+  }
+  return stack;
 }
 
 function getName(node: LiquidHtmlNode) {

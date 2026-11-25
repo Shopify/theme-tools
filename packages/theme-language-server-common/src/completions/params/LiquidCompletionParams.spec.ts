@@ -7,14 +7,18 @@ import { createLiquidCompletionParams } from './LiquidCompletionParams';
 describe('Module: LiquidCompletionParams', async () => {
   describe('createLiquidCompletionParams', async () => {
     describe('parsed LiquidHTML template', async () => {
-      it('returns an undefined completionContext when the template is unsalvageable', () => {
+      it('recovers a completion context from otherwise-unsalvageable input', () => {
         const context = '{{ }}%}%{%}%$}}{#$%}{% ren█ %}';
         const { completionContext } = createLiquidParamsFromContext(context);
-        expect(completionContext).not.to.exist;
+        expect(completionContext).to.exist;
+
+        const { node } = completionContext!;
+        expectPath(node, 'type').to.eql('LiquidTag');
+        expectPath(node, 'name').to.eql('ren');
       });
 
       describe('completionContext.partialAst', async () => {
-        it('returns an ast of the file up to the cursor position', async () => {
+        it('returns an ast of the full file', async () => {
           const context = '{{ "hey" }}\n\n{{ product.id }}{% ren█ %}{% echo "not in the AST" %}';
 
           const { completionContext } = createLiquidParamsFromContext(context);
@@ -42,7 +46,7 @@ describe('Module: LiquidCompletionParams', async () => {
           expectPath(partialAst, 'children.2.markup').to.eql('');
           expectPath(partialAst, 'children.2.type').to.eql('LiquidTag');
 
-          expectPath(partialAst, 'children.3').not.to.exist;
+          expectPath(partialAst, 'children.3.type').to.eql('LiquidTag');
         });
       });
 
@@ -58,7 +62,7 @@ describe('Module: LiquidCompletionParams', async () => {
           expectPath(node, 'markup').to.eql('');
           expectPath(node, 'type').to.eql('LiquidTag');
           expectPath(node, 'position.start').to.eql(29);
-          expectPath(node, 'position.end').to.eql(37);
+          expectPath(node, 'position.end').to.eql(38);
         });
 
         it('returns the node under the cursor on nested contexts', async () => {
@@ -217,6 +221,54 @@ describe('Module: LiquidCompletionParams', async () => {
           const { completionContext } = createLiquidParamsFromContext(context);
           const { node } = completionContext!;
           expectPath(node, 'type', context).to.eql('VariableLookup');
+        }
+      });
+
+      it('returns an argument-name lookup whose parent is the block markup', async () => {
+        const contexts: [context: string, name: string][] = [
+          [`{% block 'card', █ %}{% endblock %}`, ''],
+          [`{% block 'card', he█ %}{% endblock %}`, 'he'],
+          [`{% block 'card', he█ading: 'x' %}{% endblock %}`, 'he'],
+          [`{% block 'card', █heading: 'x' %}{% endblock %}`, ''],
+          [`{% block 'card', heading: 'x', █ %}{% endblock %}`, ''],
+          [`{% block 'card', heading: 'x', fe█ %}{% endblock %}`, 'fe'],
+          [`{% block 'card', heading: 'x', █, id: 'y' %}{% endblock %}`, ''],
+          [`{% block 'card',\n  heading: 'x',\n  █\n%}{% endblock %}`, ''],
+          [`{% block 'card', █`, ''],
+          [`{% block 'card', heading: 'x', he█`, 'he'],
+          [`{% liquid\n  block 'card', he█\n  endblock\n%}`, 'he'],
+        ];
+        for (const [context, name] of contexts) {
+          const { completionContext } = createLiquidParamsFromContext(context);
+          const { node, ancestors } = completionContext!;
+          expectPath(node, 'type', context).to.eql('VariableLookup');
+          expectPath(node, 'name', context).to.eql(name);
+          expectPath(ancestors.at(-1), 'type', context).to.eql('BlockMarkup');
+          expectPath(ancestors.at(-1), 'name.value', context).to.eql('card');
+        }
+      });
+
+      it('recovers the argument names of unfinished block markup', async () => {
+        const context = `{% block 'card', heading: 'x', █, block.settings.id: 'y', id: 'z' %}{% endblock %}`;
+        const { completionContext } = createLiquidParamsFromContext(context);
+        const { ancestors } = completionContext!;
+        expectPath(ancestors.at(-1), 'args.0.name').to.eql('heading');
+        expectPath(ancestors.at(-1), 'args.1.name').to.eql('id');
+        expectPath(ancestors.at(-1), 'args.2').to.eql(undefined);
+      });
+
+      it('does not return an argument-name lookup outside a block argument-name slot', async () => {
+        const contexts = [
+          `{% block 'card' █ %}{% endblock %}`,
+          `{% block 'card', heading: 'x' █ %}{% endblock %}`,
+          `{% block 'card', heading: █ %}{% endblock %}`,
+          `{% block 'card', heading: pr█ %}{% endblock %}`,
+          `{% block 'card', heading: 'x', block.█ %}{% endblock %}`,
+        ];
+        for (const context of contexts) {
+          const { completionContext } = createLiquidParamsFromContext(context);
+          const { ancestors } = completionContext!;
+          expectPath(ancestors.at(-1), 'type', context).not.to.eql('BlockMarkup');
         }
       });
 

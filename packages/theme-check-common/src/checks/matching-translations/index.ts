@@ -38,7 +38,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
       fileUri.endsWith('.default.json') || fileUri.endsWith('.default.schema.json');
     const isSchemaTranslationFile = fileUri.endsWith('.schema.json');
 
-    if (!isLocaleFile || isDefaultTranslationsFile || ast instanceof Error) {
+    if (!isLocaleFile || ast instanceof Error) {
       // No need to lint a file that isn't a translation file, we return an
       // empty object as the check for those.
       return {};
@@ -48,7 +48,8 @@ export const MatchingTranslations: JSONCheckDefinition = {
     const hasDefaultTranslations = () => defaultTranslations.size > 0;
     const isTerminalNode = ({ type }: JSONNode) => type === 'Literal';
     const isPluralizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
-    const isShopifyPath = (path: string) => path.startsWith('shopify.');
+    const isExternalPath = (path: string) =>
+      path.startsWith('shopify.') || path.startsWith('customer_accounts.');
 
     const hasDefaultTranslation = (translationPath: string) =>
       defaultTranslations.has(translationPath) ?? false;
@@ -77,6 +78,40 @@ export const MatchingTranslations: JSONCheckDefinition = {
         .reduce((acc: string[], val) => acc.concat(val.key.value), [])
         .join('.');
     };
+
+    if (isDefaultTranslationsFile) {
+      if (isSchemaTranslationFile) return {};
+
+      // The storefront raises when a count has no matching plural key and no
+      // `other` to fall back to, so every pluralized entry needs `other`.
+      return {
+        async Property(node, ancestors) {
+          const value = node.value;
+          if (value.type !== 'Object' || value.children.length === 0) return;
+          if (ancestors.some((ancestor) => ancestor.type === 'Array')) return;
+          if (
+            !value.children.every(
+              (child) =>
+                isPluralizationNode(child) &&
+                child.value.type === 'Literal' &&
+                typeof child.value.value === 'string',
+            )
+          ) {
+            return;
+          }
+          if (value.children.some((child) => child.key.value === 'other')) return;
+
+          const path = objectPath(ancestors.concat(node));
+          if (isExternalPath(path) || path === 'shopify' || path === 'customer_accounts') return;
+
+          context.report({
+            message: `The pluralized translation '${path}' is missing the 'other' key`,
+            startIndex: node.loc.start.offset,
+            endIndex: node.loc.end.offset,
+          });
+        },
+      };
+    }
 
     const countCommonParts = (arrayA: string[], arrayB: string[]): number => {
       const minLength = Math.min(arrayA.length, arrayB.length);
@@ -129,7 +164,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
         if (!hasDefaultTranslations()) return;
         if (isPluralizationNode(node)) return;
         if (!isTerminalNode(node.value)) return;
-        if (isShopifyPath(path)) return;
+        if (isExternalPath(path)) return;
 
         if (hasDefaultTranslation(path)) {
           // As `path` is present, we remove it from the
@@ -158,7 +193,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
           const closest = closestTranslationKey(path);
 
           if (isPluralizationPath(path)) return;
-          if (isShopifyPath(path)) return;
+          if (isExternalPath(path)) return;
 
           context.report({
             message: `The translation for '${path}' is missing`,

@@ -7,10 +7,13 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
-    "start": "yarn build && node dist/index.js",
+    "start": "pnpm build && node dist/index.js",
     "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.8"
   }
 }

@@ -3,6 +3,7 @@ import { LiquidHtmlNode, NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liqui
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { AbstractFileSystem, UriString } from './AbstractFileSystem';
+import type { GetBlockParameters } from './block-parameters';
 import { JSONCorrector, StringCorrector } from './fixes';
 
 import {
@@ -388,10 +389,30 @@ export interface Dependencies {
   getDocDefinition?: (relativePath: string) => Promise<DocDefinition | undefined>;
 
   /**
+   * Get CSS class names defined in a file.
+   * For .css asset files, returns all class selectors in the file.
+   * For .liquid files, extracts class selectors from {% stylesheet %} tags.
+   * Returns undefined when unavailable.
+   */
+  getCSSClassesForURI?: (uri: string) => Promise<Set<string>>;
+
+  /**
    * Get references to a file (which files reference this file)
    * Returns an empty array if no files reference this file
    */
   getReferences?: (uri: string) => Promise<Reference[]>;
+
+  /**
+   * Get dependencies of a file (which files this file references/renders)
+   * Returns an empty array if no dependencies found
+   */
+  getDependencies?: (uri: string) => Promise<Reference[]>;
+
+  /**
+   * Get the size in bytes of a remote file, such as a script on a CDN.
+   * Returns 0 when it can't be found. Defaults to the Content-Length of a HEAD request.
+   */
+  remoteFileSize?: (url: string) => Promise<number>;
 }
 
 export type ValidateJSON = (
@@ -402,8 +423,10 @@ export type ValidateJSON = (
 export type IsValidSchema = (uri: string, jsonString: string) => Promise<boolean>;
 
 export interface AugmentedDependencies extends Dependencies {
+  getBlockParameters: GetBlockParameters;
   fileExists: (uri: UriString) => Promise<boolean>;
   fileSize: (uri: UriString) => Promise<number>;
+  remoteFileSize: (url: string) => Promise<number>;
   getDefaultLocale: () => Promise<string>;
   getDefaultSchemaLocale: () => Promise<string>;
   getDefaultTranslations(): Promise<Translations>;

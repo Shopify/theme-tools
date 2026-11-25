@@ -47,11 +47,15 @@ export class TranslationCompletionProvider implements Provider {
     const translations = await this.getTranslationsForURI(params.textDocument.uri);
     const partial = node.value;
 
-    // We only want to show standard translations to complete if the translation
-    // is prefixed by shopify. Otherwise it's too noisy.
-    const options = translationOptions(translations).filter(
-      (option) => !option.path[0]?.startsWith('shopify') || partial.startsWith('shopify'),
-    );
+    // Platform-provided translations (shopify.*, customer_accounts.*) are
+    // excluded from completions unless the user has already started typing
+    // that prefix. Otherwise they add too much noise.
+    const options = translationOptions(translations).filter((option) => {
+      const root = option.path[0] ?? '';
+      if (root.startsWith('shopify')) return partial.startsWith('shopify');
+      if (root.startsWith('customer_accounts')) return partial.startsWith('customer_accounts');
+      return true;
+    });
 
     const [_currentNode, realAncestors] =
       ast instanceof Error

@@ -31,20 +31,20 @@ Separating e2e tests into `test/` ensures:
 
 ```bash
 # Browser e2e tests
-yarn test:web
+pnpm test:web
 
 # Build test bundle only
-yarn build:test
+pnpm build:test
 ```
 
 ## Watch mode
 
 ```
 # terminal 1
-yarn build:test:watch
+pnpm build:test:watch
 
 # terminal 2 (refresh for changes, no hmr)
-yarn test:web:watch
+pnpm test:web:watch
 ```
 
 ## Adding Tests

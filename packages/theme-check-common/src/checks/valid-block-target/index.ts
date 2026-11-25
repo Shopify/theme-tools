@@ -51,6 +51,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
           rootLevelLocalBlocks,
           presetLevelBlocks,
           defaultLevelBlocks,
+          hasRootBlocksDeclaration,
         } = getBlocks(validSchema);
 
         if (rootLevelLocalBlocks.length > 0) return;
@@ -79,7 +80,15 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
                 const blockId = 'id' in node ? node.id! : path.at(-2)!;
                 const isStaticBlock = !!node.static;
 
-                if (isInvalidPresetBlock(blockId, node, rootLevelThemeBlocks, staticBlockDefs)) {
+                if (
+                  isInvalidPresetBlock(
+                    blockId,
+                    node,
+                    rootLevelThemeBlocks,
+                    staticBlockDefs,
+                    hasRootBlocksDeclaration,
+                  )
+                ) {
                   const errorMessage = isStaticBlock
                     ? `Could not find a static block of type "${node.type}" with id "${blockId}" in this file.`
                     : reportMissingThemeBlockDefinitionError(node);
@@ -110,7 +119,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
           defaultLevelBlocks.map(async ({ node, path }) => {
             const typeNode = nodeAtPath(ast, path)! as LiteralNode;
 
-            if (isInvalidDefaultBlock(node, rootLevelThemeBlocks)) {
+            if (isInvalidDefaultBlock(node, rootLevelThemeBlocks, hasRootBlocksDeclaration)) {
               reportWarning(
                 reportMissingThemeBlockDefinitionError(node),
                 offset,

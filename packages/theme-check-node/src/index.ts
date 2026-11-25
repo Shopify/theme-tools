@@ -5,11 +5,14 @@ import {
   JSONValidator,
   LiquidSourceCode,
   Offense,
+  Reference,
   SectionSchema,
   Theme,
   ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
+  extractCSSClassesFromAssetUri,
+  extractCSSClassesFromLiquidUri,
   extractDocDefinition,
   filePathSupportsLiquidDoc,
   isBlock,
@@ -19,6 +22,7 @@ import {
   path as pathUtils,
   toSchema,
 } from '@shopify/theme-check-common';
+import { buildThemeGraph, ThemeGraph } from '@shopify/theme-graph';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
 import fs from 'node:fs/promises';
@@ -29,6 +33,7 @@ import glob = require('glob');
 
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
+import { LoadConfigOptions } from './config/types';
 import { NodeFileSystem } from './NodeFileSystem';
 import { fileURLToPath } from 'node:url';
 
@@ -38,9 +43,9 @@ export * from '@shopify/theme-check-common';
 export * from './config/types';
 export { NodeFileSystem };
 
-export const loadConfig: typeof resolveConfig = async (configPath, root) => {
+export const loadConfig: typeof resolveConfig = async (configPath, root, options = {}) => {
   configPath ??= await findConfigPath(root);
-  return resolveConfig(configPath, root);
+  return resolveConfig(configPath, root, options);
 };
 
 export type ThemeCheckRun = {
@@ -60,13 +65,21 @@ export async function toSourceCode(
   }
 }
 
-export async function check(root: string, configPath?: string): Promise<Offense[]> {
-  const run = await themeCheckRun(root, configPath);
+export async function check(
+  root: string,
+  configPath?: string,
+  options: LoadConfigOptions = {},
+): Promise<Offense[]> {
+  const run = await themeCheckRun(root, configPath, undefined, options);
   return run.offenses;
 }
 
-export async function checkAndAutofix(root: string, configPath?: string) {
-  const { theme, offenses } = await themeCheckRun(root, configPath);
+export async function checkAndAutofix(
+  root: string,
+  configPath?: string,
+  options: LoadConfigOptions = {},
+) {
+  const { theme, offenses } = await themeCheckRun(root, configPath, undefined, options);
   await autofix(theme, offenses);
 }
 
@@ -74,8 +87,9 @@ export async function themeCheckRun(
   root: string,
   configPath?: string,
   log: (message: string) => void = () => {},
+  options: LoadConfigOptions = {},
 ): Promise<ThemeCheckRun> {
-  const { theme, config } = await getThemeAndConfig(root, configPath);
+  const { theme, config } = await getThemeAndConfig(root, configPath, options);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   // This does feel a bit heavy handed, but I'm in a rush.
@@ -121,7 +135,7 @@ export async function themeCheckRun(
   ]));
   const docDefinitions = new Map(
     theme.map((file) => [
-      path.relative(URI.file(root).toString(), file.uri),
+      pathUtils.relative(file.uri, config.rootUri),
       memo(async (): Promise<DocDefinition | undefined> => {
         const ast = file.ast;
         if (!isLiquidHtmlNode(ast)) {
@@ -134,6 +148,44 @@ export async function themeCheckRun(
       }),
     ]),
   );
+  const cssClassesForURI = new Map<string, () => Promise<Set<string>>>(
+    theme
+      .filter((source) => source.uri.endsWith('.liquid'))
+      .map((source) => [
+        source.uri,
+        memo(async () => extractCSSClassesFromLiquidUri(source.uri, NodeFileSystem)),
+      ]),
+  );
+  // Also include CSS asset files
+  try {
+    const assetsUri = pathUtils.join(config.rootUri, 'assets');
+    const files = await NodeFileSystem.readDirectory(assetsUri);
+    for (const [uri] of files.filter(([u]) => u.endsWith('.css'))) {
+      cssClassesForURI.set(
+        uri,
+        memo(async () => extractCSSClassesFromAssetUri(uri, NodeFileSystem)),
+      );
+    }
+  } catch {
+    // assets directory might not exist
+  }
+
+  // Build theme graph for cross-file checks (e.g. ValidScopedCSSClass)
+  const getSectionSchema = async (name: string) => sectionSchemas.get(name)?.();
+  const getBlockSchema = async (name: string) => blockSchemas.get(name)?.();
+
+  let themeGraph: ThemeGraph | undefined;
+  try {
+    themeGraph = await buildThemeGraph(config.rootUri, {
+      fs: NodeFileSystem,
+      getSectionSchema,
+      getBlockSchema,
+      getWebComponentDefinitionReference: () => undefined,
+      mode: config.context,
+    });
+  } catch {
+    // If graph building fails, cross-file checks will gracefully degrade
+  }
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
@@ -143,10 +195,23 @@ export async function themeCheckRun(
     // This is kind of gross, but we want those things to be lazy and called by name so...
     // In the language server, this is memo'ed in DocumentManager, but we don't have that kind
     // of luxury in CLI-mode.
-    getSectionSchema: async (name) => sectionSchemas.get(name)?.(),
-    getBlockSchema: async (name) => blockSchemas.get(name)?.(),
+    getSectionSchema,
+    getBlockSchema,
     getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
     getDocDefinition: async (relativePath) => docDefinitions.get(relativePath)?.(),
+    getCSSClassesForURI: async (uri: string) => cssClassesForURI.get(uri)?.() ?? new Set(),
+
+    async getReferences(uri: string): Promise<Reference[]> {
+      if (!themeGraph) return [];
+      const mod = themeGraph.modules[uri];
+      return mod?.references ?? [];
+    },
+
+    async getDependencies(uri: string): Promise<Reference[]> {
+      if (!themeGraph) return [];
+      const mod = themeGraph.modules[uri];
+      return mod?.dependencies ?? [];
+    },
   });
 
   return {
@@ -159,8 +224,9 @@ export async function themeCheckRun(
 export async function getThemeAndConfig(
   root: string,
   configPath?: string,
+  options: LoadConfigOptions = {},
 ): Promise<{ theme: Theme; config: Config }> {
-  const config = await loadConfig(configPath, root);
+  const config = await loadConfig(configPath, root, options);
   const theme = await getTheme(config);
   return {
     theme,

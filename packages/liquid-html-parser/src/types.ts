@@ -38,23 +38,27 @@ export enum NodeTypes {
   LogicalExpression = 'LogicalExpression',
 
   AssignMarkup = 'AssignMarkup',
+  BlockMarkup = 'BlockMarkup',
   ContentForMarkup = 'ContentForMarkup',
   CycleMarkup = 'CycleMarkup',
   ForMarkup = 'ForMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RawMarkup = 'RawMarkup',
   RenderMarkup = 'RenderMarkup',
+  SectionMarkup = 'SectionMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
   RenderAliasExpression = 'RenderAliasExpression',
   LiquidDocDescriptionNode = 'LiquidDocDescriptionNode',
   LiquidDocParamNode = 'LiquidDocParamNode',
   LiquidDocExampleNode = 'LiquidDocExampleNode',
   LiquidDocPromptNode = 'LiquidDocPromptNode',
+  LiquidErrorNode = 'LiquidErrorNode',
 }
 
 // These are officially supported with special node types
 export enum NamedTags {
   assign = 'assign',
+  block = 'block',
   capture = 'capture',
   case = 'case',
   content_for = 'content_for',
@@ -65,17 +69,29 @@ export enum NamedTags {
   for = 'for',
   form = 'form',
   if = 'if',
+  ifchanged = 'ifchanged',
   include = 'include',
   increment = 'increment',
   layout = 'layout',
   liquid = 'liquid',
   paginate = 'paginate',
+  partial = 'partial',
   render = 'render',
   section = 'section',
   sections = 'sections',
   tablerow = 'tablerow',
   unless = 'unless',
   when = 'when',
+}
+
+export enum RawTags {
+  comment = 'comment',
+  doc = 'doc',
+  javascript = 'javascript',
+  raw = 'raw',
+  schema = 'schema',
+  style = 'style',
+  stylesheet = 'stylesheet',
 }
 
 export enum Comparators {

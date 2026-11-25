@@ -1,6 +1,7 @@
 import {
   AbstractFileSystem,
   assertNever,
+  extractCSSClassesFromLiquidAST,
   memoize,
   path,
   recursiveReadDirectory,
@@ -216,6 +217,17 @@ export class DocumentManager {
             if (isError(ast)) return undefined;
 
             return extractDocDefinition(uri, ast);
+          }),
+          /**
+           * Lazy and only computed once per file version. Returns the set of
+           * CSS class selectors declared in this file's {% stylesheet %} tags.
+           * Shared by ValidScopedCSSClass and any future feature that needs to
+           * know which classes a file defines.
+           */
+          getCSSClasses: memo(async () => {
+            const ast = sourceCode.ast;
+            if (isError(ast)) return new Set<string>();
+            return extractCSSClassesFromLiquidAST(ast);
           }),
         };
       default:

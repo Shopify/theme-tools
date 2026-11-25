@@ -1,5 +1,7 @@
 import {
   check,
+  extractCSSClassesFromLiquidUri,
+  extractCSSClassesFromAssetUri,
   findRoot,
   makeFileExists,
   Offense,
@@ -70,6 +72,27 @@ export function makeRunChecks(
         async getReferences(uri: string): Promise<Reference[]> {
           if (!themeGraphManager) return [];
           return themeGraphManager.getReferences(uri);
+        },
+
+        async getDependencies(uri: string): Promise<Reference[]> {
+          if (!themeGraphManager) return [];
+          return themeGraphManager.getDependencies(uri);
+        },
+
+        getCSSClassesForURI(uri: string): Promise<Set<string>> {
+          // Liquid files tracked by the DocumentManager already have their AST
+          // parsed; getCSSClasses() is memoized per file version there, so it
+          // is reused across saves and invalidated automatically when the
+          // document changes.
+          const doc = documentManager.get(uri);
+          if (doc?.type === SourceCodeType.LiquidHtml) return doc.getCSSClasses();
+          // CSS assets aren't tracked by the DocumentManager, and occasionally
+          // we get asked about liquid URIs outside the preloaded set (e.g.
+          // before preload finishes). Fall back to direct parsing in both
+          // cases.
+          return uri.endsWith('.css')
+            ? extractCSSClassesFromAssetUri(uri, fs)
+            : extractCSSClassesFromLiquidUri(uri, fs);
         },
 
         // TODO should do something for app blocks?

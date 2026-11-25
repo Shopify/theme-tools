@@ -28,9 +28,20 @@ import {
   isLiquidSourceCode,
 } from '../../documents';
 import { FindThemeRootURI } from '../../internal-types';
-import { isSection, isSectionGroup, isTemplate, sectionName } from '../../utils/uri';
+import {
+  isSection,
+  isSectionGroup,
+  isSettingsData,
+  isTemplate,
+  sectionName,
+} from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
-import { isValidSectionGroup, isValidTemplate } from './utils';
+import {
+  isSettingsDataPreset,
+  isValidSectionGroup,
+  isValidSettingsData,
+  isValidTemplate,
+} from './utils';
 
 type DocumentChange = TextDocumentEdit;
 
@@ -43,6 +54,7 @@ const annotationId = 'renameSection';
  *   2. References in template files must be changed
  *   3. References in section groups must be changed
  *   4. References like {% section "oldName" %} must be changed
+ *   5. References in config/settings_data.json must be changed
  */
 export class SectionRenameHandler implements BaseRenameHandler {
   constructor(
@@ -69,6 +81,9 @@ export class SectionRenameHandler implements BaseRenameHandler {
     const liquidFiles = theme.filter(isLiquidSourceCode);
     const templates = theme.filter(isJsonSourceCode).filter((file) => isTemplate(file.uri));
     const sectionGroups = theme.filter(isJsonSourceCode).filter((file) => isSectionGroup(file.uri));
+    const settingsDataFiles = theme
+      .filter(isJsonSourceCode)
+      .filter((file) => isSettingsData(file.uri));
     const oldSectionName = sectionName(rename.oldUri);
     const newSectionName = sectionName(rename.newUri);
     const editLabel = `Rename section '${oldSectionName}' to '${newSectionName}'`;
@@ -84,13 +99,17 @@ export class SectionRenameHandler implements BaseRenameHandler {
 
     // All the templates/*.json files need to be updated with the new block name
     // when the old block name wasn't a local block.
-    const [templateChanges, sectionGroupChanges, sectionTagChanges] = await Promise.all([
-      Promise.all(templates.map(this.getTemplateChanges(oldSectionName, newSectionName))),
-      Promise.all(sectionGroups.map(this.getSectionGroupChanges(oldSectionName, newSectionName))),
-      Promise.all(liquidFiles.map(this.getSectionTagChanges(oldSectionName, newSectionName))),
-    ]);
+    const [templateChanges, sectionGroupChanges, sectionTagChanges, settingsDataChanges] =
+      await Promise.all([
+        Promise.all(templates.map(this.getTemplateChanges(oldSectionName, newSectionName))),
+        Promise.all(sectionGroups.map(this.getSectionGroupChanges(oldSectionName, newSectionName))),
+        Promise.all(liquidFiles.map(this.getSectionTagChanges(oldSectionName, newSectionName))),
+        Promise.all(
+          settingsDataFiles.map(this.getSettingsDataChanges(oldSectionName, newSectionName)),
+        ),
+      ]);
 
-    for (const docChange of [...templateChanges, ...sectionGroupChanges]) {
+    for (const docChange of [...templateChanges, ...sectionGroupChanges, ...settingsDataChanges]) {
       if (docChange !== null) {
         workspaceEdit.documentChanges!.push(docChange);
       }
@@ -179,6 +198,52 @@ export class SectionRenameHandler implements BaseRenameHandler {
     };
   }
 
+  private getSettingsDataChanges(oldSectionName: string, newSectionName: string) {
+    return async (sourceCode: AugmentedJsonSourceCode) => {
+      const { textDocument, ast, source } = sourceCode;
+      const parsed = parseJSON(source);
+      if (!parsed || isError(parsed) || isError(ast)) return null;
+      if (!isValidSettingsData(parsed)) return null;
+
+      // Each preset keeps its own section settings. Once the theme is customized,
+      // `current` holds them too. Otherwise `current` is the name of a preset.
+      const containers: { path: string[]; value: unknown }[] = [
+        ...Object.entries(parsed.presets ?? {}).map(([presetName, value]) => ({
+          path: ['presets', presetName],
+          value,
+        })),
+        { path: ['current'], value: parsed.current },
+      ];
+
+      const edits: AnnotatedTextEdit[] = containers.flatMap(({ path: containerPath, value }) =>
+        !isSettingsDataPreset(value)
+          ? []
+          : Object.entries(value.sections ?? {})
+              .filter(([_key, section]) => section?.type === oldSectionName)
+              .map(([sectionKey]) => {
+                const node = nodeAtPath(ast, [
+                  ...containerPath,
+                  'sections',
+                  sectionKey,
+                  'type',
+                ]) as LiteralNode;
+                return {
+                  annotationId,
+                  newText: newSectionName,
+                  range: Range.create(
+                    textDocument.positionAt(node.loc.start.offset + 1),
+                    textDocument.positionAt(node.loc.end.offset - 1),
+                  ),
+                } as AnnotatedTextEdit;
+              }),
+      );
+
+      if (edits.length === 0) return null;
+
+      return documentChanges(sourceCode, edits);
+    };
+  }
+
   private getSectionTagChanges(oldSectionName: string, newSectionName: string) {
     return async (sourceCode: AugmentedLiquidSourceCode) => {
       const { textDocument, ast } = sourceCode;
@@ -192,7 +257,7 @@ export class SectionRenameHandler implements BaseRenameHandler {
           // Note the type assertion to the LHS of the expression.
           // The type assertions above are enough for this to be true.
           // But I'm making the explicit annotation here to make it clear.
-          const typeNode: LiquidString = node.markup;
+          const typeNode: LiquidString = node.markup.name;
           if (typeNode.value !== oldSectionName) return;
 
           return {

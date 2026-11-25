@@ -10,10 +10,10 @@ import {
 } from '@shopify/liquid-html-parser';
 import { Context, LiquidDocParameter, SourceCodeType, StringCorrector } from '..';
 import {
-  BasicParamTypes,
+  checkArgumentType,
+  getArgumentTypeMismatchMessage,
   getDefaultValueForType,
-  inferArgumentType,
-  isTypeCompatible,
+  parseStringLiterals,
 } from './utils';
 import { isLiquidString } from '../checks/utils';
 
@@ -109,7 +109,8 @@ export function reportDuplicateArguments(
 
 /**
  * Find type mismatch between the arguments provided for `content_for` tag and `render` tag
- * and their associated file's LiquidDoc
+ * and their associated file's LiquidDoc. Arguments declared with named Liquid types, such as
+ * `product`, are skipped.
  */
 export function findTypeMismatchParams(
   liquidDocParameters: Map<string, LiquidDocParameter>,
@@ -118,21 +119,12 @@ export function findTypeMismatchParams(
   const typeMismatchParams: LiquidNamedArgument[] = [];
 
   for (const arg of providedParams) {
-    if (arg.value.type === NodeTypes.VariableLookup) {
-      continue;
-    }
-
     const liquidDocParamDef = liquidDocParameters.get(arg.name);
-    if (liquidDocParamDef && liquidDocParamDef.type) {
-      const paramType = liquidDocParamDef.type.toLowerCase();
-      const supportedTypes = Object.keys(BasicParamTypes).map((type) => type.toLowerCase());
-      if (!supportedTypes.includes(paramType)) {
-        continue;
-      }
-
-      if (!isTypeCompatible(paramType, inferArgumentType(arg.value))) {
-        typeMismatchParams.push(arg);
-      }
+    if (
+      liquidDocParamDef?.type &&
+      checkArgumentType(liquidDocParamDef.type, arg.value).kind === 'incompatible'
+    ) {
+      typeMismatchParams.push(arg);
     }
   }
 
@@ -151,17 +143,14 @@ export function reportTypeMismatches(
     const paramDef = liquidDocParameters.get(arg.name);
     if (!paramDef || !paramDef.type) continue;
 
-    const expectedType = paramDef.type.toLowerCase();
-    const actualType = inferArgumentType(arg.value);
-
     const suggestions = generateTypeMismatchSuggestions(
-      expectedType,
+      paramDef.type,
       arg.value.position.start,
       arg.value.position.end,
     );
 
     context.report({
-      message: `Type mismatch for argument '${arg.name}': expected ${expectedType}, got ${actualType}`,
+      message: getArgumentTypeMismatchMessage(arg.name, paramDef.type, arg.value),
       startIndex: arg.value.position.start,
       endIndex: arg.value.position.end,
       suggest: suggestions,
@@ -177,6 +166,17 @@ export function generateTypeMismatchSuggestions(
   startPosition: number,
   endPosition: number,
 ) {
+  const literals = parseStringLiterals(expectedType);
+  if (literals) {
+    return literals.map((literal) => ({
+      message: `Replace with ${literal.raw}`,
+      fix: (fixer: StringCorrector) => {
+        return fixer.replace(startPosition, endPosition, literal.raw);
+      },
+    }));
+  }
+
+  expectedType = expectedType.toLowerCase();
   const defaultValue = getDefaultValueForType(expectedType);
   const suggestions = [];
 
@@ -247,23 +247,30 @@ export function makeRemoveArgumentCorrector(
   arg: LiquidNamedArgument,
 ) {
   return (fixer: StringCorrector) => {
-    const sourceBeforeArg = node.source.slice(node.position.start, arg.position.start);
-    const matches = sourceBeforeArg.match(/,\s*/g);
-    const lastCommaMatch = matches?.[matches.length - 1];
-    let startPos = lastCommaMatch
-      ? arg.position.start - (lastCommaMatch.length - 1)
-      : arg.position.start;
+    const source = sourceForNode(node);
+    const sourceBeforeArg = source.slice(node.position.start, arg.position.start);
+    const sourceAfterArg = source.slice(arg.position.end, node.position.end);
+    const trailingCommaMatch = sourceAfterArg.match(/^\s*,\s*/);
 
-    if (isLastArg(node, arg)) {
-      // Remove the leading comma if it's the last parameter
-      startPos -= 1;
-    }
-
-    const sourceAfterArg = node.source.substring(arg.position.end, node.position.end);
-    const trailingCommaMatch = sourceAfterArg.match(/\s*,/);
     if (trailingCommaMatch) {
-      return fixer.remove(startPos, arg.position.end + trailingCommaMatch[0].length);
+      if (isLastArg(node, arg)) {
+        const leadingCommaMatch = sourceBeforeArg.match(/,\s*$/);
+        const startPos = leadingCommaMatch
+          ? arg.position.start - leadingCommaMatch[0].length
+          : arg.position.start;
+        return fixer.remove(
+          startPos,
+          arg.position.end + trailingCommaMatch[0].replace(/\s+$/, '').length,
+        );
+      }
+
+      return fixer.remove(arg.position.start, arg.position.end + trailingCommaMatch[0].length);
     }
+
+    const leadingCommaMatch = sourceBeforeArg.match(/,\s*$/);
+    const startPos = leadingCommaMatch
+      ? arg.position.start - leadingCommaMatch[0].length
+      : arg.position.start;
     return fixer.remove(startPos, arg.position.end);
   };
 }
@@ -273,6 +280,7 @@ export function makeAddArgumentCorrector(
   arg: LiquidDocParameter,
 ) {
   return (fixer: StringCorrector) => {
+    const source = sourceForNode(node);
     const paramToAdd = `, ${arg.name}: ${getDefaultValueForType(arg.type)}`;
 
     if (node.args.length == 0) {
@@ -280,7 +288,7 @@ export function makeAddArgumentCorrector(
     }
 
     const lastArg = node.args[node.args.length - 1];
-    const sourceAfterLastArg = node.source.substring(lastArg.position.end, node.position.end);
+    const sourceAfterLastArg = source.substring(lastArg.position.end, node.position.end);
 
     const trailingCommaAndWhitespaceMatch = sourceAfterLastArg.match(/\s*,\s*/);
     if (trailingCommaAndWhitespaceMatch) {
@@ -294,4 +302,12 @@ export function makeAddArgumentCorrector(
 
     return fixer.insert(lastArg.position.end, paramToAdd);
   };
+}
+
+function sourceForNode(node: ContentForMarkup | RenderMarkup): string {
+  if (node.source) return node.source;
+  if (node.args.length > 0) return node.args[0].source;
+  return node.type === NodeTypes.ContentForMarkup
+    ? node.contentForType.source
+    : node.snippet.source;
 }

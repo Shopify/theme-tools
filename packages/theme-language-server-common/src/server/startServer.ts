@@ -120,6 +120,7 @@ export function startServer(
     documentManager,
     fs,
     findThemeRootURI,
+    getModeForURI,
   );
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
@@ -333,6 +334,7 @@ export function startServer(
     documentManager,
     themeDocset,
     getTranslationsForURI,
+    getSchemaTranslationsForURI,
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
     log,
@@ -340,6 +342,8 @@ export function startServer(
     getMetafieldDefinitions,
     getDocDefinitionForURI,
     getModeForURI,
+    getThemeBlockSchema,
+    findThemeRootURI,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
@@ -349,6 +353,8 @@ export function startServer(
     getThemeSettingsSchemaForURI,
     getDocDefinitionForURI,
     getModeForURI,
+    getThemeBlockSchema,
+    getSchemaTranslationsForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(
@@ -458,6 +464,9 @@ export function startServer(
         },
         {
           globPattern: '**/*.liquid',
+        },
+        {
+          globPattern: '**/assets/*.css',
         },
         {
           globPattern: '**/{locales,sections,templates,customers}/*.json',

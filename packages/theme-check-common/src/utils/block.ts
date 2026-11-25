@@ -129,6 +129,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema) {
     rootLevelLocalBlocks,
     presetLevelBlocks,
     defaultLevelBlocks,
+    hasRootBlocksDeclaration: Array.isArray(rootLevelBlocks),
   };
 }
 
@@ -137,12 +138,21 @@ export function isInvalidPresetBlock(
   blockNode: Preset.Block,
   rootLevelThemeBlocks: BlockDefNodeWithPath[],
   staticBlockDefs: StaticBlockDef[],
+  hasRootBlocksDeclaration: boolean = true,
 ): boolean {
   if (blockNode.static) {
     return !staticBlockDefs.some((block) => block.type === blockNode.type && block.id === blockId);
   }
 
   const isPrivateBlockType = blockNode.type.startsWith('_');
+
+  // Local blocks referenced in presets are valid when the schema has no
+  // root-level blocks array. They reference block files (blocks/_name.liquid)
+  // directly and their existence is validated separately.
+  if (isPrivateBlockType && !hasRootBlocksDeclaration) {
+    return false;
+  }
+
   const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
   const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
   const isPresetInRootLevel = rootLevelThemeBlocks.some(
@@ -155,8 +165,14 @@ export function isInvalidPresetBlock(
 export function isInvalidDefaultBlock(
   blockNode: Section.Block | ThemeBlock.Block,
   rootLevelThemeBlocks: BlockDefNodeWithPath[],
+  hasRootBlocksDeclaration: boolean = true,
 ): boolean {
   const isPrivateBlockType = blockNode.type.startsWith('_');
+
+  if (isPrivateBlockType && !hasRootBlocksDeclaration) {
+    return false;
+  }
+
   const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
   const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
   const isDefaultInRootLevel = rootLevelThemeBlocks.some(
@@ -207,7 +223,7 @@ async function validateBlockTargeting(
   }
 
   if ('blocks' in nestedBlock && nestedBlock.blocks) {
-    validateNestedBlocks(
+    await validateNestedBlocks(
       context,
       nestedBlock,
       nestedBlock.blocks,
@@ -238,7 +254,7 @@ export async function validateNestedBlocks(
   const allowedBlockTypes = rootLevelThemeBlocks.map((block) => block.node.type);
 
   if (Array.isArray(nestedBlocks)) {
-    Promise.all(
+    await Promise.all(
       nestedBlocks.map((nestedBlock, index) => {
         const nestedPath = currentPath.concat(['blocks', String(index), 'type']);
         return validateBlockTargeting(
@@ -255,7 +271,7 @@ export async function validateNestedBlocks(
       }),
     );
   } else if (typeof nestedBlocks === 'object') {
-    Promise.all(
+    await Promise.all(
       Object.entries(nestedBlocks).map(([key, nestedBlock]) => {
         const nestedPath = currentPath.concat(['blocks', key, 'type']);
         return validateBlockTargeting(

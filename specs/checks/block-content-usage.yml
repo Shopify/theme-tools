@@ -1,0 +1,77 @@
+check: BlockContentUsage
+severity: error
+cases:
+  - name: 'reports the block.content lookup in "{{ block.content }}"'
+    files:
+      blocks/card.liquid: "{{ block.content }}"
+    offenses:
+      - file: blocks/card.liquid
+        message: "Use the implicit 'content' parameter directly instead of 'block.content'."
+        start: [0, 3]
+        highlight: block.content
+  - name: "reports the block.content lookup in \"{{ block['content'] | upcase }}\""
+    files:
+      blocks/card.liquid: "{{ block['content'] | upcase }}"
+    offenses:
+      - file: blocks/card.liquid
+        message: "Use the implicit 'content' parameter directly instead of 'block.content'."
+        start: [0, 3]
+        highlight: "block['content']"
+  - name: 'reports the block.content lookup in "{{ block.content.size }}"'
+    files:
+      blocks/card.liquid: "{{ block.content.size }}"
+    offenses:
+      - file: blocks/card.liquid
+        message: "Use the implicit 'content' parameter directly instead of 'block.content'."
+        start: [0, 3]
+        highlight: block.content.size
+  - name: 'reports the block.content lookup in "{% if block.content != blank %}{{ content }}{% endif %}"'
+    files:
+      blocks/card.liquid: "{% if block.content != blank %}{{ content }}{% endif %}"
+    offenses:
+      - file: blocks/card.liquid
+        message: "Use the implicit 'content' parameter directly instead of 'block.content'."
+        start: [0, 6]
+        highlight: block.content
+  - name: "reports the block.content lookup in \"{% render 'card', body: block.content %}\""
+    files:
+      blocks/card.liquid: "{% render 'card', body: block.content %}"
+    offenses:
+      - file: blocks/card.liquid
+        message: "Use the implicit 'content' parameter directly instead of 'block.content'."
+        start: [0, 24]
+        highlight: block.content
+  - name: 'reports the block.content lookup in "{% liquid\n  echo block.content\n%}"'
+    files:
+      blocks/card.liquid: |-
+        {% liquid
+          echo block.content
+        %}
+    offenses:
+      - file: blocks/card.liquid
+        message: "Use the implicit 'content' parameter directly instead of 'block.content'."
+        start: [1, 7]
+        highlight: block.content
+  - name: accepts bare content and other block properties
+    files:
+      blocks/card.liquid: |-
+        {{ content }}
+        {{ block.id }}
+        {{ block.settings.content }}
+        {{ block.shopify_attributes }}
+        {{ product.content }}
+  - name: does not report the ordinary block object in sections/main.liquid
+    files:
+      sections/main.liquid: "{% for block in section.blocks %}{{ block.content }}{% endfor %}"
+  - name: does not report the ordinary block object in snippets/card.liquid
+    files:
+      snippets/card.liquid: "{% for block in section.blocks %}{{ block.content }}{% endfor %}"
+  - name: does not report the ordinary block object in templates/index.liquid
+    files:
+      templates/index.liquid: "{% for block in section.blocks %}{{ block.content }}{% endfor %}"
+  - name: does not report the ordinary block object in layout/theme.liquid
+    files:
+      layout/theme.liquid: "{% for block in section.blocks %}{{ block.content }}{% endfor %}"
+  - name: does not report block.content inside a tag that does not render Liquid
+    files:
+      blocks/card.liquid: '{% javascript %}console.log("{{ block.content }}");{% endjavascript %}'
