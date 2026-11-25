@@ -2,6 +2,8 @@
 //! brace expansion (brace-expansion@5.1.0 / balanced-match@4.0.4), `**` matching, and the other
 //! path portions on the state machines of @isaacs/nonrecursive-glob-match@1.1.0, which match in
 //! polynomial time.
+//!
+//! Their licenses are in `ThirdPartyNotices.txt`, at the root of this crate.
 
 use crate::js::len16;
 use nonrecursive_glob_match::Matcher;
