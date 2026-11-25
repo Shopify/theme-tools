@@ -155,3 +155,14 @@ jobs:
 
       - name: Run the prettier3 idempotence tests
         run: pnpm --dir packages/prettier-plugin-liquid test:idempotence:3
+
+  # Branch protection requires this job instead of each matrix job, so changing
+  # the matrix doesn't leave a required check that never reports.
+  tests-passed:
+    runs-on: ubuntu-latest
+    name: Tests passed
+    needs: tests
+    if: always()
+    steps:
+      - name: Check that every test job passed
+        run: test "${{ needs.tests.result }}" = success
