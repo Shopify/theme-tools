@@ -1,5 +1,6 @@
 ---
 '@shopify/theme-check-common': minor
+'theme-check-rs': minor
 ---
 
 Add two checks for `range` setting structural validity:

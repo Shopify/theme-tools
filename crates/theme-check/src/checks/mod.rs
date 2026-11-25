@@ -51,6 +51,7 @@ mod missing_template;
 mod orphaned_snippet;
 mod pagination_size;
 mod parser_blocking_script;
+mod range_setting;
 mod raw_tags;
 mod remote_asset;
 mod required_layout_theme_object;
@@ -83,6 +84,8 @@ mod valid_doc_param_types;
 mod valid_html_translation;
 mod valid_json;
 mod valid_local_blocks;
+mod valid_range_default;
+mod valid_range_step_count;
 mod valid_render_snippet_argument_types;
 mod valid_schema;
 mod valid_schema_name;
@@ -158,6 +161,10 @@ pub static ALL_CHECKS: &[&CheckDef] = &[
     &valid_json::VALID_JSON,
     &valid_doc_param_types::VALID_DOC_PARAM_TYPES,
     &valid_local_blocks::VALID_LOCAL_BLOCKS,
+    &valid_range_default::VALID_RANGE_DEFAULT,
+    &valid_range_default::VALID_RANGE_DEFAULT_SETTINGS_SCHEMA,
+    &valid_range_step_count::VALID_RANGE_STEP_COUNT,
+    &valid_range_step_count::VALID_RANGE_STEP_COUNT_SETTINGS_SCHEMA,
     &valid_render_snippet_argument_types::VALID_RENDER_SNIPPET_ARGUMENT_TYPES,
     &valid_schema::VALID_SCHEMA,
     &valid_settings_key::VALID_SETTINGS_KEY,
