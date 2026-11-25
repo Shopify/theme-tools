@@ -765,3 +765,9 @@ cases:
         message: "Unknown object 'my_var' used."
         start: [0, 8]
         highlight: my_var
+  - name: should not report a variable assigned inside an HTML comment, which Liquid renders
+    files:
+      file.liquid: |
+        <!-- {% assign foo = 10 %} -->
+        {{ foo }}
+    docset: default
