@@ -181,6 +181,49 @@ cases:
         message: "Unknown object 'c' used."
         start: [2, 20]
         highlight: c
+  - name: does not report continue as the offset of a for loop
+    files:
+      file.liquid: |
+        {% for c in collections limit: 3 %}{{ c }}{% endfor %}
+        {% for c in collections limit: 3 offset: continue %}{{ c }}{% endfor %}
+        {%- for c in collections
+          limit: 3
+          offset: continue
+        -%}
+          {{ c }}
+        {%- endfor -%}
+        {% for c in collections reversed offset: continue %}{{ c }}{% endfor %}
+        {% liquid
+          for c in collections offset: continue
+            echo c
+          endfor
+        %}
+    docset: default
+  - name: reports continue anywhere other than the offset of a for loop
+    files:
+      file.liquid: |
+        {{ continue }}
+        {% for c in collections limit: continue %}{% endfor %}
+        {% for c in collections offset: continue.size %}{% endfor %}
+        {% tablerow c in collections offset: continue %}{% endtablerow %}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'continue' used."
+        start: [0, 3]
+        highlight: continue
+      - file: file.liquid
+        message: "Unknown object 'continue' used."
+        start: [1, 31]
+        highlight: continue
+      - file: file.liquid
+        message: "Unknown object 'continue' used."
+        start: [2, 32]
+        highlight: continue.size
+      - file: file.liquid
+        message: "Unknown object 'continue' used."
+        start: [3, 37]
+        highlight: continue
   - name: should contextually report on the undefined nature of the paginate object (defined in paginate tag, undefined outside)
     files:
       file.liquid: |
