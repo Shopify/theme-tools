@@ -67,7 +67,7 @@ import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
 import { ValidSelectDefault, ValidSelectDefaultSettingsSchema } from './valid-select-default';
-import { ValidSettingsKey } from './valid-settings-key';
+import { ValidSettingsKey, ValidSettingsKeyJSON } from './valid-settings-key';
 import { ValidStandardEventData } from './valid-standard-event-data';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
@@ -167,6 +167,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidSelectDefault,
   ValidSelectDefaultSettingsSchema,
   ValidSettingsKey,
+  ValidSettingsKeyJSON,
   ValidStandardEventData,
   ValidStaticBlockType,
   ValidVisibleIf,
