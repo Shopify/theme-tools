@@ -7,7 +7,7 @@ import {
   SourceCodeType,
 } from '../../types';
 import { isError } from '../../utils';
-import { doesFileExist, doesFileExceedThreshold } from '../../utils/file-utils';
+import { doesFileExist, doesFileExceedThreshold, isAssetFileName } from '../../utils/file-utils';
 
 const schema = {
   thresholdInBytes: SchemaProp.number(10000),
@@ -47,6 +47,15 @@ export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> =
 
         const startIndex = node.body.position.start + node.body.value.indexOf(javascript);
         const endIndex = startIndex + javascript.length;
+
+        if (!isAssetFileName(context, javascript)) {
+          context.report({
+            message: `'${javascript}' must be the name of a file in the assets directory.`,
+            startIndex: startIndex,
+            endIndex: endIndex,
+          });
+          return;
+        }
 
         const fileExists = await doesFileExist(context, relativePath);
 

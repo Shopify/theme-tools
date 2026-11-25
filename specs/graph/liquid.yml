@@ -63,6 +63,7 @@ cases:
     files:
       layout/theme.liquid: |
         {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}
+        {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hi', items: [1, true] %}{% endblock %}
         {% block 'text' %}{% endblock %}
       blocks/text.liquid: |
         Text
@@ -71,7 +72,7 @@ cases:
       - { file: layout/theme.liquid, type: Liquid, kind: layout }
     edges:
       - source: layout/theme.liquid
-        start: [1, 0]
+        start: [2, 0]
         text: "{% block 'text' %}{% endblock %}"
         target: blocks/text.liquid
   - name: an app block in a liquid tag isn't followed, and theme blocks still are
@@ -79,6 +80,8 @@ cases:
       layout/theme.liquid: |
         {% liquid
           block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'
+          endblock
+          block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hi', items: [1, true]
           endblock
         %}
         {% block 'text' %}{% endblock %}
@@ -89,7 +92,7 @@ cases:
       - { file: layout/theme.liquid, type: Liquid, kind: layout }
     edges:
       - source: layout/theme.liquid
-        start: [4, 0]
+        start: [6, 0]
         text: "{% block 'text' %}{% endblock %}"
         target: blocks/text.liquid
   - name: follows a static block rendered with content_for

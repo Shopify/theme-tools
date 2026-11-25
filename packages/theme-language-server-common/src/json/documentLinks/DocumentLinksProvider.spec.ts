@@ -12,7 +12,15 @@ describe('JSON Document Links', () => {
   let jsonLanguageService: JSONLanguageService;
 
   beforeEach(async () => {
-    documentManager = new DocumentManager();
+    // Schema extraction requires mode and validation callbacks. Treat these fixtures as
+    // valid theme schemas so the Liquid tests exercise link generation without schema validation.
+    documentManager = new DocumentManager(
+      undefined,
+      undefined,
+      undefined,
+      async () => 'theme',
+      async () => true,
+    );
     rootUri = 'file:///path/to/project';
 
     // Create a minimal JSONLanguageService for testing
@@ -29,6 +37,83 @@ describe('JSON Document Links', () => {
     // Initialize the service to resolve the initialized promise
     await jsonLanguageService.setup({});
   });
+
+  it.each(['templates/product.json', 'sections/header-group.json', 'config/settings_data.json'])(
+    'should skip Shopify URI links in %s while preserving local file links',
+    async (path) => {
+      uriString = `${rootUri}/${path}`;
+      const sections = {
+        main: {
+          type: 'main-product',
+          blocks: {
+            app: { type: 'shopify://apps/subscriptions/blocks/app-block/app-id' },
+            text: { type: 'text' },
+            group: {
+              type: 'group',
+              blocks: {
+                app: { type: 'shopify://apps/reviews/blocks/review/app-id' },
+                image: { type: 'image' },
+              },
+            },
+            other: { type: 'shopify://other/resource' },
+          },
+        },
+      };
+      const content =
+        path === 'config/settings_data.json'
+          ? {
+              current: {
+                sections,
+                blocks: {
+                  embed: { type: 'shopify://apps/example/blocks/app-embed/app-id' },
+                },
+              },
+            }
+          : { sections };
+      documentManager.open(uriString, JSON.stringify(content), 1);
+
+      const result = await jsonLanguageService.documentLinks({
+        textDocument: { uri: uriString },
+      });
+
+      expect(result.map((link) => link.target)).toEqual([
+        `${rootUri}/sections/main-product.liquid`,
+        `${rootUri}/blocks/text.liquid`,
+        `${rootUri}/blocks/group.liquid`,
+        `${rootUri}/blocks/image.liquid`,
+      ]);
+    },
+  );
+
+  it.each(['sections/apps.liquid', 'blocks/group.liquid'])(
+    'should skip Shopify URI links in %s schema presets',
+    async (path) => {
+      uriString = `${rootUri}/${path}`;
+      const content = `{% schema %}
+        {
+          "name": "Apps",
+          "blocks": [{ "type": "@app" }, { "type": "@theme" }],
+          "presets": [{
+            "name": "Apps",
+            "blocks": [
+              { "type": "shopify://apps/subscriptions/blocks/app-block/app-id" },
+              { "type": "text" }
+            ]
+          }]
+        }
+      {% endschema %}`;
+      documentManager.open(uriString, content, 1);
+
+      const result = await jsonLanguageService.documentLinks({
+        textDocument: { uri: uriString },
+      });
+
+      expect(result.map((link) => link.target)).toEqual([`${rootUri}/blocks/text.liquid`]);
+      const link = result[0];
+      const textDocument = documentManager.get(uriString)!.textDocument;
+      expect(textDocument.getText(link.range)).toBe('text');
+    },
+  );
 
   describe('Schema Tags in Liquid Files', () => {
     it('should return document links for block types in schema tags', async () => {

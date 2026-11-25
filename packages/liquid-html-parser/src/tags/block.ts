@@ -1,4 +1,4 @@
-import type { BlockMarkup, BlockArrayArgument, LiquidNamedArgument } from '../ast';
+import type { BlockArgument, BlockMarkup } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
 import { NodeTypes } from '../types';
@@ -25,7 +25,7 @@ export const blockTag: TagDefinitionBlock<BlockMarkup> = {
       throw new Error(`in 'block' - '${name.value}' is not a valid block type`);
     }
 
-    let args: (LiquidNamedArgument | BlockArrayArgument)[] = [];
+    let args: BlockArgument[] = [];
     if (markup.consumeOptional(MarkupTokenType.Comma) && !markup.isAtEnd()) {
       args = markup.blockNamedArguments();
     }
