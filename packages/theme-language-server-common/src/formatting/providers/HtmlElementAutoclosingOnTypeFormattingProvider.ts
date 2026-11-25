@@ -69,7 +69,9 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider implements BaseOnTyp
         if (
           ast instanceof LiquidHTMLASTParsingError &&
           ast.unclosed &&
-          ast.unclosed.type === NodeTypes.HtmlElement &&
+          // <script> and <style> are HtmlRawNodes
+          (ast.unclosed.type === NodeTypes.HtmlElement ||
+            ast.unclosed.type === NodeTypes.HtmlRawNode) &&
           (ast.unclosed.blockStartPosition.end === textDocument.offsetAt(params.position) ||
             shouldClose(ast.unclosed, nodeAtCursor(textDocument, params.position)))
         ) {
@@ -103,11 +105,7 @@ function nodeAtCursor(textDocument: TextDocument, position: Position) {
       mode: 'tolerant',
     });
 
-    const offset = textDocument.offsetAt(position);
-    const [node, ancestors] = findCurrentNode(ast, offset);
-    if (node.type === NodeTypes.HtmlElement && node.blockStartPosition.end === offset) {
-      return node;
-    }
+    const [node, ancestors] = findCurrentNode(ast, textDocument.offsetAt(position));
     if (ancestors.at(-1)?.type === NodeTypes.HtmlElement) return ancestors.at(-1)!;
     if (node.type === NodeTypes.LiquidBranch) return ancestors.at(-1)!;
     return node;
