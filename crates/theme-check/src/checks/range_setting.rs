@@ -111,39 +111,3 @@ pub fn literal_values(node: &ObjectNode) -> Value {
     }
     Value::Object(values)
 }
-
-/// `lastNodeAtPath(node, path)`: like `at_path`, but an object's last property with a key wins, as
-/// in the parsed schema, so the reported node holds the value that was checked.
-pub fn last_node_at_path<'n, 'a>(
-    node: &'n JsonNode<'a>,
-    path: &[PathSeg],
-) -> Option<&'n JsonNode<'a>> {
-    let mut current = node;
-    for seg in path {
-        current = match (current, seg) {
-            (JsonNode::Object(o), PathSeg::Key(k)) => property_value(o, k)?,
-            (JsonNode::Array(a), PathSeg::Index(i)) => a.children.get(*i)?,
-            _ => return None,
-        };
-    }
-    Some(current)
-}
-
-/// JS `Math.round`: halves round toward positive infinity.
-pub fn js_round(x: f64) -> f64 {
-    let floor = x.floor();
-    if x - floor >= 0.5 {
-        floor + 1.0
-    } else {
-        floor
-    }
-}
-
-/// `propertyValue(node, key)`: the value of the last `key` property, the one `literalValues` keeps.
-pub fn property_value<'n, 'a>(node: &'n ObjectNode<'a>, key: &str) -> Option<&'n JsonNode<'a>> {
-    node.children
-        .iter()
-        .rev()
-        .find(|p| p.key.value == key)
-        .map(|p| &p.value)
-}

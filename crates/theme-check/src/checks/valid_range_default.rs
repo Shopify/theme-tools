@@ -1,6 +1,6 @@
 use super::range_setting::{
-    finite_number, js_round, last_node_at_path, literal_values, property_value,
-    setting_definitions, setting_path, to_range_setting, RangeSetting, EPSILON,
+    finite_number, literal_values, setting_definitions, setting_path, to_range_setting,
+    RangeSetting, EPSILON,
 };
 use crate::context::{CheckDef, CheckResult, Context, Create, JsonCheck, LiquidCheck, Severity};
 use crate::js;
@@ -75,7 +75,7 @@ impl<'a> LiquidCheck<'a> for Check {
                 };
                 report(
                     cx,
-                    last_node_at_path(ast, &setting_path(&definitions.path, i, "default")),
+                    ast.at_path(&setting_path(&definitions.path, i, "default")),
                     default_message(&range, default, &problem),
                 );
             }
@@ -111,7 +111,7 @@ impl<'a> LiquidCheck<'a> for Check {
         }
 
         for path in value_paths {
-            let Some(JsonNode::Object(settings_node)) = last_node_at_path(ast, &path) else {
+            let Some(JsonNode::Object(settings_node)) = ast.at_path(&path) else {
                 continue;
             };
             for property in &settings_node.children {
@@ -181,7 +181,7 @@ impl<'a> JsonCheck<'a> for JsonRangeDefault {
             let Some(problem) = range_problem(&range, default) else {
                 continue;
             };
-            if let Some(default_node) = property_value(setting, "default") {
+            if let Some(default_node) = setting.get("default").map(|p| &p.value) {
                 cx.report(
                     default_message(&range, default, &problem),
                     default_node.span(),
@@ -208,25 +208,13 @@ fn range_problem(setting: &RangeSetting, value: f64) -> Option<String> {
     if value < setting.min || value > setting.max {
         return Some(format!("is outside the range [{min}, {max}]"));
     }
-    if !is_on_step_grid(setting, value) {
+    // The ratio is never negative here, where `round` matches `Math.round`.
+    let ratio = (value - setting.min) / setting.step;
+    if (ratio - ratio.round()).abs() >= EPSILON {
         return Some(format!(
-            "is not aligned to step {} in range [{min}, {max}] — try {}",
-            js_number_to_string(setting.step),
-            js_number_to_string(nearest_valid_value(setting, value))
+            "is not aligned to step {} in range [{min}, {max}]",
+            js_number_to_string(setting.step)
         ));
     }
     None
-}
-
-fn is_on_step_grid(setting: &RangeSetting, value: f64) -> bool {
-    let ratio = (value - setting.min) / setting.step;
-    (ratio - js_round(ratio)).abs() < EPSILON
-}
-
-/// `nearestValidValue(setting, value)`: the grid value nearest to `value`, which is within
-/// [min, max], kept at or below `max` and at one decimal digit.
-fn nearest_valid_value(setting: &RangeSetting, value: f64) -> f64 {
-    let last_index = ((setting.max - setting.min) / setting.step + EPSILON).floor();
-    let index = last_index.min(js_round((value - setting.min) / setting.step));
-    js_round((setting.min + index * setting.step) * 10.0) / 10.0
 }

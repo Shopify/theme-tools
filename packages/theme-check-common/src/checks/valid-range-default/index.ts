@@ -8,15 +8,13 @@ import {
   isLiteralNode,
   isObjectNode,
 } from '../../types';
-import { getLocEnd, getLocStart } from '../../json';
+import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { getSchema, isSectionSchema } from '../../to-schema';
 import {
   EPSILON,
   RangeSetting,
   isFiniteNumber,
-  lastNodeAtPath,
   literalValues,
-  propertyValue,
   settingDefinitions,
   toRangeSetting,
 } from './range-setting';
@@ -75,7 +73,7 @@ export const ValidRangeDefault: LiquidCheckDefinition = {
             const problem = rangeProblem(range, range.default);
             if (!problem) return;
             report(
-              lastNodeAtPath(ast, [...path, i, 'default']),
+              nodeAtPath(ast, [...path, i, 'default']),
               `Default value ${range.default} for range setting "${range.id}" ${problem}.`,
             );
           });
@@ -96,7 +94,7 @@ export const ValidRangeDefault: LiquidCheckDefinition = {
         if (isSectionSchema(schema)) valuePaths.push(['default', 'settings']);
 
         for (const path of valuePaths) {
-          const settingsNode = lastNodeAtPath(ast, path);
+          const settingsNode = nodeAtPath(ast, path);
           if (!settingsNode || !isObjectNode(settingsNode)) continue;
 
           for (const property of settingsNode.children) {
@@ -135,7 +133,7 @@ export const ValidRangeDefaultSettingsSchema: JSONCheckDefinition = {
           const problem = rangeProblem(range, range.default);
           if (!problem) continue;
 
-          const defaultNode = propertyValue(settingNode, 'default')!;
+          const defaultNode = settingNode.children.find((p) => p.key.value === 'default')!.value;
           context.report({
             message: `Default value ${range.default} for range setting "${range.id}" ${problem}.`,
             startIndex: getLocStart(defaultNode),
@@ -147,29 +145,10 @@ export const ValidRangeDefaultSettingsSchema: JSONCheckDefinition = {
   },
 };
 
-function rangeProblem(setting: RangeSetting, value: number): string | undefined {
-  if (value < setting.min || value > setting.max) {
-    return `is outside the range [${setting.min}, ${setting.max}]`;
+function rangeProblem({ min, max, step }: RangeSetting, value: number): string | undefined {
+  if (value < min || value > max) return `is outside the range [${min}, ${max}]`;
+  const ratio = (value - min) / step;
+  if (Math.abs(ratio - Math.round(ratio)) >= EPSILON) {
+    return `is not aligned to step ${step} in range [${min}, ${max}]`;
   }
-  if (!isOnStepGrid(setting, value)) {
-    const suggestion = nearestValidValue(setting, value);
-    return `is not aligned to step ${setting.step} in range [${setting.min}, ${setting.max}] — try ${suggestion}`;
-  }
-  return undefined;
-}
-
-function isOnStepGrid(setting: RangeSetting, value: number): boolean {
-  const ratio = (value - setting.min) / setting.step;
-  return Math.abs(ratio - Math.round(ratio)) < EPSILON;
-}
-
-/**
- * The grid value nearest to `value`, which is within [min, max]. The last
- * grid value is at or below `max`, and Shopify numbers have at most one
- * decimal digit, which also drops float noise like 0.6000000000000001.
- */
-function nearestValidValue({ min, max, step }: RangeSetting, value: number): number {
-  const lastIndex = Math.floor((max - min) / step + EPSILON);
-  const index = Math.min(lastIndex, Math.round((value - min) / step));
-  return Math.round((min + index * step) * 10) / 10;
 }

@@ -1,4 +1,4 @@
-import { JSONNode, ObjectNode, isArrayNode, isLiteralNode, isObjectNode } from '../../types';
+import { ObjectNode, isLiteralNode } from '../../types';
 
 // Shared by ValidRangeDefault and ValidRangeStepCount.
 
@@ -65,35 +65,9 @@ export function settingDefinitions(schema: {
  * null, so they never read as a missing `step`.
  */
 export function literalValues(node: ObjectNode): Record<string, unknown> {
-  const values: Record<string, unknown> = Object.create(null);
+  const values: Record<string, unknown> = {};
   for (const property of node.children) {
     values[property.key.value] = isLiteralNode(property.value) ? property.value.value : null;
   }
   return values;
-}
-
-/**
- * Like `nodeAtPath`, but an object's last property with a key wins, as in the
- * parsed schema, so the reported node holds the value that was checked.
- */
-export function lastNodeAtPath(node: JSONNode, path: (string | number)[]): JSONNode | undefined {
-  let current: JSONNode | undefined = node;
-  for (const key of path) {
-    if (!current) return;
-    if (isObjectNode(current)) {
-      current = typeof key === 'string' ? propertyValue(current, key) : undefined;
-    } else if (isArrayNode(current)) {
-      current = typeof key === 'number' ? current.children[key] : undefined;
-    } else {
-      return;
-    }
-  }
-  return current;
-}
-
-/** The value of a JSON object's last `key` property, the one `literalValues` keeps. */
-export function propertyValue(node: ObjectNode, key: string): JSONNode | undefined {
-  for (let i = node.children.length - 1; i >= 0; i--) {
-    if (node.children[i].key.value === key) return node.children[i].value;
-  }
 }
