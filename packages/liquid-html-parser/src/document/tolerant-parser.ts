@@ -103,9 +103,17 @@ export class TolerantDocumentParser extends DocumentParser {
        * construct. isResyncToken includes EndOfInput, so this also stops
        * cleanly at the end of the source.
        */
-      while (!this.isAtEnd() && !isResyncToken(this.peek().type)) this.advance();
+      while (!this.isAtEnd() && !this.isResyncPoint()) this.advance();
       const end = this.peek().start;
       return makeLiquidErrorNode(startTok.start, end, source, e.message, found);
     }
+  }
+
+  private isResyncPoint(): boolean {
+    const type = this.peek().type;
+    // Skipping the open comment's `-->` would make the rest of the document comment text.
+    return (
+      isResyncToken(type) || (type === TokenType.HtmlCommentClose && this.htmlOpenComment !== null)
+    );
   }
 }

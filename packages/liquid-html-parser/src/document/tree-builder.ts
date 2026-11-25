@@ -107,7 +107,7 @@ export function mergeAdjacentTextNodesTrimmed(
     // Trim leading whitespace if preceded by a non-text node or at start
     const prev = merged[i - 1];
     if (!prev || !isTextNode(prev)) {
-      const trimmed = value.replace(/^\s+/, '');
+      const trimmed = value.trimStart();
       const trimLen = value.length - trimmed.length;
       value = trimmed;
       start += trimLen;
@@ -116,7 +116,7 @@ export function mergeAdjacentTextNodesTrimmed(
     // Trim trailing whitespace if followed by a non-text node or at end
     const next = merged[i + 1];
     if (!next || !isTextNode(next)) {
-      const trimmed = value.replace(/\s+$/, '');
+      const trimmed = value.trimEnd();
       const trimLen = value.length - trimmed.length;
       value = trimmed;
       end -= trimLen;

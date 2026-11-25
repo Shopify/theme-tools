@@ -2558,12 +2558,37 @@ cases:
       children:
         - type: HtmlComment
           body: hello {{ product.name }}
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [2, 0], text: --> }
           position:
             start: [0, 0]
             text: |-
               <!--
                 hello {{ product.name }}
               -->
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [1, 2], text: hello }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 10], text: " product.name " }
+              position: { start: [1, 8], text: "{{ product.name }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: product.name
+                position: { start: [1, 11], text: "product.name " }
+                expression:
+                  type: VariableLookup
+                  name: product
+                  position: { start: [1, 11], text: product.name }
+                  lookups:
+                    - type: String
+                      value: name
+                      position: { start: [1, 19], text: name }
+                  lookupModes: [bareword]
+                filters: []
   - name: should parse script tags as raw
     source: |-
       <script>
@@ -4507,7 +4532,13 @@ cases:
       children:
         - type: HtmlComment
           body: hello
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 11], text: --> }
           position: { start: [0, 0], text: <!-- hello --> }
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [0, 5], text: hello }
   - name: should parse style tags as HtmlRawNode
     source: "<style>.x { color: red; }</style>"
     parse: [html]
@@ -4938,7 +4969,13 @@ cases:
       children:
         - type: HtmlComment
           body: a
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 5], text: --> }
           position: { start: [0, 0], text: <!--a--> }
+          children:
+            - type: TextNode
+              value: a
+              position: { start: [0, 4], text: a }
         - type: HtmlRawNode
           name: script
           blockStartPosition: { start: [0, 8], text: <script> }
@@ -4956,7 +4993,13 @@ cases:
                 position: { start: [0, 16], text: b }
         - type: HtmlComment
           body: c
+          blockStartPosition: { start: [0, 26], text: <!-- }
+          blockEndPosition: { start: [0, 31], text: --> }
           position: { start: [0, 26], text: <!--c--> }
+          children:
+            - type: TextNode
+              value: c
+              position: { start: [0, 30], text: c }
         - type: HtmlRawNode
           name: style
           blockStartPosition: { start: [0, 34], text: <style> }
@@ -4972,3 +5015,2760 @@ cases:
               - type: TextNode
                 value: d
                 position: { start: [0, 41], text: d }
+  - name: parses a script body with a loop condition with no spaces around <
+    source: <script>for (var i=0;i<arr.length;i++){}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>for (var i=0;i<arr.length;i++){}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 40], text: </script> }
+          position: { start: [0, 0], text: "<script>for (var i=0;i<arr.length;i++){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for (var i=0;i<arr.length;i++){}
+            position: { start: [0, 8], text: "for (var i=0;i<arr.length;i++){}" }
+            nodes:
+              - type: TextNode
+                value: for (var i=0;i<arr.length;i++){}
+                position: { start: [0, 8], text: "for (var i=0;i<arr.length;i++){}" }
+  - name: parses a script body with a comparison followed by a double-quoted string
+    source: <script>if(a<b){alert("x")}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>if(a<b){alert("x")}</script>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 27], text: </script> }
+          position: { start: [0, 0], text: '<script>if(a<b){alert("x")}</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(a<b){alert("x")}
+            position: { start: [0, 8], text: 'if(a<b){alert("x")}' }
+            nodes:
+              - type: TextNode
+                value: if(a<b){alert("x")}
+                position: { start: [0, 8], text: 'if(a<b){alert("x")}' }
+  - name: parses a script body with a comparison followed by an apostrophe in a comment
+    source: |-
+      <script>if (i<n) { x() } // don't
+      </script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>if (i<n) { x() } // don't
+          </script>
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [1, 0], text: </script> }
+          position:
+            start: [0, 0]
+            text: |-
+              <script>if (i<n) { x() } // don't
+              </script>
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: |
+              if (i<n) { x() } // don't
+            position:
+              start: [0, 8]
+              text: |
+                if (i<n) { x() } // don't
+            nodes:
+              - type: TextNode
+                value: if (i<n) { x() } // don't
+                position: { start: [0, 8], text: "if (i<n) { x() } // don't" }
+  - name: parses a script body with a comparison against !
+    source: <script>if (a<!b) {}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if (a<!b) {}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 20], text: </script> }
+          position: { start: [0, 0], text: "<script>if (a<!b) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if (a<!b) {}
+            position: { start: [0, 8], text: "if (a<!b) {}" }
+            nodes:
+              - type: TextNode
+                value: if (a<!b) {}
+                position: { start: [0, 8], text: "if (a<!b) {}" }
+  - name: parses a script body with a regex literal followed by an apostrophe
+    source: <script>var r = /<b/; var q = "it's";</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>var r = /<b/; var q = "it's";</script> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 37], text: </script> }
+          position: { start: [0, 0], text: <script>var r = /<b/; var q = "it's";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var r = /<b/; var q = "it's";
+            position: { start: [0, 8], text: var r = /<b/; var q = "it's"; }
+            nodes:
+              - type: TextNode
+                value: var r = /<b/; var q = "it's";
+                position: { start: [0, 8], text: var r = /<b/; var q = "it's"; }
+  - name: parses a script body with a line comment containing <
+    source: |-
+      <script>// show if count <limit
+      x()</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>// show if count <limit
+          x()</script>
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [1, 3], text: </script> }
+          position:
+            start: [0, 0]
+            text: |-
+              <script>// show if count <limit
+              x()</script>
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: |-
+              // show if count <limit
+              x()
+            position:
+              start: [0, 8]
+              text: |-
+                // show if count <limit
+                x()
+            nodes:
+              - type: TextNode
+                value: |-
+                  // show if count <limit
+                  x()
+                position:
+                  start: [0, 8]
+                  text: |-
+                    // show if count <limit
+                    x()
+  - name: parses a minified script body
+    source: <script>for(var e=0;e<t.length;e++){t[e].classList.add("on")}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>for(var e=0;e<t.length;e++){t[e].classList.add("on")}</script>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 61], text: </script> }
+          position: { start: [0, 0], text: '<script>for(var e=0;e<t.length;e++){t[e].classList.add("on")}</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(var e=0;e<t.length;e++){t[e].classList.add("on")}
+            position: { start: [0, 8], text: 'for(var e=0;e<t.length;e++){t[e].classList.add("on")}' }
+            nodes:
+              - type: TextNode
+                value: for(var e=0;e<t.length;e++){t[e].classList.add("on")}
+                position: { start: [0, 8], text: 'for(var e=0;e<t.length;e++){t[e].classList.add("on")}' }
+  - name: parses a style body whose comment contains < and an apostrophe
+    source: "<style>/* <b isn't bold here */ .a { color: red; }</style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>/* <b isn't bold here */ .a { color: red; }</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 50], text: </style> }
+          position: { start: [0, 0], text: "<style>/* <b isn't bold here */ .a { color: red; }</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: "/* <b isn't bold here */ .a { color: red; }"
+            position: { start: [0, 7], text: "/* <b isn't bold here */ .a { color: red; }" }
+            nodes:
+              - type: TextNode
+                value: "/* <b isn't bold here */ .a { color: red; }"
+                position: { start: [0, 7], text: "/* <b isn't bold here */ .a { color: red; }" }
+  - name: closes a script body on an upper-case close tag
+    source: <SCRIPT>for(i=0;i<n;i++){}</SCRIPT>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<SCRIPT>for(i=0;i<n;i++){}</SCRIPT>" }
+      children:
+        - type: HtmlRawNode
+          name: SCRIPT
+          blockStartPosition: { start: [0, 0], text: <SCRIPT> }
+          blockEndPosition: { start: [0, 26], text: </SCRIPT> }
+          position: { start: [0, 0], text: "<SCRIPT>for(i=0;i<n;i++){}</SCRIPT>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){}
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){}
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+  - name: closes a script body on a close tag with whitespace before >
+    source: |-
+      <script>for(i=0;i<n;i++){}</script 
+      >
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>for(i=0;i<n;i++){}</script 
+          >
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition:
+            start: [0, 26]
+            text: |-
+              </script 
+              >
+          position:
+            start: [0, 0]
+            text: |-
+              <script>for(i=0;i<n;i++){}</script 
+              >
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){}
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){}
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+  - name: parses a drop glued to < in a script body
+    source: <script>if (i<{{ max }}) {}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if (i<{{ max }}) {}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 27], text: </script> }
+          position: { start: [0, 0], text: "<script>if (i<{{ max }}) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if (i<{{ max }}) {}
+            position: { start: [0, 8], text: "if (i<{{ max }}) {}" }
+            nodes:
+              - type: TextNode
+                value: if (i<
+                position: { start: [0, 8], text: if (i< }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 16], text: " max " }
+                position: { start: [0, 14], text: "{{ max }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: max
+                  position: { start: [0, 17], text: "max " }
+                  expression:
+                    type: VariableLookup
+                    name: max
+                    position: { start: [0, 17], text: max }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+              - type: TextNode
+                value: ) {}
+                position: { start: [0, 23], text: ") {}" }
+  - name: parses a Liquid block after a < comparison in a script body
+    source: <script>for(i=0;i<n;i++){ {% if x %}a(){% endif %} }</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){ {% if x %}a(){% endif %} }</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 52], text: </script> }
+          position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){ {% if x %}a(){% endif %} }</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){ {% if x %}a(){% endif %} }
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){ {% if x %}a(){% endif %} }" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){" }
+              - type: LiquidTag
+                name: if
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 26], text: "{% if x %}" }
+                blockEndPosition: { start: [0, 39], text: "{% endif %}" }
+                markupPosition: { start: [0, 32], text: "x " }
+                position: { start: [0, 26], text: "{% if x %}a(){% endif %}" }
+                markup:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 32], text: x }
+                  lookups: []
+                  lookupModes: []
+                children:
+                  - type: LiquidBranch
+                    name: null
+                    markup: ""
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    markupPosition: { start: [0, 36], text: "" }
+                    blockStartPosition: { start: [0, 36], text: "" }
+                    blockEndPosition: { start: [0, 39], text: "" }
+                    position: { start: [0, 36], text: a() }
+                    children:
+                      - type: TextNode
+                        value: a()
+                        position: { start: [0, 36], text: a() }
+              - type: TextNode
+                value: "}"
+                position: { start: [0, 51], text: "}" }
+  - name: parses the HTML after a script body with a < comparison
+    source: <script>if(a<b){}</script><div>after</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if(a<b){}</script><div>after</div>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 17], text: </script> }
+          position: { start: [0, 0], text: "<script>if(a<b){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(a<b){}
+            position: { start: [0, 8], text: "if(a<b){}" }
+            nodes:
+              - type: TextNode
+                value: if(a<b){}
+                position: { start: [0, 8], text: "if(a<b){}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 26], text: <div> }
+          blockEndPosition: { start: [0, 36], text: </div> }
+          position: { start: [0, 26], text: <div>after</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 27], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 31], text: after }
+  - name: closes a script body at its own close tag rather than a later script's
+    source: |-
+      <script>if (a<b) {}</script>
+      <div>hi</div>
+      <script>x()</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>if (a<b) {}</script>
+          <div>hi</div>
+          <script>x()</script>
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 19], text: </script> }
+          position: { start: [0, 0], text: "<script>if (a<b) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if (a<b) {}
+            position: { start: [0, 8], text: "if (a<b) {}" }
+            nodes:
+              - type: TextNode
+                value: if (a<b) {}
+                position: { start: [0, 8], text: "if (a<b) {}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [1, 0], text: <div> }
+          blockEndPosition: { start: [1, 7], text: </div> }
+          position: { start: [1, 0], text: <div>hi</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [1, 1], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: hi
+              position: { start: [1, 5], text: hi }
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [2, 0], text: <script> }
+          blockEndPosition: { start: [2, 11], text: </script> }
+          position: { start: [2, 0], text: <script>x()</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: x()
+            position: { start: [2, 8], text: x() }
+            nodes:
+              - type: TextNode
+                value: x()
+                position: { start: [2, 8], text: x() }
+  - name: does not close a script body on a close tag inside a drop
+    source: <script>for(i=0;i<n;i++){} var s = {{ '</script>' | json }};</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){} var s = {{ '</script>' | json }};</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 60], text: </script> }
+          position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){} var s = {{ '</script>' | json }};</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){} var s = {{ '</script>' | json }};
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){} var s = {{ '</script>' | json }};" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){} var s =
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){} var s =" }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 37], text: " '</script>' | json " }
+                position: { start: [0, 35], text: "{{ '</script>' | json }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: "'</script>' | json"
+                  position: { start: [0, 38], text: "'</script>' | json " }
+                  expression:
+                    type: String
+                    single: true
+                    value: </script>
+                    position: { start: [0, 38], text: "'</script>'" }
+                  filters:
+                    - type: LiquidFilter
+                      name: json
+                      position: { start: [0, 49], text: " | json" }
+                      args: []
+              - type: TextNode
+                value: ;
+                position: { start: [0, 59], text: ; }
+  - name: does not close a script body on a close tag inside a comment
+    source: "<script>if (i<n) {}{% comment %}old: </script>{% endcomment %}</script>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if (i<n) {}{% comment %}old: </script>{% endcomment %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 62], text: </script> }
+          position: { start: [0, 0], text: "<script>if (i<n) {}{% comment %}old: </script>{% endcomment %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "if (i<n) {}{% comment %}old: </script>{% endcomment %}"
+            position: { start: [0, 8], text: "if (i<n) {}{% comment %}old: </script>{% endcomment %}" }
+            nodes:
+              - type: TextNode
+                value: if (i<n) {}
+                position: { start: [0, 8], text: "if (i<n) {}" }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 30], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 19], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 46], text: "{% endcomment %}" }
+                position: { start: [0, 19], text: "{% comment %}old: </script>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "old: </script>"
+                  position: { start: [0, 32], text: "old: </script>" }
+                  nodes:
+                    - type: TextNode
+                      value: "old: </script>"
+                      position: { start: [0, 32], text: "old: </script>" }
+  - name: does not close a script body without a < comparison on a close tag inside a comment
+    source: "<script>x(){% comment %}old: </script>{% endcomment %}</script>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>x(){% comment %}old: </script>{% endcomment %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 54], text: </script> }
+          position: { start: [0, 0], text: "<script>x(){% comment %}old: </script>{% endcomment %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "x(){% comment %}old: </script>{% endcomment %}"
+            position: { start: [0, 8], text: "x(){% comment %}old: </script>{% endcomment %}" }
+            nodes:
+              - type: TextNode
+                value: x()
+                position: { start: [0, 8], text: x() }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 22], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 11], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 38], text: "{% endcomment %}" }
+                position: { start: [0, 11], text: "{% comment %}old: </script>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "old: </script>"
+                  position: { start: [0, 24], text: "old: </script>" }
+                  nodes:
+                    - type: TextNode
+                      value: "old: </script>"
+                      position: { start: [0, 24], text: "old: </script>" }
+  - name: does not close a script body on a close tag inside a doc
+    source: <script>if(i<n){}{% doc %}</script>{% enddoc %}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if(i<n){}{% doc %}</script>{% enddoc %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 47], text: </script> }
+          position: { start: [0, 0], text: "<script>if(i<n){}{% doc %}</script>{% enddoc %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(i<n){}{% doc %}</script>{% enddoc %}
+            position: { start: [0, 8], text: "if(i<n){}{% doc %}</script>{% enddoc %}" }
+            nodes:
+              - type: TextNode
+                value: if(i<n){}
+                position: { start: [0, 8], text: "if(i<n){}" }
+              - type: LiquidRawTag
+                name: doc
+                markup: ""
+                markupPosition: { start: [0, 24], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 17], text: "{% doc %}" }
+                blockEndPosition: { start: [0, 35], text: "{% enddoc %}" }
+                position: { start: [0, 17], text: "{% doc %}</script>{% enddoc %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: </script>
+                  position: { start: [0, 26], text: </script> }
+                  nodes:
+                    - type: LiquidDocDescriptionNode
+                      name: description
+                      isImplicit: true
+                      isInline: true
+                      position: { start: [0, 26], text: </script> }
+                      content:
+                        type: TextNode
+                        value: </script>
+                        position: { start: [0, 26], text: </script> }
+  - name: does not close a script body on a close tag inside a raw
+    source: <script>if(i<n){}{% raw %}</script>{% endraw %}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if(i<n){}{% raw %}</script>{% endraw %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 47], text: </script> }
+          position: { start: [0, 0], text: "<script>if(i<n){}{% raw %}</script>{% endraw %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(i<n){}{% raw %}</script>{% endraw %}
+            position: { start: [0, 8], text: "if(i<n){}{% raw %}</script>{% endraw %}" }
+            nodes:
+              - type: TextNode
+                value: if(i<n){}
+                position: { start: [0, 8], text: "if(i<n){}" }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 24], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 17], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 35], text: "{% endraw %}" }
+                position: { start: [0, 17], text: "{% raw %}</script>{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: </script>
+                  position: { start: [0, 26], text: </script> }
+                  nodes:
+                    - type: TextNode
+                      value: </script>
+                      position: { start: [0, 26], text: </script> }
+  - name: does not close a style body on a close tag inside a comment
+    source: <style>/* <b isn't */{% comment %}</style>{% endcomment %}</style>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>/* <b isn't */{% comment %}</style>{% endcomment %}</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 58], text: </style> }
+          position: { start: [0, 0], text: "<style>/* <b isn't */{% comment %}</style>{% endcomment %}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: /* <b isn't */{% comment %}</style>{% endcomment %}
+            position: { start: [0, 7], text: "/* <b isn't */{% comment %}</style>{% endcomment %}" }
+            nodes:
+              - type: TextNode
+                value: /* <b isn't */
+                position: { start: [0, 7], text: /* <b isn't */ }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 32], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 21], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 42], text: "{% endcomment %}" }
+                position: { start: [0, 21], text: "{% comment %}</style>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: </style>
+                  position: { start: [0, 34], text: </style> }
+                  nodes:
+                    - type: TextNode
+                      value: </style>
+                      position: { start: [0, 34], text: </style> }
+  - name: closes a script body after a raw {{ in a string, and parses the markup after it
+    source: <script>var o="{% raw %}{{{% endraw %}";</script><p>{{ x }}</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}";</script><p>{{ x }}</p>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 40], text: </script> }
+          position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}";</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var o="{% raw %}{{{% endraw %}";
+            position: { start: [0, 8], text: 'var o="{% raw %}{{{% endraw %}";' }
+            nodes:
+              - type: TextNode
+                value: var o="
+                position: { start: [0, 8], text: var o=" }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 22], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 15], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 26], text: "{% endraw %}" }
+                position: { start: [0, 15], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 24], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 24], text: "{{" }
+              - type: TextNode
+                value: '";'
+                position: { start: [0, 38], text: '";' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 49], text: <p> }
+          blockEndPosition: { start: [0, 59], text: </p> }
+          position: { start: [0, 49], text: "<p>{{ x }}</p>" }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 50], text: p }
+          attributes: []
+          children:
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 54], text: " x " }
+              position: { start: [0, 52], text: "{{ x }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: x
+                position: { start: [0, 55], text: "x " }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 55], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+  - name: closes a script body after a raw {{ before a < comparison
+    source: <script>{% raw %}{{{% endraw %}if(a<b){}</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %}if(a<b){}</script><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 40], text: </script> }
+          position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %}if(a<b){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{% raw %}{{{% endraw %}if(a<b){}"
+            position: { start: [0, 8], text: "{% raw %}{{{% endraw %}if(a<b){}" }
+            nodes:
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 15], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 8], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 19], text: "{% endraw %}" }
+                position: { start: [0, 8], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 17], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 17], text: "{{" }
+              - type: TextNode
+                value: if(a<b){}
+                position: { start: [0, 31], text: "if(a<b){}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 49], text: <p> }
+          blockEndPosition: { start: [0, 57], text: </p> }
+          position: { start: [0, 49], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 50], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 52], text: after }
+  - name: closes a script body after a raw {{ and a later }} around a loop
+    source: <script>var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";</script><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 71], text: </script> }
+          position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";
+            position: { start: [0, 8], text: 'var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";' }
+            nodes:
+              - type: TextNode
+                value: var o="
+                position: { start: [0, 8], text: var o=" }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 22], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 15], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 26], text: "{% endraw %}" }
+                position: { start: [0, 15], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 24], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 24], text: "{{" }
+              - type: TextNode
+                value: '"; for(i=0;i<n;i++){} var c="}}";'
+                position: { start: [0, 38], text: '"; for(i=0;i<n;i++){} var c="}}";' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 80], text: <p> }
+          blockEndPosition: { start: [0, 88], text: </p> }
+          position: { start: [0, 80], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 81], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 83], text: after }
+  - name: closes a script body after raw {{ and }} split across two raw tags
+    source: <script>{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}</script><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 68], text: </script> }
+          position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}"
+            position: { start: [0, 8], text: "{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}" }
+            nodes:
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 15], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 8], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 19], text: "{% endraw %}" }
+                position: { start: [0, 8], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 17], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 17], text: "{{" }
+              - type: TextNode
+                value: x
+                position: { start: [0, 32], text: x }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 41], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 34], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 45], text: "{% endraw %}" }
+                position: { start: [0, 34], text: "{% raw %}}}{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "}}"
+                  position: { start: [0, 43], text: "}}" }
+                  nodes:
+                    - type: TextNode
+                      value: "}}"
+                      position: { start: [0, 43], text: "}}" }
+              - type: TextNode
+                value: ; if(a<b){}
+                position: { start: [0, 57], text: "; if(a<b){}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 77], text: <p> }
+          blockEndPosition: { start: [0, 85], text: </p> }
+          position: { start: [0, 77], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 78], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 80], text: after }
+  - name: rejects a script body whose comment has a {{ that swallows the endcomment, as Liquid::Tokenizer does
+    source: <script>{% comment %}{{ old {% endcomment %}for(i=0;i<n;i++){}</script><p>after</p>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script body whose comment has a bare {{ that swallows the endcomment
+    source: <script>{% comment %} {{ {% endcomment %}</script><p>after</p>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script body with an unclosed comment
+    source: <script>if(i<n){}{% comment %}</script>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 17]
+      text: "{% comment %}"
+  - name: rejects a script with a < comparison that is never closed
+    source: |
+      <script>
+        for (var i=0;i<n;i++){}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script body with an unterminated drop
+    source: <script>if(a<b){} var t = "{{";</script>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: parses an HTML comment holding a tag opener
+    source: <!-- a <b --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- a <b --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: a <b
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 10], text: --> }
+          position: { start: [0, 0], text: <!-- a <b --> }
+          children:
+            - type: TextNode
+              value: a <b
+              position: { start: [0, 5], text: a <b }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 13], text: <p> }
+          blockEndPosition: { start: [0, 21], text: </p> }
+          position: { start: [0, 13], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 14], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 16], text: after }
+  - name: parses an HTML comment holding an unbalanced quote
+    source: <!-- <a title="x --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- <a title="x --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: <a title="x
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 17], text: --> }
+          position: { start: [0, 0], text: <!-- <a title="x --> }
+          children:
+            - type: TextNode
+              value: <a title="x
+              position: { start: [0, 5], text: <a title="x }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 20], text: <p> }
+          blockEndPosition: { start: [0, 28], text: </p> }
+          position: { start: [0, 20], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 21], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 23], text: after }
+  - name: parses an HTML comment holding a close tag
+    source: <!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- </div> --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: </div>
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 12], text: --> }
+          position: { start: [0, 0], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 5], text: </div> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 15], text: <p> }
+          blockEndPosition: { start: [0, 23], text: </p> }
+          position: { start: [0, 15], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 16], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 18], text: after }
+  - name: parses an HTML comment holding a nested <!--
+    source: <!-- <!-- x --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- <!-- x --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: <!-- x
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 12], text: --> }
+          position: { start: [0, 0], text: <!-- <!-- x --> }
+          children:
+            - type: TextNode
+              value: <!-- x
+              position: { start: [0, 5], text: <!-- x }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 15], text: <p> }
+          blockEndPosition: { start: [0, 23], text: </p> }
+          position: { start: [0, 15], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 16], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 18], text: after }
+  - name: parses an HTML comment holding Liquid after a tag opener
+    source: <!-- <b {{ x }} --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- <b {{ x }} --><p>after</p>" }
+      children:
+        - type: HtmlComment
+          body: <b {{ x }}
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 16], text: --> }
+          position: { start: [0, 0], text: "<!-- <b {{ x }} -->" }
+          children:
+            - type: TextNode
+              value: <b
+              position: { start: [0, 5], text: <b }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: " x " }
+              position: { start: [0, 8], text: "{{ x }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: x
+                position: { start: [0, 11], text: "x " }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 11], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 19], text: <p> }
+          blockEndPosition: { start: [0, 27], text: </p> }
+          position: { start: [0, 19], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 20], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 22], text: after }
+  - name: closes an HTML comment on --!>
+    source: <!-- a --!><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- a --!><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: a
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 7], text: --!> }
+          position: { start: [0, 0], text: <!-- a --!> }
+          children:
+            - type: TextNode
+              value: a
+              position: { start: [0, 5], text: a }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 11], text: <p> }
+          blockEndPosition: { start: [0, 19], text: </p> }
+          position: { start: [0, 11], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 12], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 14], text: after }
+  - name: closes the empty HTML comment <!-->
+    source: <!--><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!--><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: ""
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 4], text: ">" }
+          position: { start: [0, 0], text: <!--> }
+          children: []
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 5], text: <p> }
+          blockEndPosition: { start: [0, 13], text: </p> }
+          position: { start: [0, 5], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 6], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 8], text: after }
+  - name: closes the empty HTML comment <!--->
+    source: <!---><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!---><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: ""
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 4], text: -> }
+          position: { start: [0, 0], text: <!---> }
+          children: []
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 6], text: <p> }
+          blockEndPosition: { start: [0, 14], text: </p> }
+          position: { start: [0, 6], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 7], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 9], text: after }
+  - name: closes the empty HTML comment <!---->
+    source: <!----><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!----><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: ""
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 4], text: --> }
+          position: { start: [0, 0], text: <!----> }
+          children: []
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 7], text: <p> }
+          blockEndPosition: { start: [0, 15], text: </p> }
+          position: { start: [0, 7], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 8], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 10], text: after }
+  - name: parses an IE conditional comment
+    source: <!--[if IE]><p>old</p><![endif]-->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!--[if IE]><p>old</p><![endif]-->" }
+      children:
+        - type: HtmlComment
+          body: "[if IE]><p>old</p><![endif]"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 31], text: --> }
+          position: { start: [0, 0], text: "<!--[if IE]><p>old</p><![endif]-->" }
+          children:
+            - type: TextNode
+              value: "[if IE]><p>old</p><![endif]"
+              position: { start: [0, 4], text: "[if IE]><p>old</p><![endif]" }
+  - name: parses a downlevel-revealed conditional comment
+    source: <!--[if !IE]><!--><p>modern</p><!--<![endif]-->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!--[if !IE]><!--><p>modern</p><!--<![endif]-->" }
+      children:
+        - type: HtmlComment
+          body: "[if !IE]><!"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 15], text: --> }
+          position: { start: [0, 0], text: "<!--[if !IE]><!-->" }
+          children:
+            - type: TextNode
+              value: "[if !IE]><!"
+              position: { start: [0, 4], text: "[if !IE]><!" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 18], text: <p> }
+          blockEndPosition: { start: [0, 27], text: </p> }
+          position: { start: [0, 18], text: <p>modern</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 19], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: modern
+              position: { start: [0, 21], text: modern }
+        - type: HtmlComment
+          body: <![endif]
+          blockStartPosition: { start: [0, 31], text: <!-- }
+          blockEndPosition: { start: [0, 44], text: --> }
+          position: { start: [0, 31], text: "<!--<![endif]-->" }
+          children:
+            - type: TextNode
+              value: <![endif]
+              position: { start: [0, 35], text: "<![endif]" }
+  - name: parses an HTML comment holding --
+    source: <!-- a -- b -->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- a -- b --> }
+      children:
+        - type: HtmlComment
+          body: a -- b
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 12], text: --> }
+          position: { start: [0, 0], text: <!-- a -- b --> }
+          children:
+            - type: TextNode
+              value: a -- b
+              position: { start: [0, 5], text: a -- b }
+  - name: reads a --> outside an HTML comment as text
+    source: <p>a --> b</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <p>a --> b</p> }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: <p> }
+          blockEndPosition: { start: [0, 10], text: </p> }
+          position: { start: [0, 0], text: <p>a --> b</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 1], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: a --> b
+              position: { start: [0, 3], text: a --> b }
+  - name: parses an HTML comment inside a Liquid comment
+    source: "{% comment %}<!-- x -->{% endcomment %}<div>y</div>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}<!-- x -->{% endcomment %}<div>y</div>" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 23], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}<!-- x -->{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!-- x -->
+            position: { start: [0, 13], text: <!-- x --> }
+            nodes:
+              - type: TextNode
+                value: <!-- x -->
+                position: { start: [0, 13], text: <!-- x --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 39], text: <div> }
+          blockEndPosition: { start: [0, 45], text: </div> }
+          position: { start: [0, 39], text: <div>y</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 40], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: y
+              position: { start: [0, 44], text: y }
+  - name: keeps an HTML comment in a script body as text
+    source: <script><!-- alert(1) //--></script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script><!-- alert(1) //--></script> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 27], text: </script> }
+          position: { start: [0, 0], text: <script><!-- alert(1) //--></script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: <!-- alert(1) //-->
+            position: { start: [0, 8], text: <!-- alert(1) //--> }
+            nodes:
+              - type: TextNode
+                value: <!-- alert(1) //-->
+                position: { start: [0, 8], text: <!-- alert(1) //--> }
+  - name: keeps an HTML comment in a style body as text
+    source: "<style><!-- body { color: red } --></style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style><!-- body { color: red } --></style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 35], text: </style> }
+          position: { start: [0, 0], text: "<style><!-- body { color: red } --></style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: "<!-- body { color: red } -->"
+            position: { start: [0, 7], text: "<!-- body { color: red } -->" }
+            nodes:
+              - type: TextNode
+                value: "<!-- body { color: red } -->"
+                position: { start: [0, 7], text: "<!-- body { color: red } -->" }
+  - name: keeps an HTML comment in an svg body as text
+    source: <svg><!-- icon --><path d="M0 0"/></svg>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><!-- icon --><path d="M0 0"/></svg> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 34], text: </svg> }
+          position: { start: [0, 0], text: <svg><!-- icon --><path d="M0 0"/></svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!-- icon --><path d="M0 0"/>
+            position: { start: [0, 5], text: <!-- icon --><path d="M0 0"/> }
+            nodes:
+              - type: TextNode
+                value: <!-- icon --><path d="M0 0"/>
+                position: { start: [0, 5], text: <!-- icon --><path d="M0 0"/> }
+  - name: closes a script whose body opens an HTML comment it never closes
+    source: <script>const s = "<!--";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>const s = "<!--";</script><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 25], text: </script> }
+          position: { start: [0, 0], text: <script>const s = "<!--";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: const s = "<!--";
+            position: { start: [0, 8], text: const s = "<!--"; }
+            nodes:
+              - type: TextNode
+                value: const s = "<!--";
+                position: { start: [0, 8], text: const s = "<!--"; }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 34], text: <p> }
+          blockEndPosition: { start: [0, 42], text: </p> }
+          position: { start: [0, 34], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 35], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 37], text: after }
+  - name: closes a script whose body opens a quoted attribute it never closes
+    source: <script>const s = "<a title='x";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>const s = "<a title='x";</script><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 32], text: </script> }
+          position: { start: [0, 0], text: <script>const s = "<a title='x";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: const s = "<a title='x";
+            position: { start: [0, 8], text: const s = "<a title='x"; }
+            nodes:
+              - type: TextNode
+                value: const s = "<a title='x";
+                position: { start: [0, 8], text: const s = "<a title='x"; }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 41], text: <p> }
+          blockEndPosition: { start: [0, 49], text: </p> }
+          position: { start: [0, 41], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 42], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 44], text: after }
+  - name: closes a style whose body opens an HTML comment it never closes
+    source: '<style>.x::after { content: "<!--"; }</style><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<style>.x::after { content: "<!--"; }</style><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 37], text: </style> }
+          position: { start: [0, 0], text: '<style>.x::after { content: "<!--"; }</style>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: '.x::after { content: "<!--"; }'
+            position: { start: [0, 7], text: '.x::after { content: "<!--"; }' }
+            nodes:
+              - type: TextNode
+                value: '.x::after { content: "<!--"; }'
+                position: { start: [0, 7], text: '.x::after { content: "<!--"; }' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 45], text: <p> }
+          blockEndPosition: { start: [0, 53], text: </p> }
+          position: { start: [0, 45], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 46], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 48], text: after }
+  - name: closes an svg holding a <!-- in CDATA
+    source: <svg><text><![CDATA[x > y <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[x > y <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 42], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[x > y <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > y <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[x > y <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x > y <!-- z]]></text>
+                position: { start: [0, 5], text: "<text><![CDATA[x > y <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 48], text: <p> }
+          blockEndPosition: { start: [0, 56], text: </p> }
+          position: { start: [0, 48], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 49], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 51], text: after }
+  - name: closes an svg holding a <!-- in a CDATA style
+    source: '<svg><style><![CDATA[a > b { content: "<!--" }]]></style></svg><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg><style><![CDATA[a > b { content: "<!--" }]]></style></svg><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 57], text: </svg> }
+          position: { start: [0, 0], text: '<svg><style><![CDATA[a > b { content: "<!--" }]]></style></svg>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: '<style><![CDATA[a > b { content: "<!--" }]]></style>'
+            position: { start: [0, 5], text: '<style><![CDATA[a > b { content: "<!--" }]]></style>' }
+            nodes:
+              - type: TextNode
+                value: '<style><![CDATA[a > b { content: "<!--" }]]></style>'
+                position: { start: [0, 5], text: '<style><![CDATA[a > b { content: "<!--" }]]></style>' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 63], text: <p> }
+          blockEndPosition: { start: [0, 71], text: </p> }
+          position: { start: [0, 63], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 64], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 66], text: after }
+  - name: closes an svg holding a <!-- in CDATA, after a ]]> inside a Liquid comment
+    source: <svg><text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 73], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x >
+                position: { start: [0, 5], text: "<text><![CDATA[x >" }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 35], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 24], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 40], text: "{% endcomment %}" }
+                position: { start: [0, 24], text: "{% comment %}]]>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "]]>"
+                  position: { start: [0, 37], text: "]]>" }
+                  nodes:
+                    - type: TextNode
+                      value: "]]>"
+                      position: { start: [0, 37], text: "]]>" }
+              - type: TextNode
+                value: <!-- z]]></text>
+                position: { start: [0, 57], text: "<!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 79], text: <p> }
+          blockEndPosition: { start: [0, 87], text: </p> }
+          position: { start: [0, 79], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 80], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 82], text: after }
+  - name: closes an svg holding a <!-- in CDATA, after a </script>
+    source: <svg><text><![CDATA[x > </script> <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[x > </script> <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 50], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[x > </script> <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > </script> <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[x > </script> <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x > </script> <!-- z]]></text>
+                position: { start: [0, 5], text: "<text><![CDATA[x > </script> <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 56], text: <p> }
+          blockEndPosition: { start: [0, 64], text: </p> }
+          position: { start: [0, 56], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 57], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 59], text: after }
+  - name: closes an svg holding a <!-- in a CDATA script, after a </style>
+    source: <svg><script><![CDATA[if (a < b) s = '</style> <!--';]]></script></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><script><![CDATA[if (a < b) s = '</style> <!--';]]></script></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 65], text: </svg> }
+          position: { start: [0, 0], text: "<svg><script><![CDATA[if (a < b) s = '</style> <!--';]]></script></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <script><![CDATA[if (a < b) s = '</style> <!--';]]></script>
+            position: { start: [0, 5], text: "<script><![CDATA[if (a < b) s = '</style> <!--';]]></script>" }
+            nodes:
+              - type: TextNode
+                value: <script><![CDATA[if (a < b) s = '</style> <!--';]]></script>
+                position: { start: [0, 5], text: "<script><![CDATA[if (a < b) s = '</style> <!--';]]></script>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 71], text: <p> }
+          blockEndPosition: { start: [0, 79], text: </p> }
+          position: { start: [0, 71], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 72], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 74], text: after }
+  - name: closes an svg holding a <!-- in a foreignObject script
+    source: <svg><foreignObject><script>const s = "<!--";</script></foreignObject></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><foreignObject><script>const s = "<!--";</script></foreignObject></svg><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 70], text: </svg> }
+          position: { start: [0, 0], text: <svg><foreignObject><script>const s = "<!--";</script></foreignObject></svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <foreignObject><script>const s = "<!--";</script></foreignObject>
+            position: { start: [0, 5], text: <foreignObject><script>const s = "<!--";</script></foreignObject> }
+            nodes:
+              - type: TextNode
+                value: <foreignObject><script>const s = "<!--";</script></foreignObject>
+                position: { start: [0, 5], text: <foreignObject><script>const s = "<!--";</script></foreignObject> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 76], text: <p> }
+          blockEndPosition: { start: [0, 84], text: </p> }
+          position: { start: [0, 76], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 77], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 79], text: after }
+  - name: closes an svg holding a <!-- in a foreignObject style
+    source: '<svg><foreignObject><style>a::after { content: "<!--" }</style></foreignObject></svg><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg><foreignObject><style>a::after { content: "<!--" }</style></foreignObject></svg><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 79], text: </svg> }
+          position: { start: [0, 0], text: '<svg><foreignObject><style>a::after { content: "<!--" }</style></foreignObject></svg>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>'
+            position: { start: [0, 5], text: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>' }
+            nodes:
+              - type: TextNode
+                value: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>'
+                position: { start: [0, 5], text: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 85], text: <p> }
+          blockEndPosition: { start: [0, 93], text: </p> }
+          position: { start: [0, 85], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 86], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 88], text: after }
+  - name: closes an svg holding an HTML comment that never closes
+    source: <svg><!-- icon</svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><!-- icon</svg><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 14], text: </svg> }
+          position: { start: [0, 0], text: <svg><!-- icon</svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!-- icon
+            position: { start: [0, 5], text: <!-- icon }
+            nodes:
+              - type: TextNode
+                value: <!-- icon
+                position: { start: [0, 5], text: <!-- icon }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 20], text: <p> }
+          blockEndPosition: { start: [0, 28], text: </p> }
+          position: { start: [0, 20], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 21], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 23], text: after }
+  - name: closes an svg holding a <!-- in CDATA, after a </svg marker>
+    source: <svg><text><![CDATA[a > </svg marker> <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[a > </svg marker> <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 54], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[a > </svg marker> <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[a > </svg marker> <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[a > </svg marker> <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[a > </svg marker> <!-- z]]></text>
+                position: { start: [0, 5], text: "<text><![CDATA[a > </svg marker> <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 60], text: <p> }
+          blockEndPosition: { start: [0, 68], text: </p> }
+          position: { start: [0, 60], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 61], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 63], text: after }
+  - name: parses an HTML comment after a script whose body holds an unpaired <![CDATA[
+    source: <script>/* <![CDATA[ */ if (x > y) {}</script><!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>/* <![CDATA[ */ if (x > y) {}</script><!-- </div> --><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 37], text: </script> }
+          position: { start: [0, 0], text: "<script>/* <![CDATA[ */ if (x > y) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: /* <![CDATA[ */ if (x > y) {}
+            position: { start: [0, 8], text: "/* <![CDATA[ */ if (x > y) {}" }
+            nodes:
+              - type: TextNode
+                value: /* <![CDATA[ */ if (x > y) {}
+                position: { start: [0, 8], text: "/* <![CDATA[ */ if (x > y) {}" }
+        - type: HtmlComment
+          body: </div>
+          blockStartPosition: { start: [0, 46], text: <!-- }
+          blockEndPosition: { start: [0, 58], text: --> }
+          position: { start: [0, 46], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 51], text: </div> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 61], text: <p> }
+          blockEndPosition: { start: [0, 69], text: </p> }
+          position: { start: [0, 61], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 62], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 64], text: after }
+  - name: parses an HTML comment after a style whose body holds an unpaired <![CDATA[
+    source: <style>/* <![CDATA[ */ a > b {}</style><!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>/* <![CDATA[ */ a > b {}</style><!-- </div> --><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 31], text: </style> }
+          position: { start: [0, 0], text: "<style>/* <![CDATA[ */ a > b {}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: /* <![CDATA[ */ a > b {}
+            position: { start: [0, 7], text: "/* <![CDATA[ */ a > b {}" }
+            nodes:
+              - type: TextNode
+                value: /* <![CDATA[ */ a > b {}
+                position: { start: [0, 7], text: "/* <![CDATA[ */ a > b {}" }
+        - type: HtmlComment
+          body: </div>
+          blockStartPosition: { start: [0, 39], text: <!-- }
+          blockEndPosition: { start: [0, 51], text: --> }
+          position: { start: [0, 39], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 44], text: </div> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 54], text: <p> }
+          blockEndPosition: { start: [0, 62], text: </p> }
+          position: { start: [0, 54], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 55], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 57], text: after }
+  - name: closes an svg whose open tag has a glued Liquid attribute
+    source: <svg{% if x %} class="x"{% endif %}><text><![CDATA[x > <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg{% if x %} class="x"{% endif %}><text><![CDATA[x > <!-- z]]></text></svg><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: '<svg{% if x %} class="x"{% endif %}>' }
+          blockEndPosition: { start: [0, 71], text: </svg> }
+          position: { start: [0, 0], text: '<svg{% if x %} class="x"{% endif %}><text><![CDATA[x > <!-- z]]></text></svg>' }
+          attributes:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 4], text: "{% if x %}" }
+              blockEndPosition: { start: [0, 24], text: "{% endif %}" }
+              markupPosition: { start: [0, 10], text: "x " }
+              position: { start: [0, 4], text: '{% if x %} class="x"{% endif %}' }
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [0, 10], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 14], text: "" }
+                  blockStartPosition: { start: [0, 14], text: "" }
+                  blockEndPosition: { start: [0, 24], text: "" }
+                  position: { start: [0, 14], text: ' class="x"' }
+                  children:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [0, 22], text: x }
+                      position: { start: [0, 15], text: class="x" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [0, 15], text: class }
+                      value:
+                        - type: TextNode
+                          value: x
+                          position: { start: [0, 22], text: x }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > <!-- z]]></text>
+            position: { start: [0, 36], text: "<text><![CDATA[x > <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x > <!-- z]]></text>
+                position: { start: [0, 36], text: "<text><![CDATA[x > <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 77], text: <p> }
+          blockEndPosition: { start: [0, 85], text: </p> }
+          position: { start: [0, 77], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 78], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 80], text: after }
+  - name: does not close a script body on a close tag inside a drop before a <!--
+    source: <script>{{ '</script>' }}<!--</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>{{ '</script>' }}<!--</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 29], text: </script> }
+          position: { start: [0, 0], text: "<script>{{ '</script>' }}<!--</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{{ '</script>' }}<!--"
+            position: { start: [0, 8], text: "{{ '</script>' }}<!--" }
+            nodes:
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 10], text: " '</script>' " }
+                position: { start: [0, 8], text: "{{ '</script>' }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: "'</script>'"
+                  position: { start: [0, 11], text: "'</script>' " }
+                  expression:
+                    type: String
+                    single: true
+                    value: </script>
+                    position: { start: [0, 11], text: "'</script>'" }
+                  filters: []
+              - type: TextNode
+                value: <!--
+                position: { start: [0, 25], text: <!-- }
+  - name: parses Liquid in an HTML comment holding an unbalanced quote
+    source: <!-- <a title="{{ x }} -->
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<!-- <a title="{{ x }} -->' }
+      children:
+        - type: TextNode
+          value: <!-- <a title="
+          position: { start: [0, 0], text: <!-- <a title=" }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 17], text: " x " }
+          position: { start: [0, 15], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 18], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 18], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: TextNode
+          value: -->
+          position: { start: [0, 23], text: --> }
+  - name: closes a nested svg at its outer </svg> when CDATA after the inner one holds a <!--
+    source: <svg><svg></svg><text><![CDATA[a > <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><svg></svg><text><![CDATA[a > <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 51], text: </svg> }
+          position: { start: [0, 0], text: "<svg><svg></svg><text><![CDATA[a > <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <svg></svg><text><![CDATA[a > <!-- z]]></text>
+            position: { start: [0, 5], text: "<svg></svg><text><![CDATA[a > <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <svg></svg><text><![CDATA[a > <!-- z]]></text>
+                position: { start: [0, 5], text: "<svg></svg><text><![CDATA[a > <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 57], text: <p> }
+          blockEndPosition: { start: [0, 65], text: </p> }
+          position: { start: [0, 57], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 58], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 60], text: after }
+  - name: parses an HTML comment right after a nested svg
+    source: <svg><svg></svg></svg><!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><svg></svg></svg><!-- </div> --><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 16], text: </svg> }
+          position: { start: [0, 0], text: <svg><svg></svg></svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <svg></svg>
+            position: { start: [0, 5], text: <svg></svg> }
+            nodes:
+              - type: TextNode
+                value: <svg></svg>
+                position: { start: [0, 5], text: <svg></svg> }
+        - type: HtmlComment
+          body: </div>
+          blockStartPosition: { start: [0, 22], text: <!-- }
+          blockEndPosition: { start: [0, 34], text: --> }
+          position: { start: [0, 22], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 27], text: </div> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 37], text: <p> }
+          blockEndPosition: { start: [0, 45], text: </p> }
+          position: { start: [0, 37], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 38], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 40], text: after }
+  - name: parses the Liquid inside an HTML comment as text and Liquid
+    source: <!-- a {{ b }} <p> -->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- a {{ b }} <p> -->" }
+      children:
+        - type: HtmlComment
+          body: a {{ b }} <p>
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 19], text: --> }
+          position: { start: [0, 0], text: "<!-- a {{ b }} <p> -->" }
+          children:
+            - type: TextNode
+              value: a
+              position: { start: [0, 5], text: a }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 9], text: " b " }
+              position: { start: [0, 7], text: "{{ b }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: b
+                position: { start: [0, 10], text: "b " }
+                expression:
+                  type: VariableLookup
+                  name: b
+                  position: { start: [0, 10], text: b }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+            - type: TextNode
+              value: <p>
+              position: { start: [0, 15], text: <p> }
+  - name: splits an HTML comment at the tag that closes an enclosing block
+    source: "{% for x in xs %}{% if x %}<!-- a {% endif %} b -->{% endfor %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% for x in xs %}{% if x %}<!-- a {% endif %} b -->{% endfor %}" }
+      children:
+        - type: LiquidTag
+          name: for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% for x in xs %}" }
+          blockEndPosition: { start: [0, 51], text: "{% endfor %}" }
+          markupPosition: { start: [0, 7], text: "x in xs " }
+          position: { start: [0, 0], text: "{% for x in xs %}{% if x %}<!-- a {% endif %} b -->{% endfor %}" }
+          markup:
+            type: ForMarkup
+            variableName: x
+            reversed: false
+            position: { start: [0, 7], text: "x in xs " }
+            collection:
+              type: VariableLookup
+              name: xs
+              position: { start: [0, 12], text: xs }
+              lookups: []
+              lookupModes: []
+            args: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 17], text: "" }
+              blockStartPosition: { start: [0, 17], text: "" }
+              blockEndPosition: { start: [0, 51], text: "" }
+              position: { start: [0, 17], text: "{% if x %}<!-- a {% endif %} b -->" }
+              children:
+                - type: LiquidTag
+                  name: if
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 17], text: "{% if x %}" }
+                  blockEndPosition: { start: [0, 34], text: "{% endif %}" }
+                  markupPosition: { start: [0, 23], text: "x " }
+                  position: { start: [0, 17], text: "{% if x %}<!-- a {% endif %}" }
+                  markup:
+                    type: VariableLookup
+                    name: x
+                    position: { start: [0, 23], text: x }
+                    lookups: []
+                    lookupModes: []
+                  children:
+                    - type: LiquidBranch
+                      name: null
+                      markup: ""
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      markupPosition: { start: [0, 27], text: "" }
+                      blockStartPosition: { start: [0, 27], text: "" }
+                      blockEndPosition: { start: [0, 34], text: "" }
+                      position: { start: [0, 27], text: "<!-- a " }
+                      children:
+                        - type: HtmlComment
+                          body: a
+                          blockStartPosition: { start: [0, 27], text: <!-- }
+                          blockEndPosition: { start: [0, 34], text: "" }
+                          position: { start: [0, 27], text: "<!-- a " }
+                          children:
+                            - type: TextNode
+                              value: a
+                              position: { start: [0, 32], text: a }
+                - type: HtmlComment
+                  body: b
+                  blockStartPosition: { start: [0, 45], text: "" }
+                  blockEndPosition: { start: [0, 48], text: --> }
+                  position: { start: [0, 45], text: " b -->" }
+                  children:
+                    - type: TextNode
+                      value: b
+                      position: { start: [0, 46], text: b }
+  - name: ends an HTML comment with a block opened inside it that closes after it
+    source: <!-- {% if x %} --> a {% endif %}<b>c</b>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- {% if x %} --> a {% endif %}<b>c</b>" }
+      children:
+        - type: HtmlComment
+          body: "{% if x %} --> a {% endif %}"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 33], text: "" }
+          position: { start: [0, 0], text: "<!-- {% if x %} --> a {% endif %}" }
+          children:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 5], text: "{% if x %}" }
+              blockEndPosition: { start: [0, 22], text: "{% endif %}" }
+              markupPosition: { start: [0, 11], text: "x " }
+              position: { start: [0, 5], text: "{% if x %} --> a {% endif %}" }
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [0, 11], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 15], text: "" }
+                  blockStartPosition: { start: [0, 15], text: "" }
+                  blockEndPosition: { start: [0, 22], text: "" }
+                  position: { start: [0, 15], text: " --> a " }
+                  children:
+                    - type: TextNode
+                      value: --> a
+                      position: { start: [0, 16], text: --> a }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 33], text: <b> }
+          blockEndPosition: { start: [0, 37], text: </b> }
+          position: { start: [0, 33], text: <b>c</b> }
+          name:
+            - type: TextNode
+              value: b
+              position: { start: [0, 34], text: b }
+          attributes: []
+          children:
+            - type: TextNode
+              value: c
+              position: { start: [0, 36], text: c }
+  - name: ends an HTML comment that never closes at the end of the source, as a browser does
+    source: a <!-- b <p>c</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: a <!-- b <p>c</p> }
+      children:
+        - type: TextNode
+          value: a
+          position: { start: [0, 0], text: a }
+        - type: HtmlComment
+          body: b <p>c</p>
+          blockStartPosition: { start: [0, 2], text: <!-- }
+          blockEndPosition: { start: [0, 17], text: "" }
+          position: { start: [0, 2], text: <!-- b <p>c</p> }
+          children:
+            - type: TextNode
+              value: b <p>c</p>
+              position: { start: [0, 7], text: b <p>c</p> }
+  - name: ends the rest of a split HTML comment that never closes at the end of the source
+    source: "{% if x %}<!-- a {% endif %} b"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %} b" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if x %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "x " }
+          position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 6], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 10], text: "<!-- a " }
+              children:
+                - type: HtmlComment
+                  body: a
+                  blockStartPosition: { start: [0, 10], text: <!-- }
+                  blockEndPosition: { start: [0, 17], text: "" }
+                  position: { start: [0, 10], text: "<!-- a " }
+                  children:
+                    - type: TextNode
+                      value: a
+                      position: { start: [0, 15], text: a }
+        - type: HtmlComment
+          body: b
+          blockStartPosition: { start: [0, 28], text: "" }
+          blockEndPosition: { start: [0, 30], text: "" }
+          position: { start: [0, 28], text: " b" }
+          children:
+            - type: TextNode
+              value: b
+              position: { start: [0, 29], text: b }
+  - name: ends a split HTML comment at a block that closes at the end of the source
+    source: "{% if x %}<!-- a {% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if x %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "x " }
+          position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 6], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 10], text: "<!-- a " }
+              children:
+                - type: HtmlComment
+                  body: a
+                  blockStartPosition: { start: [0, 10], text: <!-- }
+                  blockEndPosition: { start: [0, 17], text: "" }
+                  position: { start: [0, 10], text: "<!-- a " }
+                  children:
+                    - type: TextNode
+                      value: a
+                      position: { start: [0, 15], text: a }
+  - name: tracks an HTML comment reopened inside a block before the block's end tag
+    source: <!--{% if true %}--><!--{% endif %}x--><b>after</b>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!--{% if true %}--><!--{% endif %}x--><b>after</b>" }
+      children:
+        - type: HtmlComment
+          body: "{% if true %}--><!--{% endif %}x"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 36], text: --> }
+          position: { start: [0, 0], text: "<!--{% if true %}--><!--{% endif %}x-->" }
+          children:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 4], text: "{% if true %}" }
+              blockEndPosition: { start: [0, 24], text: "{% endif %}" }
+              markupPosition: { start: [0, 10], text: "true " }
+              position: { start: [0, 4], text: "{% if true %}--><!--{% endif %}" }
+              markup:
+                type: LiquidLiteral
+                keyword: "true"
+                value: true
+                position: { start: [0, 10], text: "true" }
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 17], text: "" }
+                  blockStartPosition: { start: [0, 17], text: "" }
+                  blockEndPosition: { start: [0, 24], text: "" }
+                  position: { start: [0, 17], text: --><!-- }
+                  children:
+                    - type: TextNode
+                      value: --><!--
+                      position: { start: [0, 17], text: --><!-- }
+            - type: TextNode
+              value: x
+              position: { start: [0, 35], text: x }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 39], text: <b> }
+          blockEndPosition: { start: [0, 47], text: </b> }
+          position: { start: [0, 39], text: <b>after</b> }
+          name:
+            - type: TextNode
+              value: b
+              position: { start: [0, 40], text: b }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 42], text: after }
+  - name: splits an HTML comment at each branch of an enclosing block
+    source: "{% if a %}<!-- x {% else %} y -->{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %}<!-- x {% else %} y -->{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 33], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %}<!-- x {% else %} y -->{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 10], text: "<!-- x " }
+              children:
+                - type: HtmlComment
+                  body: x
+                  blockStartPosition: { start: [0, 10], text: <!-- }
+                  blockEndPosition: { start: [0, 17], text: "" }
+                  position: { start: [0, 10], text: "<!-- x " }
+                  children:
+                    - type: TextNode
+                      value: x
+                      position: { start: [0, 15], text: x }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 25], text: "" }
+              blockStartPosition: { start: [0, 17], text: "{% else %}" }
+              blockEndPosition: { start: [0, 33], text: "" }
+              position: { start: [0, 17], text: "{% else %} y -->" }
+              children:
+                - type: HtmlComment
+                  body: y
+                  blockStartPosition: { start: [0, 27], text: "" }
+                  blockEndPosition: { start: [0, 30], text: --> }
+                  position: { start: [0, 27], text: " y -->" }
+                  children:
+                    - type: TextNode
+                      value: y
+                      position: { start: [0, 28], text: y }
+  - name: rejects an orphan end tag inside an HTML comment, as Liquid does
+    source: <!-- {% endif %} -->
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'if' before it was opened without a matching 'if'
+      start: [0, 5]
+      text: "{% endif %}"
+  - name: rejects an unclosed block inside an HTML comment, as Liquid does
+    source: <!-- {% if a %} -->
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidTag 'if' was closed
+      start: [0, 5]
+      text: "{% if a %}"
+  - name: parses a raw tag inside an HTML comment as a raw tag
+    source: <!-- {% raw %}{{ a }} -->{% endraw %} -->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- {% raw %}{{ a }} -->{% endraw %} -->" }
+      children:
+        - type: HtmlComment
+          body: "{% raw %}{{ a }} -->{% endraw %}"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 38], text: --> }
+          position: { start: [0, 0], text: "<!-- {% raw %}{{ a }} -->{% endraw %} -->" }
+          children:
+            - type: LiquidRawTag
+              name: raw
+              markup: ""
+              markupPosition: { start: [0, 12], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 5], text: "{% raw %}" }
+              blockEndPosition: { start: [0, 25], text: "{% endraw %}" }
+              position: { start: [0, 5], text: "{% raw %}{{ a }} -->{% endraw %}" }
+              body:
+                type: RawMarkup
+                kind: text
+                value: "{{ a }} -->"
+                position: { start: [0, 14], text: "{{ a }} -->" }
+                nodes:
+                  - type: TextNode
+                    value: "{{ a }} -->"
+                    position: { start: [0, 14], text: "{{ a }} -->" }

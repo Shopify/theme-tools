@@ -1712,3 +1712,16 @@ cases:
         start: [0, 3]
         highlight: bool and cond
         fix: "{{ bool }}"
+  - name: accepts a Liquid block that closes inside an HTML comment, since Liquid renders the comment's Liquid
+    files:
+      file.liquid: "{% if a %}<!-- {% endif %} -->"
+    docset: default
+  - name: should report an end tag inside an HTML comment that closes no block
+    files:
+      file.liquid: "<!-- {% endif %} -->"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Attempting to close LiquidTag 'if' before it was opened without a matching 'if'"
+        start: [0, 5]
+        highlight: "{% endif %}"
