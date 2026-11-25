@@ -491,19 +491,18 @@ fn merge_rows(
         if set.len() < 2 {
             return Some(());
         }
+        let mut keys = merge_keys(glob_parts);
         let len = set.iter().map(Vec::len).max().unwrap_or(0);
         for k in 0..len {
             // the rows that are the same other than at portion k, in the order of their first row
-            let mut keys = std::collections::HashMap::new();
+            let mut group_of = std::collections::HashMap::new();
             let mut groups: Vec<Vec<usize>> = Vec::new();
             for (i, row) in set.iter().enumerate() {
                 if !matches!(row.get(k), Some(Part::Pending)) || !ext_safe(&glob_parts[i][k]) {
                     continue;
                 }
-                let mut parts = glob_parts[i].clone();
-                parts[k] = String::new();
-                let key = format!("{}/{}", row.len(), parts.join("/"));
-                let g = *keys.entry(key).or_insert_with(|| {
+                let key = (keys[i].pre[k], keys[i].suf[k + 1]);
+                let g = *group_of.entry(key).or_insert_with(|| {
                     groups.push(Vec::new());
                     groups.len() - 1
                 });
@@ -529,10 +528,62 @@ fn merge_rows(
                 if set.len() < 2 {
                     return Some(());
                 }
+                keys = merge_keys(glob_parts);
             }
         }
     }
     Some(())
+}
+
+/// The ids of a row's prefixes and suffixes: two rows are the same other than at portion k when
+/// they have the same `pre[k]` and `suf[k + 1]`.
+struct MergeKey {
+    pre: Vec<usize>,
+    suf: Vec<usize>,
+}
+
+/// `#mergeKeys()`: the ids, in time linear in the size of the rows.
+fn merge_keys(glob_parts: &[Vec<String>]) -> Vec<MergeKey> {
+    let mut part_ids = std::collections::HashMap::new();
+    let ids: Vec<Vec<usize>> = glob_parts
+        .iter()
+        .map(|row| {
+            row.iter()
+                .map(|p| {
+                    let next = part_ids.len();
+                    *part_ids.entry(p.as_str()).or_insert(next)
+                })
+                .collect()
+        })
+        .collect();
+    let len = ids.iter().map(Vec::len).max().unwrap_or(0);
+    let mut keys: Vec<MergeKey> = ids
+        .iter()
+        .map(|r| MergeKey {
+            pre: vec![0],
+            suf: vec![0; r.len() + 1],
+        })
+        .collect();
+    // 0 is the empty prefix or suffix, so the ids at each k start at 1.
+    for k in 0..len {
+        let mut m = std::collections::HashMap::new();
+        for (r, key) in ids.iter().zip(&mut keys) {
+            if let Some(&part) = r.get(k) {
+                let next = m.len() + 1;
+                key.pre.push(*m.entry((key.pre[k], part)).or_insert(next));
+            }
+        }
+    }
+    for k in (0..len).rev() {
+        let mut m = std::collections::HashMap::new();
+        for (r, key) in ids.iter().zip(&mut keys) {
+            if let Some(&part) = r.get(k) {
+                let next = m.len() + 1;
+                key.suf[k] = *m.entry((key.suf[k + 1], part)).or_insert(next);
+            }
+        }
+    }
+    keys
 }
 
 fn keep<T>(rows: Vec<T>, drop: &[bool]) -> Vec<T> {
