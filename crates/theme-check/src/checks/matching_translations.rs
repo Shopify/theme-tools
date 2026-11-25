@@ -1,6 +1,6 @@
 use crate::context::{CheckDef, CheckError, CheckResult, Context, Create, JsonCheck, Severity};
 use crate::fixes::{Fix, Suggestion};
-use crate::json::{JsonKind, JsonNode, JsonRef, PropertyNode};
+use crate::json::{JsonKind, JsonNode, JsonRef, Lit, LiteralNode, PropertyNode};
 use liquid_ast::Span;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
@@ -35,8 +35,14 @@ fn create<'a>(cx: &mut Context<'a>) -> Option<Box<dyn JsonCheck<'a> + 'a>> {
     let is_locale_file = cx.to_relative_path(uri).starts_with("locales/");
     let is_default = uri.ends_with(".default.json") || uri.ends_with(".default.schema.json");
     let ast = cx.file.json_ast()?;
-    if !is_locale_file || is_default {
+    if !is_locale_file {
         return None;
+    }
+    if is_default {
+        if uri.ends_with(".schema.json") {
+            return None;
+        }
+        return Some(Box::new(RequireOther));
     }
     Some(Box::new(Check {
         ast,
@@ -92,6 +98,73 @@ fn json_paths(
         Some(_) => {}
     }
     Ok(())
+}
+
+/// Checks the storefront default locale for pluralized entries without `other`.
+/// The storefront falls back to `other` when a count has no matching plural
+/// key, and raises when `other` is missing too.
+struct RequireOther;
+
+impl<'a> JsonCheck<'a> for RequireOther {
+    fn kinds(&self) -> &'static [JsonKind] {
+        &[JsonKind::Property]
+    }
+
+    fn enter(
+        &mut self,
+        node: JsonRef<'a>,
+        ancestors: &[JsonRef<'a>],
+        cx: &mut Context<'a>,
+    ) -> CheckResult {
+        let JsonRef::Property(prop) = node else {
+            return Ok(());
+        };
+        let JsonNode::Object(value) = &prop.value else {
+            return Ok(());
+        };
+        let is_pluralized = !value.children.is_empty()
+            && value.children.iter().all(|child| {
+                PLURALIZATION_KEYS.contains(&child.key.value.as_ref())
+                    && matches!(
+                        &child.value,
+                        JsonNode::Literal(LiteralNode {
+                            value: Lit::Str(_),
+                            ..
+                        })
+                    )
+            });
+        if !is_pluralized
+            || value
+                .children
+                .iter()
+                .any(|child| child.key.value == "other")
+            || ancestors.iter().any(|a| matches!(a, JsonRef::Array(_)))
+        {
+            return Ok(());
+        }
+        let path = object_path(ancestors, node);
+        if is_external_path(&path) || path == "shopify" || path == "customer_accounts" {
+            return Ok(());
+        }
+        cx.report(
+            format!("The pluralized translation '{path}' is missing the 'other' key"),
+            prop.span,
+        );
+        Ok(())
+    }
+}
+
+/// `objectPath(ancestors.concat(node))`: the keys of the properties down to `node`, joined by dots.
+fn object_path<'a>(ancestors: &[JsonRef<'a>], node: JsonRef<'a>) -> String {
+    ancestors
+        .iter()
+        .chain([&node])
+        .filter_map(|a| match a {
+            JsonRef::Property(p) => Some(p.key.value.as_ref()),
+            _ => None,
+        })
+        .collect::<Vec<&str>>()
+        .join(".")
 }
 
 fn is_external_path(path: &str) -> bool {
@@ -156,16 +229,7 @@ impl<'a> JsonCheck<'a> for Check<'a> {
         let JsonRef::Property(prop) = node else {
             return Ok(());
         };
-        // objectPath(ancestors.concat(node))
-        let keys: Vec<&str> = ancestors
-            .iter()
-            .chain([&node])
-            .filter_map(|a| match a {
-                JsonRef::Property(p) => Some(p.key.value.as_ref()),
-                _ => None,
-            })
-            .collect();
-        let path = keys.join(".");
+        let path = object_path(ancestors, node);
         match self.path_index.get(&path) {
             Some(&i) => self.nodes_by_path[i].1 = prop,
             None => {
