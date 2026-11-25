@@ -2,7 +2,7 @@ import {
   JSONCheckDefinition,
   JSONNode,
   LiquidCheckDefinition,
-  Setting,
+  ObjectNode,
   Severity,
   SourceCodeType,
   isArrayNode,
@@ -11,14 +11,10 @@ import {
 } from '../../types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { getSchema, isSectionSchema } from '../../to-schema';
+import { BlockDefNodeWithPath, getBlocks } from '../../utils';
 
-// Note: like ValidVisibleIf, this exports two checks: one for Liquid files
-// ({% schema %} in sections/blocks) and one for 'config/settings_schema.json'.
-// They perform the same check using the same logic (modulo differences in
-// how the schema is extracted and how warning locations are determined).
-
-// Setting is a `declare namespace`, so Setting.Type has no runtime value.
-const CHOICE_SETTING_TYPES = new Set<string>(['select', 'radio']);
+// Like ValidVisibleIf, this exports two checks with the same code: one for the {% schema %} of
+// sections and blocks, and one for 'config/settings_schema.json'.
 
 const meta = {
   code: 'ValidSelectDefault',
@@ -34,61 +30,6 @@ const meta = {
   targets: [],
 };
 
-type ChoiceSetting = {
-  id: string;
-  type: string;
-  options: Array<{ value: unknown }>;
-  default?: unknown;
-};
-
-function getChoiceSettings(settings: readonly Setting.Any[] | undefined): ChoiceSetting[] {
-  if (!settings) return [];
-  const result: ChoiceSetting[] = [];
-  for (const setting of settings) {
-    if (!setting || typeof setting !== 'object') continue;
-    if (!('type' in setting) || !CHOICE_SETTING_TYPES.has(setting.type as string)) continue;
-    if (!('id' in setting) || typeof setting.id !== 'string') continue;
-    const options = (setting as { options?: unknown }).options;
-    if (!Array.isArray(options)) continue;
-    result.push(setting as unknown as ChoiceSetting);
-  }
-  return result;
-}
-
-function getAllowedValues(setting: ChoiceSetting): string[] {
-  const values: string[] = [];
-  for (const option of setting.options) {
-    if (option && typeof option === 'object' && 'value' in option) {
-      const value = (option as { value: unknown }).value;
-      if (typeof value === 'string') values.push(value);
-      else if (typeof value === 'number' || typeof value === 'boolean') values.push(String(value));
-    }
-  }
-  return values;
-}
-
-function invalidDefaultMessage(setting: ChoiceSetting, actual: unknown): string {
-  const allowed = getAllowedValues(setting)
-    .map((v) => `"${v}"`)
-    .join(', ');
-  return `Default value ${JSON.stringify(actual)} for setting "${setting.id}" is not one of the valid options: ${allowed}.`;
-}
-
-function invalidPresetMessage(setting: ChoiceSetting, actual: unknown): string {
-  const allowed = getAllowedValues(setting)
-    .map((v) => `"${v}"`)
-    .join(', ');
-  return `Value ${JSON.stringify(actual)} for setting "${setting.id}" is not one of the valid options: ${allowed}.`;
-}
-
-function isValidChoiceValue(setting: ChoiceSetting, value: unknown): boolean {
-  if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
-    return true; // leave non-scalar mismatches to JSON schema validation
-  }
-  const allowed = getAllowedValues(setting);
-  return allowed.includes(String(value));
-}
-
 export const ValidSelectDefault: LiquidCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.LiquidHtml },
 
@@ -103,101 +44,54 @@ export const ValidSelectDefault: LiquidCheckDefinition = {
         if (!ast || ast instanceof Error) return;
 
         const offset = node.blockStartPosition.end;
-        const choiceSettings = getChoiceSettings(validSchema.settings);
-        if (choiceSettings.length === 0) return;
+        const report: Report = (message, node) =>
+          context.report({
+            message,
+            startIndex: offset + getLocStart(node),
+            endIndex: offset + getLocEnd(node),
+          });
 
-        const settingsById = new Map(choiceSettings.map((s) => [s.id, s]));
+        const settings = nodeAtPath(ast, ['settings']);
+        const { rootLevelLocalBlocks, presetLevelBlocks } = getBlocks(validSchema);
 
-        // 1. Validate setting defaults
-        for (let i = 0; i < (validSchema.settings?.length ?? 0); i++) {
-          const setting = validSchema.settings![i];
-          if (!setting || !('id' in setting)) continue;
-          const choice = settingsById.get(setting.id as string);
-          if (!choice) continue;
-          if (!('default' in choice) || choice.default === undefined) continue;
-
-          if (!isValidChoiceValue(choice, choice.default)) {
-            const defaultNode = nodeAtPath(ast, ['settings', i, 'default']);
-            if (defaultNode) {
-              reportAtNode(
-                context,
-                offset,
-                defaultNode,
-                invalidDefaultMessage(choice, choice.default),
-              );
-            }
-          }
+        // The defaults of the file's settings, and of its local blocks' settings.
+        checkDefaults(settings, report);
+        for (const { path } of rootLevelLocalBlocks) {
+          checkDefaults(nodeAtPath(ast, settingsPath(path)), report);
         }
 
-        // 2. Validate presets[].settings values
-        if (Array.isArray(validSchema.presets)) {
-          for (let i = 0; i < validSchema.presets.length; i++) {
-            validatePresetSettings(
-              context,
-              offset,
-              ast,
-              ['presets', String(i), 'settings'],
-              (validSchema.presets[i] as { settings?: Record<string, unknown> }).settings,
-              settingsById,
-            );
-          }
+        // The values presets give the file's settings.
+        for (let i = 0; i < (validSchema.presets?.length ?? 0); i++) {
+          checkValues(nodeAtPath(ast, ['presets', i, 'settings']), settings, report);
         }
 
-        // 3. Validate section default.settings values
-        if (isSectionSchema(schema) && 'default' in validSchema && validSchema.default?.settings) {
-          validatePresetSettings(
+        // The values presets and section defaults give their blocks' settings.
+        const checkBlock = async (path: string[], type: unknown) => {
+          const blockSettings = await referencedBlockSettings(
             context,
-            offset,
             ast,
-            ['default', 'settings'],
-            validSchema.default.settings as Record<string, unknown>,
-            settingsById,
+            rootLevelLocalBlocks,
+            type,
+          );
+          checkValues(nodeAtPath(ast, settingsPath(path)), blockSettings, report);
+        };
+
+        for (const blocks of Object.values(presetLevelBlocks)) {
+          await Promise.all(blocks.map(({ node, path }) => checkBlock(path, node.type)));
+        }
+
+        if (isSectionSchema(schema) && 'default' in validSchema && validSchema.default) {
+          checkValues(nodeAtPath(ast, ['default', 'settings']), settings, report);
+          await Promise.all(
+            (validSchema.default.blocks ?? []).map((block, i) =>
+              checkBlock(['default', 'blocks', String(i), 'type'], block.type),
+            ),
           );
         }
       },
     };
   },
 };
-
-function validatePresetSettings(
-  context: Parameters<LiquidCheckDefinition['create']>[0],
-  offset: number,
-  ast: JSONNode,
-  settingsPath: string[],
-  settings: Record<string, unknown> | undefined,
-  settingsById: Map<string, ChoiceSetting>,
-) {
-  if (!settings) return;
-  const settingsNode = nodeAtPath(ast, settingsPath);
-  if (!settingsNode || !isObjectNode(settingsNode)) return;
-
-  for (const property of settingsNode.children) {
-    const key = property.key.value;
-    if (typeof key !== 'string') continue;
-    const choice = settingsById.get(key);
-    if (!choice) continue;
-
-    const valueNode = property.value;
-    if (!isLiteralNode(valueNode)) continue;
-
-    if (!isValidChoiceValue(choice, valueNode.value)) {
-      reportAtNode(context, offset, valueNode, invalidPresetMessage(choice, valueNode.value));
-    }
-  }
-}
-
-function reportAtNode(
-  context: Parameters<LiquidCheckDefinition['create']>[0],
-  offset: number,
-  astNode: JSONNode,
-  message: string,
-) {
-  context.report({
-    message,
-    startIndex: offset + getLocStart(astNode),
-    endIndex: offset + getLocEnd(astNode),
-  });
-}
 
 export const ValidSelectDefaultSettingsSchema: JSONCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.JSON },
@@ -206,62 +100,117 @@ export const ValidSelectDefaultSettingsSchema: JSONCheckDefinition = {
     const relativePath = context.toRelativePath(context.file.uri);
     if (relativePath !== 'config/settings_schema.json') return {};
 
+    const report: Report = (message, node) =>
+      context.report({ message, startIndex: getLocStart(node), endIndex: getLocEnd(node) });
+
     return {
       async Property(node) {
-        if (node.key.value !== 'settings' || !isArrayNode(node.value)) return;
-
-        for (const settingNode of node.value.children) {
-          if (!isObjectNode(settingNode)) continue;
-
-          const typeProp = settingNode.children.find((p) => p.key.value === 'type');
-          if (!typeProp || !isLiteralNode(typeProp.value)) continue;
-          const typeValue = typeProp.value.value;
-          if (typeof typeValue !== 'string' || !CHOICE_SETTING_TYPES.has(typeValue)) continue;
-
-          const idProp = settingNode.children.find((p) => p.key.value === 'id');
-          const idValue =
-            idProp && isLiteralNode(idProp.value) && typeof idProp.value.value === 'string'
-              ? idProp.value.value
-              : undefined;
-
-          const optionsProp = settingNode.children.find((p) => p.key.value === 'options');
-          if (!optionsProp || !isArrayNode(optionsProp.value)) continue;
-
-          const allowedValues: string[] = [];
-          for (const optionNode of optionsProp.value.children) {
-            if (!isObjectNode(optionNode)) continue;
-            const valueProp = optionNode.children.find((p) => p.key.value === 'value');
-            if (!valueProp || !isLiteralNode(valueProp.value)) continue;
-            const v = valueProp.value.value;
-            if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-              allowedValues.push(String(v));
-            }
-          }
-
-          const defaultProp = settingNode.children.find((p) => p.key.value === 'default');
-          if (!defaultProp || !isLiteralNode(defaultProp.value)) continue;
-          const defaultValue = defaultProp.value.value;
-          if (
-            typeof defaultValue !== 'string' &&
-            typeof defaultValue !== 'number' &&
-            typeof defaultValue !== 'boolean'
-          ) {
-            continue;
-          }
-
-          if (!allowedValues.includes(String(defaultValue))) {
-            const id = idValue ?? 'unknown';
-            const allowed = allowedValues.map((v) => `"${v}"`).join(', ');
-            context.report({
-              message: `Default value ${JSON.stringify(
-                defaultValue,
-              )} for setting "${id}" is not one of the valid options: ${allowed}.`,
-              startIndex: getLocStart(defaultProp.value),
-              endIndex: getLocEnd(defaultProp.value),
-            });
-          }
-        }
+        if (node.key.value !== 'settings') return;
+        checkDefaults(node.value, report);
       },
     };
   },
 };
+
+type Report = (message: string, node: JSONNode) => void;
+
+/** Reports each select/radio setting in `settings` whose default isn't one of its options. */
+function checkDefaults(settings: JSONNode | undefined, report: Report) {
+  if (!isArrayNode(settings)) return;
+
+  for (const setting of settings.children) {
+    if (!isObjectNode(setting)) continue;
+    const id = literal(setting, 'id');
+    const options = choiceOptions(setting);
+    const defaultNode = setting.children.find((p) => p.key.value === 'default')?.value;
+    if (typeof id !== 'string' || !options || !isLiteralNode(defaultNode)) continue;
+
+    const value = defaultNode.value;
+    if (isScalar(value) && !options.includes(String(value))) {
+      report(
+        `Default value ${JSON.stringify(value)} for setting "${id}" is not one of the valid options: ${list(options)}.`,
+        defaultNode,
+      );
+    }
+  }
+}
+
+/**
+ * Reports each value in `values`, an object of setting values by id, that isn't one of the
+ * options of the select/radio setting it sets in `settings`.
+ */
+function checkValues(values: JSONNode | undefined, settings: JSONNode | undefined, report: Report) {
+  if (!isObjectNode(values) || !isArrayNode(settings)) return;
+
+  for (const property of values.children) {
+    const id = property.key.value;
+    const setting = settings.children.find(
+      (setting): setting is ObjectNode => isObjectNode(setting) && literal(setting, 'id') === id,
+    );
+    const options = setting && choiceOptions(setting);
+    const valueNode = property.value;
+    if (!options || !isLiteralNode(valueNode)) continue;
+
+    const value = valueNode.value;
+    if (isScalar(value) && !options.includes(String(value))) {
+      report(
+        `Value ${JSON.stringify(value)} for setting "${id}" is not one of the valid options: ${list(options)}.`,
+        valueNode,
+      );
+    }
+  }
+}
+
+/** The settings of the block a preset or section default uses, from its schema. */
+async function referencedBlockSettings(
+  context: Parameters<LiquidCheckDefinition['create']>[0],
+  ast: JSONNode,
+  localBlocks: BlockDefNodeWithPath[],
+  type: unknown,
+): Promise<JSONNode | undefined> {
+  // A section with local blocks can only use those.
+  if (localBlocks.length > 0) {
+    const localBlock = localBlocks.find((block) => block.node.type === type);
+    return localBlock && nodeAtPath(ast, settingsPath(localBlock.path));
+  }
+
+  if (typeof type !== 'string') return;
+  const blockSchema = await context.getBlockSchema?.(type);
+  const { validSchema, ast: blockAst } = blockSchema ?? {};
+  if (!validSchema || validSchema instanceof Error) return;
+  if (!blockAst || blockAst instanceof Error) return;
+  return nodeAtPath(blockAst, ['settings']);
+}
+
+/** The option values of a select or radio setting, or undefined for any other setting. */
+function choiceOptions(setting: ObjectNode): string[] | undefined {
+  const type = literal(setting, 'type');
+  if (type !== 'select' && type !== 'radio') return;
+
+  const options = setting.children.find((p) => p.key.value === 'options')?.value;
+  if (!isArrayNode(options)) return;
+
+  return options.children.flatMap((option) => {
+    const value = isObjectNode(option) ? literal(option, 'value') : undefined;
+    return isScalar(value) ? [String(value)] : [];
+  });
+}
+
+/** The value of `object[key]` when it's a literal. */
+function literal(object: ObjectNode, key: string): unknown {
+  const value = object.children.find((p) => p.key.value === key)?.value;
+  return isLiteralNode(value) ? value.value : undefined;
+}
+
+function isScalar(value: unknown): value is string | number | boolean {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+}
+
+function list(options: string[]) {
+  return options.map((option) => `"${option}"`).join(', ');
+}
+
+/** The path of a block's `settings`, from the path of its `type`. */
+function settingsPath(typePath: string[]) {
+  return typePath.slice(0, -1).concat('settings');
+}
