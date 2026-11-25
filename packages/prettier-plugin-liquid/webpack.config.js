@@ -15,15 +15,10 @@ module.exports = {
     },
   },
   externals: {
-    // The standalone bundle is browser-only. Downstream bundlers that consume
-    // standalone.js (webpack, rollup, vite) see a UMD wrapper whose `commonjs`
-    // and `commonjs2` branches `require('prettier')`. That import resolves to
-    // prettier's Node-flavored main entry, which pulls in `module`, `url`, and
-    // `path` and breaks browser builds. Route those branches to
-    // `prettier/standalone` so downstream bundlers land on prettier's
-    // browser-safe entry. `root: 'prettier'` is kept so <script>-tag loading
-    // still works against the global `window.prettier` populated by
-    // `prettier/standalone.js` on the page.
+    // standalone.js is the browser build, so it loads prettier/standalone.
+    // A bare 'prettier' resolves to Prettier 3's Node entry even in browser
+    // bundles, because its "require" export comes before "browser".
+    // `root` is the global that prettier/standalone.js sets in a <script> tag.
     prettier: {
       commonjs: 'prettier/standalone',
       commonjs2: 'prettier/standalone',
