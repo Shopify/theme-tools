@@ -88,6 +88,7 @@ mod valid_schema;
 mod valid_schema_name;
 mod valid_schema_translations;
 mod valid_scoped_css_class;
+mod valid_select_default;
 mod valid_settings_key;
 mod valid_standard_event_data;
 mod valid_static_block_type;
@@ -160,6 +161,8 @@ pub static ALL_CHECKS: &[&CheckDef] = &[
     &valid_local_blocks::VALID_LOCAL_BLOCKS,
     &valid_render_snippet_argument_types::VALID_RENDER_SNIPPET_ARGUMENT_TYPES,
     &valid_schema::VALID_SCHEMA,
+    &valid_select_default::VALID_SELECT_DEFAULT,
+    &valid_select_default::VALID_SELECT_DEFAULT_SETTINGS_SCHEMA,
     &valid_settings_key::VALID_SETTINGS_KEY,
     &valid_standard_event_data::VALID_STANDARD_EVENT_DATA,
     &valid_static_block_type::VALID_STATIC_BLOCK_TYPE,
