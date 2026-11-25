@@ -132,6 +132,21 @@ fn contextual_objects(relative_path: &str, mode: Mode) -> &'static [&'static str
     }
 }
 
+/// `{% for x in y offset: continue %}`
+///
+/// `continue` is a keyword here, not a variable: it resumes the loop where the last loop over the
+/// same collection stopped. Only `for` supports it, not `tablerow`.
+fn is_for_offset_continue(v: &VariableLookup, ancestors: &[NodeRef]) -> bool {
+    if v.name.as_deref() != Some("continue") || !v.lookups.is_empty() {
+        return false;
+    }
+    matches!(
+        ancestors,
+        [.., NodeRef::LiquidTag(tag), NodeRef::ForMarkup(_), NodeRef::NamedArgument(argument)]
+            if tag.name == "for" && argument.name == "offset"
+    )
+}
+
 /// The `globalObjects` filter for one `ObjectEntry`.
 fn is_global_object(entry: &Value, contextual: &[&str]) -> Result<bool, CheckError> {
     let name = entry.get("name").and_then(Value::as_str);
@@ -257,6 +272,9 @@ impl<'a> LiquidCheck<'a> for Check<'a> {
                     return Ok(());
                 }
                 if matches!(ancestors.last(), Some(NodeRef::LiquidTag(t)) if t.name == "capture") {
+                    return Ok(());
+                }
+                if is_for_offset_continue(v, ancestors) {
                     return Ok(());
                 }
                 self.variables.push(v);
