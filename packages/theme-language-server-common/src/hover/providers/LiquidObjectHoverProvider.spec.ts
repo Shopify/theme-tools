@@ -147,6 +147,19 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     }
   });
 
+  it.each([
+    ['variant', '{{ variant█ }}'],
+    ['style', '{% assign style = variant %}{{ style█ }}'],
+  ])('retains enum values when hovering %s', async (name, source) => {
+    await expect(provider).to.hover(
+      {
+        relativePath: 'snippets/text.liquid',
+        source: `{% doc %}\n@param {'Heading' | "Small"} variant\n{% enddoc %}\n${source}`,
+      },
+      `### ${name}: \`'Heading' | "Small"\``,
+    );
+  });
+
   it('should support paginate inside paginate tags', async () => {
     const context = `
       {% paginate all_products by 5 %}
@@ -244,6 +257,90 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     );
   });
 
+  describe('when a theme block schema defines settings', () => {
+    beforeEach(() => {
+      provider = blockFileProvider();
+    });
+
+    it('hovers a setting ID as a plain variable with its schema type', async () => {
+      await expect(provider).to.hover(
+        articleCard('{{ backgr█ound_color }}'),
+        '### background_color: `string`',
+      );
+    });
+
+    it('gives the plain variable and block.settings alias the same type', async () => {
+      const imageTitle = expect.stringMatching(/^### image: `image`(\n|$)/);
+
+      await expect(provider).to.hover(articleCard('{{ ima█ge }}'), imageTitle);
+      await expect(provider).to.hover(articleCard('{{ block.settings.ima█ge }}'), imageTitle);
+    });
+
+    it('uses the schema type for a same-named LiquidDoc parameter', async () => {
+      await expect(provider).to.hover(
+        articleCard('{{ ima█ge }}', '@param {object} image'),
+        IMAGE_HOVER,
+      );
+    });
+
+    it('does not hover the setting type value as a variable', async () => {
+      await expect(provider).to.hover(articleCard('{{ color_back█ground }}'), null);
+    });
+
+    it.each(['sections/article-card.liquid', 'snippets/article-card.liquid'])(
+      'does not hover setting IDs as variables in %s',
+      async (relativePath) => {
+        await expect(provider).to.hover(
+          { ...articleCard('{{ backgr█ound_color }}'), relativePath },
+          null,
+        );
+      },
+    );
+  });
+
+  describe('when a theme block uses the built-in content parameter', () => {
+    beforeEach(() => {
+      provider = blockFileProvider();
+    });
+
+    it('hovers content as a string variable without a schema or LiquidDoc', async () => {
+      await expect(provider).to.hover(
+        { relativePath: 'blocks/card.liquid', source: '{{ cont█ent }}' },
+        '### content: `string`',
+      );
+    });
+
+    it('hovers block.content as a string property', async () => {
+      await expect(provider).to.hover(
+        { relativePath: 'blocks/card.liquid', source: '{{ block.cont█ent }}' },
+        '### content: `string`',
+      );
+    });
+
+    it.each([
+      'sections/card.liquid',
+      'snippets/card.liquid',
+      'shop/blocks/theme/sections/card.liquid',
+      'shop/myblocks/card.liquid',
+    ])('does not hover content as a variable in %s', async (relativePath) => {
+      await expect(provider).to.hover({ relativePath, source: '{{ cont█ent }}' }, null);
+    });
+
+    it.each([
+      'sections/main.liquid',
+      'shop/blocks/theme/sections/main.liquid',
+      'shop/myblocks/main.liquid',
+    ])('does not hover content on the section block object in %s', async (relativePath) => {
+      await expect(provider).to.hover(
+        {
+          relativePath,
+          source: '{% for block in section.blocks %}{{ block.cont█ent }}{% endfor %}',
+        },
+        null,
+      );
+    });
+  });
+
   it('should return null when hovering over an undefined variable', async () => {
     await expect(provider).to.hover(`{{ unknown█ }}`, null);
   });
@@ -272,3 +369,69 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     );
   });
 });
+
+const IMAGE_HOVER = [
+  '### image: `image`',
+  'image description',
+  '',
+  '---',
+  '',
+  '[Shopify Reference](https://shopify.dev/docs/api/liquid/objects/image)',
+].join('\n');
+
+const blockSettingsObjects: ObjectEntry[] = [
+  {
+    name: 'block',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+    properties: [{ name: 'settings', return_type: [{ type: 'untyped', name: '' }] }],
+  },
+  {
+    name: 'section',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+    properties: [
+      { name: 'settings', return_type: [{ type: 'untyped', name: '' }] },
+      { name: 'blocks', return_type: [{ type: 'array', array_value: 'block' }] },
+    ],
+  },
+  {
+    name: 'image',
+    description: 'image description',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+  },
+];
+
+function blockFileProvider() {
+  return new HoverProvider(
+    new DocumentManager(),
+    {
+      filters: async () => [],
+      objects: async () => blockSettingsObjects,
+      liquidDrops: async () => blockSettingsObjects,
+      tags: async () => [],
+      systemTranslations: async () => ({}),
+    },
+    async () => ({}) as MetafieldDefinitionMap,
+  );
+}
+
+function articleCard(body: string, docParam?: string) {
+  return {
+    relativePath: 'blocks/article-card.liquid',
+    source: [
+      docParam ? `{% doc %}\n  ${docParam} - Card image\n{% enddoc %}` : '',
+      `<div class="article-card">${body}</div>`,
+      '{% schema %}',
+      JSON.stringify({
+        name: 'Article card',
+        settings: [
+          { type: 'color_background', id: 'background_color', label: 'Background' },
+          { type: 'image_picker', id: 'image', label: 'Image' },
+        ],
+      }),
+      '{% endschema %}',
+    ].join('\n'),
+  };
+}

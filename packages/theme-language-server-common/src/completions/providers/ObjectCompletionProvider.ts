@@ -1,7 +1,7 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { TypeSystem } from '../../TypeSystem';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem } from './common';
 
 export class ObjectCompletionProvider implements Provider {
@@ -10,27 +10,29 @@ export class ObjectCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { partialAst, node, ancestors } = params.completionContext;
+    const { partialAst, node, ancestors, partial } = params.completionContext;
     const parentNode = ancestors.at(-1);
 
     if (!node || node.type !== NodeTypes.VariableLookup) {
       return [];
     }
 
-    if (!node.name || node.lookups.length > 0) {
-      // We only do top level in this one.
+    if (node.lookups.length > 0) {
+      // We only do top level in this one. An empty name (partial `''`) is a
+      // valid placeholder — an empty output should still offer every object —
+      // so we no longer bail on `!node.name`.
       return [];
     }
 
-    // ContentFor and Render uses VariableLookup to support completion of NamedParams.
+    // ContentFor, Render, and Block use VariableLookup to support completion of NamedParams.
     if (
       parentNode?.type === NodeTypes.ContentForMarkup ||
-      parentNode?.type === NodeTypes.RenderMarkup
+      parentNode?.type === NodeTypes.RenderMarkup ||
+      parentNode?.type === NodeTypes.BlockMarkup
     ) {
       return [];
     }
 
-    const partial = node.name.replace(CURSOR, '');
     const options = await this.typeSystem.availableVariables(
       partialAst,
       partial,

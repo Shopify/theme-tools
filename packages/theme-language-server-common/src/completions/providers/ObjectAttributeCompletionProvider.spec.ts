@@ -80,6 +80,19 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
     });
   });
 
+  it.each(['{{ variant.█ }}', '{% assign style = variant %}{{ style.█ }}'])(
+    'offers string properties for enum variables: %s',
+    async (source) => {
+      await expect(provider).to.complete(
+        {
+          relativePath: 'snippets/text.liquid',
+          source: `{% doc %}\n@param {'heading' | 'small'} variant\n{% enddoc %}\n${source}`,
+        },
+        ['size'],
+      );
+    },
+  );
+
   it('does not complete number lookups', async () => {
     await expect(provider).to.complete('{{ product[01█ }}', []);
   });
@@ -157,6 +170,35 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
         %}
       `;
       await expect(provider).to.complete(source, ['src']);
+    });
+
+    it('returns attributes in `{% liquid %}` inner echo/assign/render slots', async () => {
+      // R1a: a covering inner statement's markup is a raw string; the
+      // expression-slot gate now matches even without a `{%` prefix, so the
+      // caret after a lookup dot resolves to that object's attributes.
+      const sources = [
+        '{% liquid\n  echo product.█ %}',
+        '{% liquid\n  assign x = product.█ %}',
+        '{% liquid\n  render "c", x: product.█ %}',
+      ];
+      for (const source of sources) {
+        await expect(provider, source).to.complete(source, ['images']);
+      }
+    });
+
+    it('returns deep attributes in a `{% liquid %}` inner echo slot', async () => {
+      // R1a: a multi-lookup expression narrows through the chain to the leaf
+      // type's attributes on an inner body line (results sorted by label).
+      const source = '{% liquid\n  echo product.images.first.█ %}';
+      await expect(provider, source).to.complete(source, ['height', 'src', 'width']);
+    });
+
+    it('keeps a `{% liquid %}` inner name-only caret on the object, not attributes', async () => {
+      // Guard: no dot means the caret is on the lookup name, not an attribute
+      // slot; the broadened expression-slot gate must not turn this into an
+      // attribute completion — it stays the plain object completion.
+      const source = '{% liquid\n  echo product█ %}';
+      await expect(provider, source).to.complete(source, ['product']);
     });
 
     describe('When: inside a for/tablerow loop', () => {

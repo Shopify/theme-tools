@@ -373,4 +373,92 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% for█ i in (1..3)', ['for']);
     await expect(provider).to.complete('{% render█ "markup"', ['render']);
   });
+
+  describe('block tag placement', () => {
+    const THEME_ROOT = 'file:///path/to';
+
+    function createProvider(themeRootUri: string | null) {
+      return new CompletionsProvider({
+        documentManager: new DocumentManager(),
+        themeDocset: {
+          filters: async () => [],
+          objects: async () => [],
+          liquidDrops: async () => [],
+          tags: async () => [{ name: 'block' }, { name: 'break' }],
+          systemTranslations: async () => ({}),
+        },
+        getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
+        findThemeRootURI: async (_uri: string) => themeRootUri,
+      });
+    }
+
+    it.each([
+      'templates/index.liquid',
+      'templates/customers/account.liquid',
+      'templates/metaobject/book.liquid',
+      'layout/theme.liquid',
+    ])('offers the block tag in %s', async (relativePath) => {
+      provider = createProvider(THEME_ROOT);
+      await expect(provider).to.complete({ relativePath, source: '{% b█ %}' }, ['block', 'break']);
+    });
+
+    it.each([
+      'blocks/card.liquid',
+      'sections/header.liquid',
+      'snippets/card.liquid',
+      'layout/nested/theme.liquid',
+      'file.liquid',
+      'snippets/templates/card.liquid',
+      'sections/layout/theme.liquid',
+    ])('does not offer the block tag in %s', async (relativePath) => {
+      provider = createProvider(THEME_ROOT);
+      await expect(provider).to.complete({ relativePath, source: '{% b█ %}' }, ['break']);
+    });
+
+    it.each([
+      ['file:///path/to/templates', 'templates/snippets/card.liquid'],
+      ['file:///path/to/templates', 'templates/card.liquid'],
+      ['file:///path/to/layout', 'layout/card.liquid'],
+      ['file:///path/to/layout', 'layout/sections/header.liquid'],
+    ])(
+      'does not offer the block tag when the theme root %s names the directory of %s',
+      async (themeRootUri, relativePath) => {
+        provider = createProvider(themeRootUri);
+        await expect(provider).to.complete({ relativePath, source: '{% b█ %}' }, ['break']);
+      },
+    );
+
+    it.each([
+      ['file:///path/to/templates', 'templates/templates/index.liquid'],
+      ['file:///path/to/layout', 'layout/layout/theme.liquid'],
+    ])(
+      'offers the block tag relative to the theme root %s in %s',
+      async (themeRootUri, relativePath) => {
+        provider = createProvider(themeRootUri);
+        await expect(provider).to.complete({ relativePath, source: '{% b█ %}' }, [
+          'block',
+          'break',
+        ]);
+      },
+    );
+
+    it('does not offer the block tag when the theme root is unknown', async () => {
+      provider = createProvider(null);
+      await expect(provider).to.complete(
+        { relativePath: 'templates/index.liquid', source: '{% b█ %}' },
+        ['break'],
+      );
+    });
+
+    it('offers the block tag nested in the body of another block tag', async () => {
+      provider = createProvider(THEME_ROOT);
+      await expect(provider).to.complete(
+        {
+          relativePath: 'templates/index.liquid',
+          source: "{% block 'card' %}{% b█ %}{% endblock %}",
+        },
+        ['block', 'break'],
+      );
+    });
+  });
 });

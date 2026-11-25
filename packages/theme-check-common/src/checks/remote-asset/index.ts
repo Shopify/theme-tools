@@ -1,5 +1,6 @@
 import {
   HtmlRawNode,
+  HtmlSelfClosingElement,
   HtmlVoidElement,
   TextNode,
   LiquidVariable,
@@ -14,7 +15,13 @@ import {
   LiquidHtmlNode,
   SchemaProp,
 } from '../../types';
-import { isAttr, isValuedHtmlAttribute, isNodeOfType, ValuedHtmlAttribute } from '../utils';
+import {
+  getHtmlNodeName,
+  isAttr,
+  isValuedHtmlAttribute,
+  isNodeOfType,
+  ValuedHtmlAttribute,
+} from '../utils';
 import { last } from '../../utils';
 
 const RESOURCE_TAGS = ['img', 'link', 'source', 'script'];
@@ -45,6 +52,14 @@ function isLiquidVariable(node: LiquidHtmlNode | string): node is LiquidVariable
 
 function isHashUrl(url: string): boolean {
   return url.startsWith('#');
+}
+
+function isDataUri(url: string): boolean {
+  return /^data:/i.test(url);
+}
+
+function cleanUrlText(url: string): string {
+  return url.replace(/[“”‘’]/g, '');
 }
 
 /**
@@ -85,8 +100,8 @@ function valueIsDefinitelyNotShopifyHosted(
   allowedDomains: string[] = [],
 ): boolean {
   return attr.value.some((node) => {
-    if (node.type === NodeTypes.TextNode && /^(https?:)?\/\//.test(node.value)) {
-      if (!isUrlHostedbyShopify(node.value, allowedDomains)) {
+    if (node.type === NodeTypes.TextNode && /^(https?:)?\/\//.test(cleanUrlText(node.value))) {
+      if (!isUrlHostedbyShopify(cleanUrlText(node.value), allowedDomains)) {
         return true;
       }
     }
@@ -171,8 +186,9 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
   create(context) {
     const allowedDomains = normaliseAllowedDomains(context.settings.allowedDomains || []);
 
-    function checkHtmlNode(node: HtmlVoidElement | HtmlRawNode) {
-      if (!RESOURCE_TAGS.includes(node.name)) return;
+    function checkHtmlNode(node: HtmlVoidElement | HtmlSelfClosingElement | HtmlRawNode) {
+      const nodeName = getHtmlNodeName(node);
+      if (!nodeName || !RESOURCE_TAGS.includes(nodeName)) return;
 
       const urlAttribute: ValuedHtmlAttribute | undefined = node.attributes
         .filter(isValuedHtmlAttribute)
@@ -183,13 +199,14 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
       const firstTextNode = urlAttribute.value.find(
         (node): node is TextNode => node.type === NodeTypes.TextNode,
       );
-      if (firstTextNode && isHashUrl(firstTextNode.value)) return;
+      if (firstTextNode && isHashUrl(cleanUrlText(firstTextNode.value))) return;
+      if (firstTextNode && isDataUri(cleanUrlText(firstTextNode.value))) return;
 
       if (startsWithVariableLookup(urlAttribute)) return;
 
       const isShopifyUrl = urlAttribute.value
         .filter((node): node is TextNode => node.type === NodeTypes.TextNode)
-        .some((textNode) => isUrlHostedbyShopify(textNode.value, allowedDomains));
+        .some((textNode) => isUrlHostedbyShopify(cleanUrlText(textNode.value), allowedDomains));
 
       if (isShopifyUrl) return;
 
@@ -235,6 +252,9 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
       if (hasAsset) return;
 
       const urlNode = parentNode.expression;
+
+      if (urlNode.type === NodeTypes.String && isDataUri(urlNode.value)) return;
+
       if (
         urlNode.type === NodeTypes.String &&
         !isUrlHostedbyShopify(urlNode.value, allowedDomains)
@@ -255,6 +275,9 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
 
     return {
       async HtmlVoidElement(node) {
+        checkHtmlNode(node);
+      },
+      async HtmlSelfClosingElement(node) {
         checkHtmlNode(node);
       },
       async HtmlRawNode(node) {

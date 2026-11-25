@@ -14,12 +14,13 @@ describe('Module: visitor', () => {
 
         if (
           typeof node.markup === 'string' ||
-          node.markup.snippet.type === LiquidHtmlNodeTypes.VariableLookup
+          node.markup.snippet.type === LiquidHtmlNodeTypes.VariableLookup ||
+          node.markup.snippet.type === LiquidHtmlNodeTypes.Range
         ) {
           return;
         }
 
-        return node.markup.snippet.value;
+        return `${node.markup.snippet.value}`;
       },
     };
 

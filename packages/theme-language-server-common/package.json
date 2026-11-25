@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-common",
-  "version": "2.21.2",
+  "version": "3.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -27,9 +27,9 @@
     "type-check": "tsc --noEmit -p src/tsconfig.json"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^2.9.2",
-    "@shopify/theme-check-common": "3.26.0",
-    "@shopify/theme-graph": "^0.2.6",
+    "@shopify/liquid-html-parser": "workspace:^2.12.2",
+    "@shopify/theme-check-common": "workspace:4.0.2",
+    "@shopify/theme-graph": "workspace:^0.3.9",
     "@vscode/web-custom-data": "^0.4.6",
     "vscode-css-languageservice": "6.3.2",
     "vscode-json-languageservice": "^5.3.10",
@@ -39,6 +39,7 @@
     "vscode-uri": "^3.0.7"
   },
   "devDependencies": {
-    "@vitest/expect": "2.1.9"
+    "@types/node": "^22.18.8",
+    "@vitest/expect": "4.1.0"
   }
 }

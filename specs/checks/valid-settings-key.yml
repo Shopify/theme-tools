@@ -1,0 +1,171 @@
+check: ValidSettingsKey
+severity: error
+cases:
+  - name: does not report an error when default setting exists
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"settings":{"existent-setting":"value"}}}
+        {% endschema %}
+  - name: reports an error when default setting does not exist
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"settings":{"non-existent-setting":"value"}}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting' does not exist in schema."
+        start: [1, 127]
+        highlight: '"non-existent-setting"'
+  - name: does not report an error when missing default settings is referenced from a block schema
+    files:
+      blocks/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"settings":{"non-existent-setting":"value"}}}
+        {% endschema %}
+  - name: does not report an error when presets setting exists
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"settings":{"existent-setting":"value"}}]}
+        {% endschema %}
+  - name: reports an error when presets setting does not exist
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"settings":{"non-existent-setting-1":"value"}},{"settings":{"non-existent-setting-2":"value"}}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-1' does not exist in schema."
+        start: [1, 128]
+        highlight: '"non-existent-setting-1"'
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-2' does not exist in schema."
+        start: [1, 176]
+        highlight: '"non-existent-setting-2"'
+  - name: does not report an error when default block setting exists in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"blocks":[{"type":"referenced","settings":{"existent-setting":"value"}}]}}
+        {% endschema %}
+  - name: default block settings > referenced blocks > does not report an error when referenced file does not exist
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"blocks":[{"type":"non-existent-file","settings":{"non-existent-setting":"value"}}]}}
+        {% endschema %}
+  - name: reports an error when default block setting does not exist in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"blocks":[{"type":"referenced","settings":{"non-existent-setting":"value"}}]}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting' does not exist in 'blocks/referenced.liquid'."
+        start: [1, 158]
+        highlight: '"non-existent-setting"'
+  - name: reports an error when default block setting does not exist in existing local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"default":{"blocks":[{"type":"local-block","settings":{"non-existent-setting-1":"value","non-existent-setting-2":"value"}}]}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-1' does not exist in schema."
+        start: [1, 187]
+        highlight: '"non-existent-setting-1"'
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-2' does not exist in schema."
+        start: [1, 220]
+        highlight: '"non-existent-setting-2"'
+  - name: does not report an error when default block setting does not exist in non-existent local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"default":{"blocks":[{"type":"non-existent-local-block","settings":{"non-existent-setting":"value"}}]}}
+        {% endschema %}
+  - name: does not report an error when default block setting exists in local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"default":{"blocks":[{"type":"local-block","settings":{"local-setting":"value"}}]}}
+        {% endschema %}
+  - name: does not report an error when presets block setting exists in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"blocks":[{"type":"referenced","settings":{"existent-setting":"value"}}]}]}
+        {% endschema %}
+  - name: presets block settings > referenced blocks > does not report an error when referenced file does not exist
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"blocks":[{"type":"non-existent-file","settings":{"non-existent-setting":"value"}}]}]}
+        {% endschema %}
+  - name: reports an error when presets block setting does not exist in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"blocks":[{"type":"referenced","settings":{"non-existent-setting":"value"}}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting' does not exist in 'blocks/referenced.liquid'."
+        start: [1, 159]
+        highlight: '"non-existent-setting"'
+  - name: reports an error when presets block setting does not exist in existing local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"local-block","settings":{"non-existent-setting-1":"value","non-existent-setting-2":"value"}}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-1' does not exist in schema."
+        start: [1, 188]
+        highlight: '"non-existent-setting-1"'
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-2' does not exist in schema."
+        start: [1, 221]
+        highlight: '"non-existent-setting-2"'
+  - name: does not report an error when presets block setting does not exist in non-existent local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"non-existent-local-block","settings":{"non-existent-setting":"value"}}]}]}
+        {% endschema %}
+  - name: does not report an error when presets block setting exists in local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"local-block","settings":{"local-setting":"value"}}]}]}
+        {% endschema %}

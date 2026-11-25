@@ -4,5 +4,5 @@ dev.edition: 2024
 
 up:
   - node:
-      version: v22.14.0
+      version: v24.16.0
       package_manager: pnpm@10.16.1
