@@ -175,6 +175,18 @@ describe('Function: isIgnored', () => {
     expect(result).toBe(true);
   });
 
+  it('should match hidden files and directories inside the theme', () => {
+    const result = isIgnored(
+      toUri('.x/a.json'),
+      config({
+        checkIgnore: [],
+        globalIgnore: ['*.json'],
+      }),
+    );
+
+    expect(result).toBe(true);
+  });
+
   describe('When the theme root is inside a dot-directory', () => {
     const rootUri = 'file:/path/.worktrees/theme';
 
