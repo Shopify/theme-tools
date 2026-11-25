@@ -2,4 +2,4 @@
 '@shopify/theme-check-node': patch
 ---
 
-Fix cross-file LiquidDoc checks on Windows by normalising snippet paths before lookup.
+Report cross-file LiquidDoc errors on Windows, when the theme path has a space, and when the config sets `root`
