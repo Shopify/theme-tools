@@ -375,6 +375,118 @@ describe('Module: SectionRenameHandler', () => {
         }
       });
 
+      it('updates the type attribute in the customized current settings', async () => {
+        const settingsData = (type: string) =>
+          JSON.stringify(
+            {
+              current: {
+                colors_text: '#000',
+                sections: {
+                  'header-id': { type, settings: {} },
+                  'footer-id': { type: 'footer', settings: {} },
+                },
+              },
+              presets: {
+                Default: {
+                  sections: {
+                    'header-id': { type, settings: {} },
+                  },
+                },
+                Dark: 'not a preset object',
+              },
+            },
+            null,
+            2,
+          );
+        fs = new MockFileSystem(
+          {
+            'sections/old-name.liquid': `
+              {% schema %}
+                { "name": "Old name" }
+              {% endschema %}`,
+
+            'config/settings_data.json': settingsData('old-name'),
+          },
+          mockRoot,
+        );
+        documentManager = new DocumentManager(
+          fs,
+          undefined,
+          undefined,
+          async () => 'theme',
+          async () => true,
+        );
+        handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
+
+        await handler.onDidRenameFiles({
+          files: [
+            {
+              oldUri: 'mock-fs:/sections/old-name.liquid',
+              newUri: 'mock-fs:/sections/new-name.liquid',
+            },
+          ],
+        });
+
+        const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+        assert(params.edit.documentChanges);
+        const [docChange] = params.edit.documentChanges;
+        assert(TextDocumentEdit.is(docChange));
+        expect(docChange.textDocument.uri).toBe(settingsDataUri);
+        expect(docChange.edits).to.applyEdits(settingsData('old-name'), settingsData('new-name'));
+      });
+
+      it('updates presets when current is the name of a preset', async () => {
+        const settingsData = (type: string) =>
+          JSON.stringify(
+            {
+              current: 'Default',
+              presets: {
+                Default: {
+                  sections: {
+                    'header-id': { type, settings: {} },
+                  },
+                },
+              },
+            },
+            null,
+            2,
+          );
+        fs = new MockFileSystem(
+          {
+            'sections/old-name.liquid': `
+              {% schema %}
+                { "name": "Old name" }
+              {% endschema %}`,
+
+            'config/settings_data.json': settingsData('old-name'),
+          },
+          mockRoot,
+        );
+        documentManager = new DocumentManager(
+          fs,
+          undefined,
+          undefined,
+          async () => 'theme',
+          async () => true,
+        );
+        handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
+
+        await handler.onDidRenameFiles({
+          files: [
+            {
+              oldUri: 'mock-fs:/sections/old-name.liquid',
+              newUri: 'mock-fs:/sections/new-name.liquid',
+            },
+          ],
+        });
+
+        const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+        assert(params.edit.documentChanges);
+        const [docChange] = params.edit.documentChanges;
+        assert(TextDocumentEdit.is(docChange));
+        expect(docChange.edits).to.applyEdits(settingsData('old-name'), settingsData('new-name'));
+      });
+
       it('completes without error when config/settings_data.json does not exist', async () => {
         // The default beforeEach fs has no settings_data.json.
         // Rename should still update templates, section groups, and liquid tags.

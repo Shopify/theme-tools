@@ -1,20 +1,22 @@
 import { Template } from '@shopify/theme-check-common';
 
+/** A preset, or the customized `current` settings, in config/settings_data.json */
 export interface SettingsDataPreset {
   sections?: Record<string, { type: string }>;
 }
 
 export interface SettingsData {
+  /** The name of a preset, or the customized settings */
+  current?: string | SettingsDataPreset;
   presets?: Record<string, SettingsDataPreset>;
 }
 
 export function isValidSettingsData(parsed: unknown): parsed is SettingsData {
-  return (
-    typeof parsed === 'object' &&
-    parsed !== null &&
-    'presets' in parsed &&
-    typeof (parsed as SettingsData).presets === 'object'
-  );
+  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed);
+}
+
+export function isSettingsDataPreset(value: unknown): value is SettingsDataPreset {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // this is very very optimistic...
