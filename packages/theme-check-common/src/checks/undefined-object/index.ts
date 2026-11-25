@@ -191,23 +191,40 @@ async function globalObjects(
 ) {
   const objects = await themeDocset.objects();
   const relativePath = context.toRelativePath(context.file.uri);
-  const contextualObjects = new Set(getContextualObjects(relativePath, context.mode));
-
-  if (relativePath.startsWith('snippets/') && context.getReferences) {
-    const ancestors = await getAncestorUris(context.file.uri, context.getReferences);
-    ancestors.forEach((uri) => {
-      const ancestorPath = context.toRelativePath(uri);
-      getContextualObjects(ancestorPath, context.mode).forEach((name) =>
-        contextualObjects.add(name),
-      );
-    });
-  }
+  const contextualObjects = new Set([
+    ...getContextualObjects(relativePath, context.mode),
+    ...(await callerContextualObjects(context, relativePath)),
+  ]);
 
   return objects.filter(({ access, name }) => {
     return (
       contextualObjects.has(name) || !access || access.global === true || access.template.length > 0
     );
   });
+}
+
+/**
+ * A snippet also sees the contextual objects of the files that render it,
+ * directly or through other files. A file whose references can't be read,
+ * such as when the theme graph fails to build, counts as rendered by nothing.
+ */
+async function callerContextualObjects(
+  context: Context<SourceCodeType.LiquidHtml>,
+  relativePath: string,
+): Promise<string[]> {
+  const { getReferences } = context;
+  if (!relativePath.startsWith('snippets/') || !getReferences) return [];
+
+  const ancestors = await getAncestorUris(context.file.uri, async (uri) => {
+    try {
+      return await getReferences(uri);
+    } catch {
+      return [];
+    }
+  });
+  return ancestors.flatMap((uri) =>
+    getContextualObjects(context.toRelativePath(uri), context.mode),
+  );
 }
 
 /** Theme blocks always receive the built-in `content` parameter as a variable. */
