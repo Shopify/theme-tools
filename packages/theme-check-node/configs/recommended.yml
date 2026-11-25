@@ -228,6 +228,12 @@ ValidJSON:
 ValidLocalBlocks:
   enabled: true
   severity: 0
+ValidRangeDefault:
+  enabled: true
+  severity: 0
+ValidRangeStepCount:
+  enabled: true
+  severity: 0
 ValidRenderSnippetArgumentTypes:
   enabled: true
   severity: 1
