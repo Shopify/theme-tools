@@ -1,8 +1,13 @@
-printWidth: 80
+It should not print a second > before a textarea that follows an inline element
 <div><label for="x">Name</label><textarea id="x" rows="4"></textarea></div>
 
+It should not print a second > before a textarea at a wide print width
 printWidth: 200
 <div><label for="x">Name</label><textarea id="x" rows="4"></textarea></div>
 
+It should not print a second > before a textarea at a very wide print width
 printWidth: 9999
 <div><label for="x">Name</label><textarea id="x" rows="4"></textarea></div>
+
+It should not print a second > before a textarea that follows a void element
+<div><img src="a"><textarea>hi</textarea></div>
