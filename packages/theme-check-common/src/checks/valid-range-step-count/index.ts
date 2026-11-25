@@ -2,15 +2,21 @@ import {
   JSONCheckDefinition,
   JSONNode,
   LiquidCheckDefinition,
-  Setting,
   Severity,
   SourceCodeType,
   isArrayNode,
-  isLiteralNode,
   isObjectNode,
 } from '../../types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
+import {
+  EPSILON,
+  RangeSetting,
+  literalValues,
+  propertyValue,
+  settingDefinitions,
+  toRangeSetting,
+} from '../valid-range-default/range-setting';
 
 // Shopify rejects range settings whose step count exceeds 101. The CLI
 // uploads the file fine, but `shopify theme dev` and the theme editor
@@ -19,17 +25,16 @@ import { getSchema } from '../../to-schema';
 //   Range settings must have at most 101 steps
 // which is a hard 500 on the entire local theme server.
 //
-// Step count is (max - min) / step + 1.
+// Step count is (max - min) / step + 1, and step defaults to 1.
 
 const MAX_STEPS = 101;
-const EPSILON = 1e-9;
 
 const meta = {
   code: 'ValidRangeStepCount',
   name: 'Validate that range settings have at most 101 steps',
   docs: {
     description:
-      'Warns when a range setting has more than 101 discrete steps, which the storefront rejects with "Range settings must have at most 101 steps".',
+      'Reports a range setting with more than 101 discrete steps, which the storefront rejects with "Range settings must have at most 101 steps".',
     recommended: true,
     url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-range-step-count',
   },
@@ -37,39 +42,6 @@ const meta = {
   schema: {},
   targets: [],
 };
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
-}
-
-function rawStepCount(min: number, max: number, step: number): number {
-  return (max - min) / step + 1;
-}
-
-function exceedsMaxSteps(min: number, max: number, step: number): boolean {
-  // EPSILON absorbs float jitter so e.g. step 0.1 across (1, 5) doesn't
-  // tip from 41 to 41.00000000000001 and trip the > 101 comparison.
-  return rawStepCount(min, max, step) > MAX_STEPS + EPSILON;
-}
-
-function tooManyStepsMessage(id: string, min: number, max: number, step: number): string {
-  const count = Math.round(rawStepCount(min, max, step));
-  // Smallest step that keeps (max - min) / step + 1 <= 101.
-  const suggestion = (max - min) / (MAX_STEPS - 1);
-  return `Range setting "${id}" has ${count} steps (min ${min}, max ${max}, step ${step}). Shopify allows at most ${MAX_STEPS} steps — use step ≥ ${suggestion}.`;
-}
-
-type RangeSettingShape = { id: string; min: number; max: number; step: number };
-
-function readRangeShape(setting: Setting.Any): RangeSettingShape | undefined {
-  if (!setting || typeof setting !== 'object') return;
-  if (!('type' in setting) || setting.type !== 'range') return;
-  if (!('id' in setting) || typeof setting.id !== 'string') return;
-  const { min, max, step } = setting as { min?: unknown; max?: unknown; step?: unknown };
-  if (!isFiniteNumber(min) || !isFiniteNumber(max) || !isFiniteNumber(step)) return;
-  if (step <= 0) return;
-  return { id: setting.id, min, max, step };
-}
 
 export const ValidRangeStepCount: LiquidCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.LiquidHtml },
@@ -83,42 +55,29 @@ export const ValidRangeStepCount: LiquidCheckDefinition = {
         const { validSchema, ast } = schema ?? {};
         if (!validSchema || validSchema instanceof Error) return;
         if (!ast || ast instanceof Error) return;
-        if (!validSchema.settings) return;
 
         const offset = node.blockStartPosition.end;
 
-        for (let i = 0; i < validSchema.settings.length; i++) {
-          const setting = validSchema.settings[i];
-          const range = readRangeShape(setting);
-          if (!range) continue;
-          if (!exceedsMaxSteps(range.min, range.max, range.step)) continue;
+        for (const { path, settings } of settingDefinitions(validSchema)) {
+          settings.forEach((setting, i) => {
+            const range = toRangeSetting(setting);
+            if (!range || !exceedsMaxSteps(range)) return;
 
-          const stepNode = nodeAtPath(ast, ['settings', i, 'step']);
-          reportAtNode(
-            context,
-            offset,
-            stepNode,
-            tooManyStepsMessage(range.id, range.min, range.max, range.step),
-          );
+            // Without a step, the range is too wide for the default step of 1.
+            const astNode =
+              nodeAtPath(ast, [...path, i, 'step']) ?? nodeAtPath(ast, [...path, i, 'max']);
+            if (!astNode) return;
+            context.report({
+              message: tooManyStepsMessage(range),
+              startIndex: offset + getLocStart(astNode),
+              endIndex: offset + getLocEnd(astNode),
+            });
+          });
         }
       },
     };
   },
 };
-
-function reportAtNode(
-  context: Parameters<LiquidCheckDefinition['create']>[0],
-  offset: number,
-  astNode: JSONNode | undefined,
-  message: string,
-) {
-  if (!astNode) return;
-  context.report({
-    message,
-    startIndex: offset + getLocStart(astNode),
-    endIndex: offset + getLocEnd(astNode),
-  });
-}
 
 export const ValidRangeStepCountSettingsSchema: JSONCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.JSON },
@@ -133,44 +92,42 @@ export const ValidRangeStepCountSettingsSchema: JSONCheckDefinition = {
 
         for (const settingNode of node.value.children) {
           if (!isObjectNode(settingNode)) continue;
+          const range = toRangeSetting(literalValues(settingNode));
+          if (!range || !exceedsMaxSteps(range)) continue;
 
-          const typeProp = settingNode.children.find((p) => p.key.value === 'type');
-          if (!typeProp || !isLiteralNode(typeProp.value) || typeProp.value.value !== 'range') {
-            continue;
-          }
-
-          const idProp = settingNode.children.find((p) => p.key.value === 'id');
-          const idValue =
-            idProp && isLiteralNode(idProp.value) && typeof idProp.value.value === 'string'
-              ? idProp.value.value
-              : 'unknown';
-
-          const minProp = settingNode.children.find((p) => p.key.value === 'min');
-          const maxProp = settingNode.children.find((p) => p.key.value === 'max');
-          const stepProp = settingNode.children.find((p) => p.key.value === 'step');
-          if (!minProp || !maxProp || !stepProp) continue;
-          if (
-            !isLiteralNode(minProp.value) ||
-            !isLiteralNode(maxProp.value) ||
-            !isLiteralNode(stepProp.value)
-          ) {
-            continue;
-          }
-
-          const min = minProp.value.value;
-          const max = maxProp.value.value;
-          const step = stepProp.value.value;
-          if (!isFiniteNumber(min) || !isFiniteNumber(max) || !isFiniteNumber(step)) continue;
-          if (step <= 0) continue;
-          if (!exceedsMaxSteps(min, max, step)) continue;
-
+          const astNode: JSONNode =
+            propertyValue(settingNode, 'step') ?? propertyValue(settingNode, 'max')!;
           context.report({
-            message: tooManyStepsMessage(idValue, min, max, step),
-            startIndex: getLocStart(stepProp.value),
-            endIndex: getLocEnd(stepProp.value),
+            message: tooManyStepsMessage(range),
+            startIndex: getLocStart(astNode),
+            endIndex: getLocEnd(astNode),
           });
         }
       },
     };
   },
 };
+
+function rawStepCount({ min, max, step }: RangeSetting): number {
+  return (max - min) / step + 1;
+}
+
+function exceedsMaxSteps(range: RangeSetting): boolean {
+  // EPSILON absorbs float jitter so e.g. step 0.1 across (1, 5) doesn't
+  // tip from 41 to 41.00000000000001 and trip the > 101 comparison.
+  return rawStepCount(range) > MAX_STEPS + EPSILON;
+}
+
+function tooManyStepsMessage(range: RangeSetting): string {
+  const { id, min, max, step } = range;
+  const count = Math.round(rawStepCount(range));
+  return `Range setting "${id}" has ${count} steps (min ${min}, max ${max}, step ${step}). Shopify allows at most ${MAX_STEPS} steps — use step ≥ ${smallestStep(range)}.`;
+}
+
+/**
+ * The smallest step that keeps (max - min) / step + 1 <= 101, rounded up to
+ * the 0.1 multiple that the setting schema requires of a step.
+ */
+function smallestStep({ min, max }: RangeSetting): number {
+  return Math.ceil((max - min) / (MAX_STEPS - 1) / 0.1 - EPSILON) / 10;
+}
