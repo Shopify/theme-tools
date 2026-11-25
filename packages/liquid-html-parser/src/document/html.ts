@@ -43,6 +43,7 @@ import type {
 } from '../ast';
 import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
 import { LiquidHTMLASTParsingError } from '../errors';
+import type { UnclosedNode } from '../errors';
 import { closesInnermostBranchOpenedElement } from './branch-opened-elements';
 import { findRawBodyEnd, liquidTagTokenName, rawBodyRuleLookup } from './raw-body';
 import type { RawBodyRuleFor } from './raw-body';
@@ -106,6 +107,11 @@ export function parseHtmlElement(
     return parseHtmlRawBody(parser, plainName, attributes, blockStartPosition);
   }
 
+  const unclosed: UnclosedNode = {
+    type: NodeTypes.HtmlElement,
+    name: compoundNameSource(source, name),
+    blockStartPosition,
+  };
   const children: LiquidHtmlNode[] = [];
   while (!parser.isAtEnd()) {
     if (parser.check(TokenType.HtmlCloseTagOpen)) {
@@ -123,6 +129,7 @@ export function parseHtmlElement(
           source,
           openTagStart,
           openTagEnd,
+          unclosed,
         );
       }
       break;
@@ -137,6 +144,7 @@ export function parseHtmlElement(
         source,
         openTagStart,
         openTagEnd,
+        unclosed,
       );
     }
     const endPos = children.length > 0 ? children[children.length - 1].position.end : openTagEnd;
@@ -171,6 +179,7 @@ export function parseHtmlElement(
       source,
       closeStart,
       closeEnd,
+      unclosed,
     );
   }
 
@@ -213,6 +222,7 @@ export function parseHtmlRawBody(
       source,
       blockStartPosition.start,
       blockStartPosition.end,
+      { type: NodeTypes.HtmlRawNode, name: plainName, blockStartPosition },
     );
   }
 
@@ -323,6 +333,7 @@ function unclosedHtmlCommentError(
     source,
     openComment.start,
     openComment.end,
+    { type: NodeTypes.HtmlComment, name: '<!--', blockStartPosition: openComment },
   );
 }
 
@@ -810,6 +821,12 @@ function rememberLookahead(
   last.to = to;
   last.startsWithWhitespace = startsWithWhitespace;
   return startsWithWhitespace;
+}
+
+/** The element name as written, Liquid included: `h{{ level }}` for `<h{{ level }}>`. */
+function compoundNameSource(source: string, name: CompoundNameSegment[]): string {
+  if (name.length === 0) return '';
+  return source.slice(name[0].position.start, name[name.length - 1].position.end);
 }
 
 export function extractPlainName(name: CompoundNameSegment[]): string | null {

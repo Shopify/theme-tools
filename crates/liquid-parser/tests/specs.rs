@@ -293,7 +293,7 @@ impl<'s> Tree<'s> {
 }
 
 /// `{ message, start, text }` at the error's `loc`, which TypeScript clamps to the template's
-/// last character.
+/// last character, and the node it names as `unclosed`, if any.
 fn spec_error(source: &str, e: &ParseError) -> Value {
     let Some(loc) = e.loc else {
         // TypeScript throws a plain Error here, which no spec has.
@@ -315,11 +315,20 @@ fn spec_error(source: &str, e: &ParseError) -> Value {
             || format!("{loc:?} outside the source"),
             String::from_utf16_lossy,
         );
-    json!({
+    let mut error = json!({
         "message": e.message,
         "start": [loc.start.line - 1, loc.start.column - 1],
         "text": text,
-    })
+    });
+    if let Some(unclosed) = &e.unclosed {
+        let start_tag = Span::new(unclosed.start_tag.start, unclosed.start_tag.end);
+        error["unclosed"] = json!({
+            "type": unclosed.kind,
+            "name": unclosed.name,
+            "blockStartPosition": Tree::new(source).pos(start_tag),
+        });
+    }
+    error
 }
 
 fn to_json(yaml: &Yaml) -> Value {
