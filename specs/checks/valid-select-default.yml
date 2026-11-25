@@ -1,0 +1,178 @@
+check: ValidSelectDefault
+severity: warning
+cases:
+  - name: does not report a select default that is one of its options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","default":"center","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"},{"value":"flex-end","label":"Right"}]}]}
+        {% endschema %}
+  - name: reports a select default that is not one of its options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","default":"this-is-not-an-option","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"},{"value":"flex-end","label":"Right"}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value "this-is-not-an-option" for setting "alignment" is not one of the valid options: "flex-start", "center", "flex-end".'
+        start: [1, 76]
+        highlight: '"this-is-not-an-option"'
+  - name: reports a radio default that is not one of its options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"radio","id":"layout_direction","default":"bogus","options":[{"value":"row","label":"Row"},{"value":"column","label":"Column"}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value "bogus" for setting "layout_direction" is not one of the valid options: "row", "column".'
+        start: [1, 82]
+        highlight: '"bogus"'
+  - name: does not report a select setting without a default
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}]}
+        {% endschema %}
+  - name: does not report the default of a setting that has no options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"text","id":"heading","default":"anything"}]}
+        {% endschema %}
+  - name: does not report a preset value that is one of the options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","options":[{"value":"flex-start","label":"Left"},{"value":"flex-end","label":"Right"}]}],"presets":[{"name":"Column","settings":{"alignment":"flex-end"}}]}
+        {% endschema %}
+  - name: reports a preset value that is not one of the options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","options":[{"value":"flex-start","label":"Left"},{"value":"flex-end","label":"Right"}]}],"presets":[{"name":"Column","settings":{"alignment":"this-is-not-an-option"}}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Value "this-is-not-an-option" for setting "alignment" is not one of the valid options: "flex-start", "flex-end".'
+        start: [1, 207]
+        highlight: '"this-is-not-an-option"'
+  - name: reports both an invalid default and an invalid preset value
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","default":"bad-default","options":[{"value":"flex-start","label":"Left"},{"value":"flex-end","label":"Right"}]}],"presets":[{"name":"Column","settings":{"alignment":"also-bad"}}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value "bad-default" for setting "alignment" is not one of the valid options: "flex-start", "flex-end".'
+        start: [1, 76]
+        highlight: '"bad-default"'
+      - file: sections/example.liquid
+        message: 'Value "also-bad" for setting "alignment" is not one of the valid options: "flex-start", "flex-end".'
+        start: [1, 231]
+        highlight: '"also-bad"'
+  - name: does not report a preset value for a setting that has no options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"text","id":"heading"}],"presets":[{"name":"Column","settings":{"heading":"free-form text"}}]}
+        {% endschema %}
+  - name: reports a section default value that is not one of the options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","options":[{"value":"flex-start","label":"Left"},{"value":"flex-end","label":"Right"}]}],"default":{"settings":{"alignment":"nope"}}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Value "nope" for setting "alignment" is not one of the valid options: "flex-start", "flex-end".'
+        start: [1, 190]
+        highlight: '"nope"'
+  - name: reports a preset value in a block file that is not one of the options
+    files:
+      blocks/column.liquid: |
+        {% schema %}
+          {"name":"Column","settings":[{"type":"select","id":"alignment","default":"center","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}],"presets":[{"name":"Column","settings":{"alignment":"this-is-not-an-option"}}]}
+        {% endschema %}
+    offenses:
+      - file: blocks/column.liquid
+        message: 'Value "this-is-not-an-option" for setting "alignment" is not one of the valid options: "flex-start", "center".'
+        start: [1, 224]
+        highlight: '"this-is-not-an-option"'
+  - name: reports a local block's select default that is not one of its options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","blocks":[{"type":"slide","name":"Slide","settings":[{"type":"select","id":"alignment","default":"nope","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value "nope" for setting "alignment" is not one of the valid options: "flex-start", "center".'
+        start: [1, 117]
+        highlight: '"nope"'
+  - name: reports a section default block value that is not one of the local block's options
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","blocks":[{"type":"slide","name":"Slide","settings":[{"type":"select","id":"alignment","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}]}],"default":{"blocks":[{"type":"slide","settings":{"alignment":"nope"}}]}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Value "nope" for setting "alignment" is not one of the valid options: "flex-start", "center".'
+        start: [1, 258]
+        highlight: '"nope"'
+  - name: reports preset block values that are not one of the options in the block file
+    files:
+      blocks/group.liquid: |
+        {% schema %}
+          {"name":"Group","settings":[{"type":"select","id":"alignment","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}],"blocks":[{"type":"@theme"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","blocks":[{"type":"@theme"}],"presets":[{"name":"Example","blocks":[{"type":"group","settings":{"alignment":"center"},"blocks":[{"type":"group","settings":{"alignment":"nested-bad"}}]}]},{"name":"Static","blocks":{"header":{"type":"group","static":true,"settings":{"alignment":"static-bad"}}}}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Value "nested-bad" for setting "alignment" is not one of the valid options: "flex-start", "center".'
+        start: [1, 188]
+        highlight: '"nested-bad"'
+      - file: sections/example.liquid
+        message: 'Value "static-bad" for setting "alignment" is not one of the valid options: "flex-start", "center".'
+        start: [1, 297]
+        highlight: '"static-bad"'
+  - name: does not report preset block values for a block file that does not exist
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","blocks":[{"type":"@theme"}],"presets":[{"name":"Example","blocks":[{"type":"missing","settings":{"alignment":"anything"}}]}]}
+        {% endschema %}
+  - name: checks each setting's default against its own options when two settings share an id
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"type":"select","id":"alignment","default":"left","options":[{"value":"center","label":"Center"}]},{"type":"select","id":"alignment","default":"left","options":[{"value":"left","label":"Left"}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value "left" for setting "alignment" is not one of the valid options: "center".'
+        start: [1, 76]
+        highlight: '"left"'
+  - name: reports a select default in config/settings_schema.json that is not one of its options
+    files:
+      config/settings_schema.json: |
+        [{"name":"Layout","settings":[{"type":"select","id":"alignment","default":"this-is-not-an-option","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}]}]
+    offenses:
+      - file: config/settings_schema.json
+        message: 'Default value "this-is-not-an-option" for setting "alignment" is not one of the valid options: "flex-start", "center".'
+        start: [0, 74]
+        highlight: '"this-is-not-an-option"'
+  - name: does not report a select default in config/settings_schema.json that is one of its options
+    files:
+      config/settings_schema.json: |
+        [{"name":"Layout","settings":[{"type":"select","id":"alignment","default":"center","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}]}]
+  - name: only checks config/settings_schema.json among JSON files
+    files:
+      config/other.json: |
+        [{"name":"Layout","settings":[{"type":"select","id":"alignment","default":"this-is-not-an-option","options":[{"value":"flex-start","label":"Left"},{"value":"center","label":"Center"}]}]}]
