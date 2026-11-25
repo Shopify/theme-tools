@@ -1,8 +1,10 @@
 use super::schema_utils::{all, array, get, get_blocks, has, s, strict_eq, BlockWithPath};
-use crate::context::{CheckDef, CheckResult, Context, Create, LiquidCheck, Severity};
+use crate::context::{
+    CheckDef, CheckError, CheckResult, Context, Create, JsonCheck, LiquidCheck, Severity,
+};
 use crate::js;
-use crate::json::{JsonNode, PathSeg::*};
-use crate::schema::SchemaKind;
+use crate::json::{JsonNode, PathSeg, PathSeg::*};
+use crate::schema::{get_schema_from_json, SchemaKind};
 use liquid_ast::{NodeKind, NodeRef, Span};
 use serde_json::Value;
 
@@ -15,6 +17,12 @@ pub static VALID_SETTINGS_KEY: CheckDef = CheckDef {
     deprecated: false,
     schema: &[],
     create: Create::Liquid(create),
+};
+
+/// The same check on the section and block settings of JSON templates.
+pub static VALID_SETTINGS_KEY_JSON: CheckDef = CheckDef {
+    create: Create::Json(create_json),
+    ..VALID_SETTINGS_KEY
 };
 
 struct Check;
@@ -54,14 +62,14 @@ impl<'a> LiquidCheck<'a> for Check {
         if let Some(Value::Array(presets)) = get(valid_schema, "presets")? {
             for i in 0..presets.len() {
                 let settings_node = ast.at_path(&[Key("presets"), Index(i), Key("settings")]);
-                validate_settings_key(cx, offset, settings_node, schema_settings, None)?;
+                validate_settings_key(cx, offset, settings_node, schema_settings, None, "schema")?;
             }
         }
 
         if schema.kind == SchemaKind::Section && has(valid_schema, "default")? {
             if let Some(default) = get(valid_schema, "default")?.filter(|d| js::truthy(d)) {
                 let settings_node = ast.at_path(&[Key("default"), Key("settings")]);
-                validate_settings_key(cx, offset, settings_node, schema_settings, None)?;
+                validate_settings_key(cx, offset, settings_node, schema_settings, None, "schema")?;
 
                 // Default block settings must match the block file's settings.
                 let default_blocks = get(default, "blocks")?.filter(|b| !b.is_null());
@@ -89,6 +97,157 @@ impl<'a> LiquidCheck<'a> for Check {
     }
 }
 
+struct JsonTemplateCheck;
+
+fn create_json<'a>(cx: &mut Context<'a>) -> Option<Box<dyn JsonCheck<'a> + 'a>> {
+    cx.to_relative_path(cx.uri())
+        .starts_with("templates/")
+        .then(|| Box::new(JsonTemplateCheck) as Box<dyn JsonCheck<'a> + 'a>)
+}
+
+impl<'a> JsonCheck<'a> for JsonTemplateCheck {
+    fn end(&mut self, cx: &mut Context<'a>) -> CheckResult {
+        let (parsed, ast) = get_schema_from_json(cx);
+        let Some(ast) = ast else { return Ok(()) };
+        let parsed = parsed.ok_or_else(|| {
+            CheckError::new("Cannot read properties of undefined (reading 'sections')")
+        })?;
+        let Some(sections) = get(&parsed, "sections")?.filter(|s| js::truthy(s)) else {
+            return Ok(());
+        };
+        let entries = js::entries(sections).map_err(CheckError)?;
+        all(entries.iter().map(|(key, section)| {
+            if !js::is_non_null_object(section) || !has(section, "type")? {
+                return Ok(());
+            }
+            let ty = get(section, "type")?;
+            let Some(valid_schema) = cx
+                .get_section_schema(&s(ty))
+                .and_then(|schema| schema.valid_value())
+                .filter(|v| js::truthy(v))
+            else {
+                return Ok(());
+            };
+            let schema_path = format!("'sections/{}.liquid'", s(ty));
+            if has(section, "settings")? {
+                let settings_node = ast.at_path(&[Key("sections"), Key(key), Key("settings")]);
+                let valid_settings = get(valid_schema, "settings")?;
+                validate_settings_key(cx, 0, settings_node, valid_settings, None, &schema_path)?;
+            }
+            if has(section, "blocks")? {
+                if let Some(blocks) = get(section, "blocks")?.filter(|b| js::is_non_null_object(b))
+                {
+                    let path = ["sections", &**key, "blocks"].map(String::from);
+                    validate_template_blocks_settings(
+                        cx,
+                        ast,
+                        blocks,
+                        valid_schema,
+                        &path,
+                        &schema_path,
+                    )?;
+                }
+            }
+            Ok(())
+        }))
+    }
+}
+
+/// Checks each block's settings against its local block in `parent_schema`, or else against
+/// its theme block file, then does the same for the block's own blocks.
+fn validate_template_blocks_settings(
+    cx: &mut Context,
+    ast: &JsonNode,
+    blocks: &Value,
+    parent_schema: &Value,
+    path: &[String],
+    parent_schema_path: &str,
+) -> CheckResult {
+    let entries = js::entries(blocks).map_err(CheckError)?;
+    all(entries.iter().map(|(key, block)| {
+        if !js::is_non_null_object(block) || !has(block, "type")? {
+            return Ok(());
+        }
+        let ty = get(block, "type")?;
+        let block_path: Vec<String> = path.iter().cloned().chain([key.to_string()]).collect();
+        let at = |last: &'static str| {
+            let segs: Vec<PathSeg> = block_path
+                .iter()
+                .map(String::as_str)
+                .chain([last])
+                .map(Key)
+                .collect();
+            ast.at_path(&segs)
+        };
+        let nested_path: Vec<String> = block_path
+            .iter()
+            .cloned()
+            .chain(["blocks".into()])
+            .collect();
+        let nested_blocks = if has(block, "blocks")? {
+            get(block, "blocks")?.filter(|b| js::is_non_null_object(b))
+        } else {
+            None
+        };
+
+        // `parentSchema.blocks?.find((b) => b.type === block.type && 'name' in b)`
+        let mut local_block = None;
+        if let Some(schema_blocks) = get(parent_schema, "blocks")?.filter(|b| !b.is_null()) {
+            for schema_block in array(Some(schema_blocks), "parentSchema.blocks.find")? {
+                if strict_eq(get(schema_block, "type")?, ty) && has(schema_block, "name")? {
+                    local_block = Some(schema_block);
+                    break;
+                }
+            }
+        }
+
+        if let Some(local_block) = local_block {
+            let valid_settings = get(local_block, "settings")?;
+            validate_settings_key(
+                cx,
+                0,
+                at("settings"),
+                valid_settings,
+                None,
+                parent_schema_path,
+            )?;
+            if let Some(nested) = nested_blocks {
+                validate_template_blocks_settings(
+                    cx,
+                    ast,
+                    nested,
+                    local_block,
+                    &nested_path,
+                    parent_schema_path,
+                )?;
+            }
+            return Ok(());
+        }
+
+        let Some(valid_schema) = cx
+            .get_block_schema(&s(ty))
+            .and_then(|schema| schema.valid_value())
+            .filter(|v| js::truthy(v))
+        else {
+            return Ok(());
+        };
+        let valid_settings = get(valid_schema, "settings")?;
+        validate_settings_key(cx, 0, at("settings"), valid_settings, Some(block), "schema")?;
+        if let Some(nested) = nested_blocks {
+            let schema_path = format!("'blocks/{}.liquid'", s(ty));
+            validate_template_blocks_settings(
+                cx,
+                ast,
+                nested,
+                valid_schema,
+                &nested_path,
+                &schema_path,
+            )?;
+        }
+        Ok(())
+    }))
+}
+
 fn validate_referenced_block(
     cx: &mut Context,
     offset: usize,
@@ -107,6 +266,7 @@ fn validate_referenced_block(
             settings_node,
             get(local_block.node, "settings")?,
             None,
+            "schema",
         );
     }
     let ty = get(referenced_block, "type")?;
@@ -123,6 +283,7 @@ fn validate_referenced_block(
         settings_node,
         get(valid_block_schema, "settings")?,
         Some(referenced_block),
+        "schema",
     )
 }
 
@@ -132,6 +293,7 @@ fn validate_settings_key(
     settings_node: Option<&JsonNode>,
     valid_settings: Option<&Value>,
     block_node: Option<&Value>,
+    schema_path: &str,
 ) -> CheckResult {
     let Some(JsonNode::Object(settings_node)) = settings_node else {
         return Ok(());
@@ -151,7 +313,10 @@ fn validate_settings_key(
                     setting.key.value,
                     s(get(block, "type")?)
                 ),
-                _ => format!("Setting '{}' does not exist in schema.", setting.key.value),
+                _ => format!(
+                    "Setting '{}' does not exist in {schema_path}.",
+                    setting.key.value
+                ),
             };
             let span = setting.key.span;
             cx.report(message, Span::new(offset + span.start, offset + span.end));
