@@ -653,11 +653,12 @@ fn brace_expand(pattern: &str) -> Vec<String> {
 mod brace_expansion {
     use crate::js::len16;
 
-    const ESC_SLASH: &str = "\0SLASH\0";
-    const ESC_OPEN: &str = "\0OPEN\0";
-    const ESC_CLOSE: &str = "\0CLOSE\0";
-    const ESC_COMMA: &str = "\0COMMA\0";
-    const ESC_PERIOD: &str = "\0PERIOD\0";
+    // As long as JS's, `'\0SLASH' + Math.random().toFixed(16) + '\0'`, since the limits count them.
+    const ESC_SLASH: &str = "\0SLASH0.5000000000000000\0";
+    const ESC_OPEN: &str = "\0OPEN0.5000000000000000\0";
+    const ESC_CLOSE: &str = "\0CLOSE0.5000000000000000\0";
+    const ESC_COMMA: &str = "\0COMMA0.5000000000000000\0";
+    const ESC_PERIOD: &str = "\0PERIOD0.5000000000000000\0";
     /// The most results.
     const EXPANSION_MAX: usize = 100_000;
     /// The most UTF-16 units in the results together.
@@ -1147,6 +1148,16 @@ mod brace_expansion {
             let out = super::expand(&sets);
             assert_eq!(out.len(), 7_858);
             assert_eq!(out[0].len(), 509);
+            // The escapes count with the length of JS's placeholders.
+            for (escape, n) in [
+                ("\\,", 5_306),
+                ("\\\\", 5_306),
+                ("\\.", 5_103),
+                ("\\{", 5_526),
+            ] {
+                let p = format!("{}{{1..99}}{{1..99}}", escape.repeat(30));
+                assert_eq!(super::expand(&p).len(), n, "{p}");
+            }
         }
     }
 }
