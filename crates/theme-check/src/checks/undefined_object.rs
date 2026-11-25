@@ -4,6 +4,7 @@ use crate::context::{
     CheckDef, CheckError, CheckResult, Context, Create, LiquidCheck, Mode, Severity,
 };
 use crate::docset::ThemeDocset;
+use crate::graph::get_ancestor_uris;
 use crate::liquid_doc::has_liquid_doc;
 use crate::path;
 use crate::schema::is_block;
@@ -132,6 +133,19 @@ fn contextual_objects(relative_path: &str, mode: Mode) -> &'static [&'static str
     }
 }
 
+/// `callerContextualObjects(context, relativePath)`: a snippet also sees the contextual objects
+/// of the files that render it, directly or through other files.
+fn caller_contextual_objects(relative_path: &str, cx: &Context) -> Vec<&'static str> {
+    if !relative_path.starts_with("snippets/") {
+        return Vec::new();
+    }
+    get_ancestor_uris(cx.deps, cx.uri())
+        .iter()
+        .flat_map(|uri| contextual_objects(&cx.to_relative_path(uri), cx.mode()))
+        .copied()
+        .collect()
+}
+
 /// `{% for x in y offset: continue %}`
 ///
 /// `continue` is a keyword here, not a variable: it resumes the loop where the last loop over the
@@ -148,7 +162,7 @@ fn is_for_offset_continue(v: &VariableLookup, ancestors: &[NodeRef]) -> bool {
 }
 
 /// The `globalObjects` filter for one `ObjectEntry`.
-fn is_global_object(entry: &Value, contextual: &[&str]) -> Result<bool, CheckError> {
+fn is_global_object(entry: &Value, contextual: &HashSet<&str>) -> Result<bool, CheckError> {
     let name = entry.get("name").and_then(Value::as_str);
     if name.is_some_and(|n| contextual.contains(&n)) {
         return Ok(true);
@@ -285,9 +299,13 @@ impl<'a> LiquidCheck<'a> for Check<'a> {
     }
 
     fn end(&mut self, cx: &mut Context<'a>) -> CheckResult {
-        let contextual = contextual_objects(&self.relative_path, cx.mode());
+        let contextual: HashSet<&str> = contextual_objects(&self.relative_path, cx.mode())
+            .iter()
+            .copied()
+            .chain(caller_contextual_objects(&self.relative_path, cx))
+            .collect();
         for entry in &self.docset.objects {
-            if is_global_object(entry, contextual)? {
+            if is_global_object(entry, &contextual)? {
                 if let Some(name) = entry.get("name").and_then(Value::as_str) {
                     self.file_scoped_variables.insert(name);
                 }
