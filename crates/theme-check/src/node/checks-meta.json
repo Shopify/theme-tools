@@ -978,10 +978,23 @@
       "recommended": true,
       "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-settings-key"
     },
-    "type": "LiquidHtml",
     "severity": 0,
     "schema": {},
-    "targets": []
+    "targets": [],
+    "type": "LiquidHtml"
+  },
+  {
+    "code": "ValidSettingsKey",
+    "name": "Validate settings key in presets",
+    "docs": {
+      "description": "Ensures settings key only references valid settings defined in its respective schema",
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-settings-key"
+    },
+    "severity": 0,
+    "schema": {},
+    "targets": [],
+    "type": "JSON"
   },
   {
     "code": "ValidStandardEventData",
