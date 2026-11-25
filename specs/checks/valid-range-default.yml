@@ -87,6 +87,78 @@ cases:
         message: 'Default value 2.3 for range setting "gap" is not aligned to step 0.5 in range [0, 10] — try 2.5.'
         start: [4, 83]
         highlight: '2.3'
+  - name: suggests a value with one decimal digit
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 0, "max": 10, "step": 0.2, "default": 0.5 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 0.5 for range setting "gap" is not aligned to step 0.2 in range [0, 10] — try 0.6.'
+        start: [4, 83]
+        highlight: '0.5'
+  - name: suggests a value on the step grid when max is off it
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 0, "max": 10, "step": 4, "default": 10 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 10 for range setting "gap" is not aligned to step 4 in range [0, 10] — try 8.'
+        start: [4, 81]
+        highlight: '10'
+  - name: reports no offense when max is not greater than min
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 10, "max": 10, "step": 1, "default": 5 },
+              { "type": "range", "id": "width", "min": 10, "max": 0, "step": 1, "default": 20 }
+            ]
+          }
+        {% endschema %}
+  - name: reports the last default when a setting repeats it
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 0, "max": 10, "step": 2, "default": 2, "default": 3 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 3 for range setting "gap" is not aligned to step 2 in range [0, 10] — try 4.'
+        start: [4, 95]
+        highlight: '3'
+  - name: reports no offense for a preset value too large to be a number
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ],
+            "presets": [{ "name": "Default", "settings": { "padding_top": 1e999 } }]
+          }
+        {% endschema %}
   - name: uses a step of 1 when the setting has no step
     files:
       sections/example.liquid: |

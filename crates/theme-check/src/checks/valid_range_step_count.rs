@@ -1,6 +1,6 @@
 use super::range_setting::{
-    literal_values, property_value, setting_definitions, setting_path, to_range_setting,
-    RangeSetting, EPSILON,
+    js_round, last_node_at_path, literal_values, property_value, setting_definitions, setting_path,
+    to_range_setting, RangeSetting, EPSILON,
 };
 use crate::context::{CheckDef, CheckResult, Context, Create, JsonCheck, LiquidCheck, Severity};
 use crate::js;
@@ -64,9 +64,8 @@ impl<'a> LiquidCheck<'a> for Check {
                     continue;
                 }
                 // Without a step, the range is too wide for the default step of 1.
-                let node = ast
-                    .at_path(&setting_path(&definitions.path, i, "step"))
-                    .or_else(|| ast.at_path(&setting_path(&definitions.path, i, "max")));
+                let node = last_node_at_path(ast, &setting_path(&definitions.path, i, "step"))
+                    .or_else(|| last_node_at_path(ast, &setting_path(&definitions.path, i, "max")));
                 if let Some(node) = node {
                     let span = node.span();
                     cx.report(
@@ -133,22 +132,49 @@ fn exceeds_max_steps(range: &RangeSetting) -> bool {
 }
 
 fn too_many_steps_message(range: &RangeSetting) -> String {
-    // The count is over 101 here, where `round` matches `Math.round`.
-    let count = raw_step_count(range).round();
+    let count = js_round(raw_step_count(range));
+    let fix = match suggested_step(range) {
+        None => format!(
+            ", and no step divides this range into 3 to {} steps — change min or max.",
+            js_number_to_string(MAX_STEPS)
+        ),
+        Some(step) => format!(" — try step {}.", js_number_to_string(step)),
+    };
     format!(
-        "Range setting \"{}\" has {} steps (min {}, max {}, step {}). Shopify allows at most {} steps — use step ≥ {}.",
+        "Range setting \"{}\" has {} steps (min {}, max {}, step {}). Shopify allows at most {} steps{fix}",
         range.id,
         js_number_to_string(count),
         js_number_to_string(range.min),
         js_number_to_string(range.max),
         js_number_to_string(range.step),
         js_number_to_string(MAX_STEPS),
-        js_number_to_string(smallest_step(range)),
     )
 }
 
-/// The smallest step that keeps (max - min) / step + 1 <= 101, rounded up to the 0.1 multiple
-/// that the setting schema requires of a step.
-fn smallest_step(range: &RangeSetting) -> f64 {
-    ((range.max - range.min) / (MAX_STEPS - 1.0) / 0.1 - EPSILON).ceil() / 10.0
+/// Ranges wider than this, in tenths, get no suggested step, to bound the search.
+const MAX_SEARCHED_TENTHS: f64 = 1e12;
+
+/// `suggestedStep(range)`: the smallest step that the storefront accepts for this range. It has at
+/// most one decimal digit, divides max - min evenly, and leaves 3 to 101 steps.
+fn suggested_step(range: &RangeSetting) -> Option<f64> {
+    let tenths = js_round((range.max - range.min) * 10.0);
+    if tenths > MAX_SEARCHED_TENTHS {
+        return None;
+    }
+    let tenths = tenths as u64;
+    let smallest = (tenths as f64 / (MAX_STEPS - 1.0)).ceil() as u64;
+    let mut best: Option<u64> = None;
+    let mut divisor = 1;
+    while divisor * divisor <= tenths {
+        if tenths % divisor == 0 {
+            for candidate in [divisor, tenths / divisor] {
+                let fits = candidate >= smallest && tenths / candidate + 1 >= 3;
+                if fits && best.is_none_or(|b| candidate < b) {
+                    best = Some(candidate);
+                }
+            }
+        }
+        divisor += 1;
+    }
+    best.map(|b| b as f64 / 10.0)
 }

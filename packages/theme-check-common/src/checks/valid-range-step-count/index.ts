@@ -7,11 +7,12 @@ import {
   isArrayNode,
   isObjectNode,
 } from '../../types';
-import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
+import { getLocEnd, getLocStart } from '../../json';
 import { getSchema } from '../../to-schema';
 import {
   EPSILON,
   RangeSetting,
+  lastNodeAtPath,
   literalValues,
   propertyValue,
   settingDefinitions,
@@ -65,7 +66,7 @@ export const ValidRangeStepCount: LiquidCheckDefinition = {
 
             // Without a step, the range is too wide for the default step of 1.
             const astNode =
-              nodeAtPath(ast, [...path, i, 'step']) ?? nodeAtPath(ast, [...path, i, 'max']);
+              lastNodeAtPath(ast, [...path, i, 'step']) ?? lastNodeAtPath(ast, [...path, i, 'max']);
             if (!astNode) return;
             context.report({
               message: tooManyStepsMessage(range),
@@ -121,13 +122,33 @@ function exceedsMaxSteps(range: RangeSetting): boolean {
 function tooManyStepsMessage(range: RangeSetting): string {
   const { id, min, max, step } = range;
   const count = Math.round(rawStepCount(range));
-  return `Range setting "${id}" has ${count} steps (min ${min}, max ${max}, step ${step}). Shopify allows at most ${MAX_STEPS} steps — use step ≥ ${smallestStep(range)}.`;
+  const suggestion = suggestedStep(range);
+  const fix =
+    suggestion === undefined
+      ? `, and no step divides this range into 3 to ${MAX_STEPS} steps — change min or max.`
+      : ` — try step ${suggestion}.`;
+  return `Range setting "${id}" has ${count} steps (min ${min}, max ${max}, step ${step}). Shopify allows at most ${MAX_STEPS} steps${fix}`;
 }
 
+/** Ranges wider than this, in tenths, get no suggested step, to bound the search. */
+const MAX_SEARCHED_TENTHS = 1e12;
+
 /**
- * The smallest step that keeps (max - min) / step + 1 <= 101, rounded up to
- * the 0.1 multiple that the setting schema requires of a step.
+ * The smallest step that the storefront accepts for this range: it has at
+ * most one decimal digit, divides max - min evenly, and leaves 3 to 101
+ * steps. Undefined when no step does.
  */
-function smallestStep({ min, max }: RangeSetting): number {
-  return Math.ceil((max - min) / (MAX_STEPS - 1) / 0.1 - EPSILON) / 10;
+function suggestedStep({ min, max }: RangeSetting): number | undefined {
+  const tenths = Math.round((max - min) * 10);
+  if (tenths > MAX_SEARCHED_TENTHS) return;
+  const smallest = Math.ceil(tenths / (MAX_STEPS - 1));
+  let best: number | undefined;
+  for (let divisor = 1; divisor * divisor <= tenths; divisor++) {
+    if (tenths % divisor !== 0) continue;
+    for (const candidate of [divisor, tenths / divisor]) {
+      const fits = candidate >= smallest && tenths / candidate + 1 >= 3;
+      if (fits && (best === undefined || candidate < best)) best = candidate;
+    }
+  }
+  return best === undefined ? undefined : best / 10;
 }

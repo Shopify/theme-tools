@@ -35,7 +35,7 @@ pub fn finite_number(value: Option<&Value>) -> Option<f64> {
 }
 
 /// `toRangeSetting(setting)`: undefined when it isn't a range setting or its id, min, max or step
-/// is invalid.
+/// is invalid. Like the storefront, this needs `max` to be greater than `min`.
 pub fn to_range_setting(setting: &Value) -> Option<RangeSetting<'_>> {
     let setting = setting.as_object()?;
     if setting.get("type").and_then(Value::as_str) != Some("range") {
@@ -48,7 +48,7 @@ pub fn to_range_setting(setting: &Value) -> Option<RangeSetting<'_>> {
         None => 1.0,
         step => finite_number(step)?,
     };
-    if step <= 0.0 {
+    if step <= 0.0 || max <= min {
         return None;
     }
     Some(RangeSetting {
@@ -110,6 +110,33 @@ pub fn literal_values(node: &ObjectNode) -> Value {
         values.insert(property.key.value.to_string(), value);
     }
     Value::Object(values)
+}
+
+/// `lastNodeAtPath(node, path)`: like `at_path`, but an object's last property with a key wins, as
+/// in the parsed schema, so the reported node holds the value that was checked.
+pub fn last_node_at_path<'n, 'a>(
+    node: &'n JsonNode<'a>,
+    path: &[PathSeg],
+) -> Option<&'n JsonNode<'a>> {
+    let mut current = node;
+    for seg in path {
+        current = match (current, seg) {
+            (JsonNode::Object(o), PathSeg::Key(k)) => property_value(o, k)?,
+            (JsonNode::Array(a), PathSeg::Index(i)) => a.children.get(*i)?,
+            _ => return None,
+        };
+    }
+    Some(current)
+}
+
+/// JS `Math.round`: halves round toward positive infinity.
+pub fn js_round(x: f64) -> f64 {
+    let floor = x.floor();
+    if x - floor >= 0.5 {
+        floor + 1.0
+    } else {
+        floor
+    }
 }
 
 /// `propertyValue(node, key)`: the value of the last `key` property, the one `literalValues` keeps.

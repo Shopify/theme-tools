@@ -1,6 +1,6 @@
 use super::range_setting::{
-    finite_number, literal_values, property_value, setting_definitions, setting_path,
-    to_range_setting, RangeSetting, EPSILON,
+    finite_number, js_round, last_node_at_path, literal_values, property_value,
+    setting_definitions, setting_path, to_range_setting, RangeSetting, EPSILON,
 };
 use crate::context::{CheckDef, CheckResult, Context, Create, JsonCheck, LiquidCheck, Severity};
 use crate::js;
@@ -75,7 +75,7 @@ impl<'a> LiquidCheck<'a> for Check {
                 };
                 report(
                     cx,
-                    ast.at_path(&setting_path(&definitions.path, i, "default")),
+                    last_node_at_path(ast, &setting_path(&definitions.path, i, "default")),
                     default_message(&range, default, &problem),
                 );
             }
@@ -111,7 +111,7 @@ impl<'a> LiquidCheck<'a> for Check {
         }
 
         for path in value_paths {
-            let Some(JsonNode::Object(settings_node)) = ast.at_path(&path) else {
+            let Some(JsonNode::Object(settings_node)) = last_node_at_path(ast, &path) else {
                 continue;
             };
             for property in &settings_node.children {
@@ -124,6 +124,9 @@ impl<'a> LiquidCheck<'a> for Check {
                 let Lit::Num(value) = lit.value else {
                     continue;
                 };
+                if !value.is_finite() {
+                    continue;
+                }
                 let Some(problem) = range_problem(range, value) else {
                     continue;
                 };
@@ -216,14 +219,14 @@ fn range_problem(setting: &RangeSetting, value: f64) -> Option<String> {
 }
 
 fn is_on_step_grid(setting: &RangeSetting, value: f64) -> bool {
-    // The ratio is never negative here, where `round` matches `Math.round`.
     let ratio = (value - setting.min) / setting.step;
-    (ratio - ratio.round()).abs() < EPSILON
+    (ratio - js_round(ratio)).abs() < EPSILON
 }
 
+/// `nearestValidValue(setting, value)`: the grid value nearest to `value`, which is within
+/// [min, max], kept at or below `max` and at one decimal digit.
 fn nearest_valid_value(setting: &RangeSetting, value: f64) -> f64 {
-    let clamped = setting.max.min(setting.min.max(value));
-    let steps = ((clamped - setting.min) / setting.step).round();
-    let candidate = setting.min + steps * setting.step;
-    setting.max.min(setting.min.max(candidate))
+    let last_index = ((setting.max - setting.min) / setting.step + EPSILON).floor();
+    let index = last_index.min(js_round((value - setting.min) / setting.step));
+    js_round((setting.min + index * setting.step) * 10.0) / 10.0
 }

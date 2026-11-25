@@ -8,12 +8,13 @@ import {
   isLiteralNode,
   isObjectNode,
 } from '../../types';
-import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
+import { getLocEnd, getLocStart } from '../../json';
 import { getSchema, isSectionSchema } from '../../to-schema';
 import {
   EPSILON,
   RangeSetting,
   isFiniteNumber,
+  lastNodeAtPath,
   literalValues,
   propertyValue,
   settingDefinitions,
@@ -74,7 +75,7 @@ export const ValidRangeDefault: LiquidCheckDefinition = {
             const problem = rangeProblem(range, range.default);
             if (!problem) return;
             report(
-              nodeAtPath(ast, [...path, i, 'default']),
+              lastNodeAtPath(ast, [...path, i, 'default']),
               `Default value ${range.default} for range setting "${range.id}" ${problem}.`,
             );
           });
@@ -95,7 +96,7 @@ export const ValidRangeDefault: LiquidCheckDefinition = {
         if (isSectionSchema(schema)) valuePaths.push(['default', 'settings']);
 
         for (const path of valuePaths) {
-          const settingsNode = nodeAtPath(ast, path);
+          const settingsNode = lastNodeAtPath(ast, path);
           if (!settingsNode || !isObjectNode(settingsNode)) continue;
 
           for (const property of settingsNode.children) {
@@ -162,9 +163,13 @@ function isOnStepGrid(setting: RangeSetting, value: number): boolean {
   return Math.abs(ratio - Math.round(ratio)) < EPSILON;
 }
 
-function nearestValidValue(setting: RangeSetting, value: number): number {
-  const clamped = Math.min(setting.max, Math.max(setting.min, value));
-  const steps = Math.round((clamped - setting.min) / setting.step);
-  const candidate = setting.min + steps * setting.step;
-  return Math.min(setting.max, Math.max(setting.min, candidate));
+/**
+ * The grid value nearest to `value`, which is within [min, max]. The last
+ * grid value is at or below `max`, and Shopify numbers have at most one
+ * decimal digit, which also drops float noise like 0.6000000000000001.
+ */
+function nearestValidValue({ min, max, step }: RangeSetting, value: number): number {
+  const lastIndex = Math.floor((max - min) / step + EPSILON);
+  const index = Math.min(lastIndex, Math.round((value - min) / step));
+  return Math.round((min + index * step) * 10) / 10;
 }
