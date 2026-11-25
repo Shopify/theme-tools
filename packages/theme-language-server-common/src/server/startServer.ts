@@ -123,7 +123,9 @@ export function startServer(
     getModeForURI,
   );
   const diagnosticsManager = new DiagnosticsManager(connection);
-  const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
+  const documentLinksProvider = new DocumentLinksProvider(documentManager, (uri) =>
+    themeGraphManager.getDependencies(uri, undefined, { includeIndirect: false }),
+  );
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
   const onTypeFormattingProvider = new OnTypeFormattingProvider(
     documentManager,
