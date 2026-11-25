@@ -1,6 +1,13 @@
-import { HtmlSelfClosingElement, HtmlVoidElement } from '@shopify/liquid-html-parser';
+import { HtmlSelfClosingElement, HtmlVoidElement, NodeTypes } from '@shopify/liquid-html-parser';
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
-import { getHtmlNodeName, isAttr, isValuedHtmlAttribute, valueIncludes } from '../utils';
+import {
+  getHtmlNodeName,
+  isAttr,
+  isNodeOfType,
+  isValuedHtmlAttribute,
+  valueIncludes,
+  ValuedHtmlAttribute,
+} from '../utils';
 
 export const CdnPreconnect: LiquidCheckDefinition = {
   meta: {
@@ -29,10 +36,7 @@ export const CdnPreconnect: LiquidCheckDefinition = {
 
       const isShopifyCdn = node.attributes
         .filter(isValuedHtmlAttribute)
-        .some(
-          (attr) =>
-            isAttr(attr, 'href') && valueIncludes(attr, '(https?:)?//cdn\\.shopify\\.com(/\\S*)?'),
-        );
+        .some((attr) => isAttr(attr, 'href') && isShopifyCdnUrl(attr));
 
       if (!isShopifyCdn) return;
 
@@ -54,3 +58,23 @@ export const CdnPreconnect: LiquidCheckDefinition = {
     };
   },
 };
+
+const SHOPIFY_CDN_ORIGIN = /^(https?:)?\/\/cdn\.shopify\.com(:443)?/i;
+
+/**
+ * Whether the href points at the cdn.shopify.com origin. The URL must start
+ * with the origin in static text, and the host must end there: at a path,
+ * query or fragment, or at the end of the whole value.
+ */
+function isShopifyCdnUrl(attr: ValuedHtmlAttribute): boolean {
+  const [first, ...rest] = attr.value;
+  if (!first || !isNodeOfType(NodeTypes.TextNode, first)) return false;
+
+  const url = first.value.trim();
+  const origin = url.match(SHOPIFY_CDN_ORIGIN);
+  if (!origin) return false;
+
+  const afterOrigin = url.slice(origin[0].length);
+  if (afterOrigin === '') return rest.length === 0;
+  return /^[/?#]/.test(afterOrigin);
+}
