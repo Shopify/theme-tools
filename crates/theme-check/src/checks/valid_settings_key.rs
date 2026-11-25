@@ -121,8 +121,10 @@ impl<'a> JsonCheck<'a> for JsonTemplateCheck {
                 return Ok(());
             }
             let ty = get(section, "type")?;
-            let Some(valid_schema) = cx
-                .get_section_schema(&s(ty))
+            // `getSectionSchema` looks the type up in a map keyed by name, so only a string matches.
+            let Some(valid_schema) = ty
+                .and_then(Value::as_str)
+                .and_then(|name| cx.get_section_schema(name))
                 .and_then(|schema| schema.valid_value())
                 .filter(|v| js::truthy(v))
             else {
@@ -224,8 +226,10 @@ fn validate_template_blocks_settings(
             return Ok(());
         }
 
-        let Some(valid_schema) = cx
-            .get_block_schema(&s(ty))
+        // `getBlockSchema` looks the type up in a map keyed by name, so only a string matches.
+        let Some(valid_schema) = ty
+            .and_then(Value::as_str)
+            .and_then(|name| cx.get_block_schema(name))
             .and_then(|schema| schema.valid_value())
             .filter(|v| js::truthy(v))
         else {

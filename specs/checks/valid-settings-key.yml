@@ -482,3 +482,42 @@ cases:
         {% schema %}
         {"name": "Main page", "blocks": [{"type": "@app"}]}
         {% endschema %}
+  - name: does not report an error when a template section's type is not a string
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "array": { "type": ["main-page"], "settings": { "heading_tagg": "h1" } },
+            "number": { "type": 404, "settings": { "heading_tagg": "h1" } }
+          },
+          "order": ["array", "number"]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+      sections/404.liquid: |
+        {% schema %}
+        {"name": "404", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when a template block's type is not a string
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": { "text": { "type": ["text"], "settings": { "headingg": "Hello" } } },
+              "block_order": ["text"]
+            }
+          },
+          "order": ["main-page"]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "@theme"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
