@@ -165,6 +165,12 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
       // retyping > on an element that is already closed
       '<ul>█\n  <li></li>\n</ul>',
       '<ul>\n  <li>█</li>\n</ul>',
+      // ... while an ancestor is unclosed
+      '<div>\n  <p>█</p>\n',
+      '<div>\n  <section>\n    <p>█</p>\n  </section>\n',
+      '{% if a %}\n  <div>\n    <p>█</p>\n{% endif %}',
+      // ... while a later element of the same name is unclosed
+      '<div>\n  <p>█</p>\n  <p>',
     ];
     for (const source of scenarios) {
       documentManager.open(uri, source.replace(CURSOR, ''), 1);
