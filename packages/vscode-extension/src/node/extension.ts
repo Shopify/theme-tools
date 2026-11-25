@@ -17,16 +17,29 @@ import {
   watchReferencesTreeViewConfig,
 } from '../common/ReferencesProvider';
 import { makeDeadCode, openLocation } from '../common/commands';
+import { checkOrphanedFilesOnBoot } from '../common/orphanedFilesOnBoot';
+
+import { CustomCheckPermissionRequest } from '@shopify/theme-language-server-common';
+import {
+  makeCustomCheckPermissionHandler,
+  watchCustomCheckConfiguration,
+} from './customCheckConsent';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
+let pendingRestart: Promise<void> | undefined;
 
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
 
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
+    watchCustomCheckConfiguration(() => {
+      restartServer(context).catch((error) => {
+        console.error('Failed to restart Theme Check after changing custom check settings', error);
+      });
+    }),
     commands.registerCommand('shopifyLiquid.runChecks', () => {
       client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
@@ -47,6 +60,9 @@ export async function activate(context: ExtensionContext) {
       createReferencesTreeView('shopify.themeGraph.dependencies', context, client, 'dependencies'),
       watchReferencesTreeViewConfig(),
     );
+
+    // Fire-and-forget: surfacing orphaned files must never block or fail activation.
+    checkOrphanedFilesOnBoot(client).catch((error) => console.error(error));
   }
 }
 
@@ -89,6 +105,8 @@ async function startServer(context: ExtensionContext) {
     return workspace.fs.stat(Uri.parse(uriString));
   });
 
+  client.onRequest(CustomCheckPermissionRequest.type, makeCustomCheckPermissionHandler());
+
   client.start();
 }
 
@@ -104,11 +122,19 @@ async function stopServer() {
   }
 }
 
-async function restartServer(context: ExtensionContext) {
-  if (client) {
-    await stopServer();
+function restartServer(context: ExtensionContext): Promise<void> {
+  // Coalesce overlapping commands and settings changes into one new server session.
+  if (!pendingRestart) {
+    pendingRestart = (async () => {
+      if (client) {
+        await stopServer();
+      }
+      await startServer(context);
+    })().finally(() => {
+      pendingRestart = undefined;
+    });
   }
-  await startServer(context);
+  return pendingRestart;
 }
 
 async function getServerOptions(context: ExtensionContext): Promise<ServerOptions | undefined> {

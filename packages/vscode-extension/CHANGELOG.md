@@ -1,5 +1,236 @@
 ## theme-check-vscode
 
+## 3.11.16
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies
+- Updated dependencies [61cae020]
+  - @shopify/prettier-plugin-liquid@1.11.6
+  - @shopify/liquid-html-parser@2.12.2
+  - @shopify/theme-check-common@4.0.2
+  - @shopify/theme-language-server-common@3.0.2
+  - @shopify/theme-language-server-browser@3.0.2
+  - @shopify/theme-language-server-node@3.0.2
+
+## 3.11.15
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [fe8a2f1f]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/prettier-plugin-liquid@1.11.5
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+  - @shopify/theme-language-server-common@3.0.1
+  - @shopify/theme-language-server-browser@3.0.1
+  - @shopify/theme-language-server-node@3.0.1
+
+## 3.11.14
+
+### Patch Changes
+
+- 803a88a5: Require consent for third-party Theme Checks and expose structured skipped-check diagnostics to callers.
+- Updated dependencies [7cb4970d]
+- Updated dependencies [803a88a5]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+  - @shopify/theme-language-server-common@3.0.0
+  - @shopify/theme-language-server-node@3.0.0
+  - @shopify/prettier-plugin-liquid@1.11.4
+  - @shopify/theme-check-common@4.0.0
+  - @shopify/theme-language-server-browser@3.0.0
+
+## 3.11.13
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies
+- Updated dependencies [b9a862fb]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+  - @shopify/theme-language-server-common@2.23.2
+  - @shopify/prettier-plugin-liquid@1.11.3
+  - @shopify/theme-language-server-browser@2.23.2
+  - @shopify/theme-language-server-node@2.23.2
+
+## 3.11.12
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [83512552]
+- Updated dependencies [e0f63a00]
+- Updated dependencies [4574b6ad]
+  - @shopify/theme-check-common@3.30.1
+  - @shopify/theme-language-server-common@2.23.1
+  - @shopify/theme-language-server-browser@2.23.1
+  - @shopify/theme-language-server-node@2.23.1
+
+## 3.11.11
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/prettier-plugin-liquid
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [1dd77e8e]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [96af869d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9c04ccbc]
+- Updated dependencies [4d7201b4]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-check-common@3.30.0
+  - @shopify/theme-language-server-common@2.23.0
+  - @shopify/liquid-html-parser@2.10.2
+  - @shopify/prettier-plugin-liquid@1.11.2
+  - @shopify/theme-language-server-browser@2.23.0
+  - @shopify/theme-language-server-node@2.23.0
+
+## 3.11.10
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/prettier-plugin-liquid
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [4091c063]
+- Updated dependencies [74185263]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [53f22f5a]
+  - @shopify/theme-language-server-common@2.22.3
+  - @shopify/liquid-html-parser@2.10.1
+  - @shopify/theme-check-common@3.29.1
+  - @shopify/prettier-plugin-liquid@1.11.1
+  - @shopify/theme-language-server-browser@2.22.3
+  - @shopify/theme-language-server-node@2.22.3
+
+## 3.11.9
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [54c5cc81]
+- Updated dependencies [f2071b6d]
+- Updated dependencies [9c46aac0]
+  - @shopify/theme-check-common@3.29.0
+  - @shopify/theme-language-server-common@2.22.2
+  - @shopify/theme-language-server-browser@2.22.2
+  - @shopify/theme-language-server-node@2.22.2
+
+## 3.11.8
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [d4ec896e]
+  - @shopify/theme-check-common@3.28.1
+  - @shopify/theme-language-server-common@2.22.1
+  - @shopify/theme-language-server-browser@2.22.1
+  - @shopify/theme-language-server-node@2.22.1
+
+## 3.11.7
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/prettier-plugin-liquid
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [6803e99c]
+- Updated dependencies [6803e99c]
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-language-server-common@2.22.0
+  - @shopify/theme-check-common@3.28.0
+  - @shopify/prettier-plugin-liquid@1.11.0
+  - @shopify/theme-language-server-browser@2.22.0
+  - @shopify/theme-language-server-node@2.22.0
+
+## 3.11.6
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [180eacbe]
+  - @shopify/theme-check-common@3.27.0
+  - @shopify/theme-language-server-common@2.21.4
+  - @shopify/theme-language-server-browser@2.21.4
+  - @shopify/theme-language-server-node@2.21.4
+
 ## 3.11.5
 
 ### Patch Changes

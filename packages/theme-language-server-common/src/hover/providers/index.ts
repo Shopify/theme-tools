@@ -1,3 +1,4 @@
+export { BlockParameterHoverProvider } from './BlockParameterHoverProvider';
 export { LiquidTagHoverProvider } from './LiquidTagHoverProvider';
 export { LiquidFilterHoverProvider } from './LiquidFilterHoverProvider';
 export { LiquidFilterArgumentHoverProvider } from './LiquidFilterArgumentHoverProvider';

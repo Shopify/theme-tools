@@ -334,6 +334,7 @@ export function startServer(
     documentManager,
     themeDocset,
     getTranslationsForURI,
+    getSchemaTranslationsForURI,
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
     log,
@@ -341,6 +342,8 @@ export function startServer(
     getMetafieldDefinitions,
     getDocDefinitionForURI,
     getModeForURI,
+    getThemeBlockSchema,
+    findThemeRootURI,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
@@ -350,6 +353,8 @@ export function startServer(
     getThemeSettingsSchemaForURI,
     getDocDefinitionForURI,
     getModeForURI,
+    getThemeBlockSchema,
+    getSchemaTranslationsForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(
