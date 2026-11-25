@@ -1,0 +1,264 @@
+import { TagKind } from '../tag-definitions';
+import type { LiquidLine, RawBodyEnd, RawBodyRule, TagDefinition } from '../tag-definitions';
+
+// Liquid's `BlockBody::FullToken`, `FullTokenPossiblyInvalid` and `LiquidTagToken`,
+// with Ruby's ASCII `\s`.
+const RUBY_WHITESPACE = '[ \\t\\n\\v\\f\\r]';
+const FULL_TOKEN = new RegExp(
+  `^\\{%-?${RUBY_WHITESPACE}*(#|\\w+)${RUBY_WHITESPACE}*[\\s\\S]*?-?%\\}$`,
+);
+const TRAILING_TAG_NAME = new RegExp(`\\{%-?${RUBY_WHITESPACE}*(\\w+)`, 'y');
+const LIQUID_TAG_NAME = /^(#|\w+)/;
+const RUBY_LINE_INDENT = /^[ \t\v\f\r]*$/;
+const TAG_OR_VARIABLE_START = /\{[{%]/g;
+
+/** Looks up the body rule of another raw tag, for the tags a rule skips as opaque. */
+export type RawBodyRuleFor = (tagName: string) => RawBodyRule | undefined;
+
+/** The `RawBodyRuleFor` of a tag registry: a raw tag's body rule, or undefined for any other tag. */
+export function rawBodyRuleLookup(
+  tagForName: (name: string) => TagDefinition | undefined,
+): RawBodyRuleFor {
+  return (name) => {
+    const def = tagForName(name);
+    return def?.kind === TagKind.Raw ? def.body : undefined;
+  };
+}
+
+/** The name of the tag a whole `{% … %}` token opens, read the way `findRawBodyEnd` reads it. */
+export function liquidTagTokenName(token: string): string | undefined {
+  return FULL_TOKEN.exec(token)?.[1];
+}
+
+/**
+ * Answers to earlier `findRawBodyEnd` searches in one source, under one tag
+ * registry. A tolerant parse records an unclosed raw tag and carries on, so it
+ * can search for many bodies that run to the end of the document; this keeps
+ * each of those searches from reading the rest of the source again.
+ */
+export class RawBodyEndCache {
+  private readonly lastIndexes = new Map<string, number>();
+  private readonly known = new Map<
+    string,
+    { rule: RawBodyRule; ends: Map<number, RawBodyEnd | null> }
+  >();
+
+  constructor(private readonly source: string) {}
+
+  /** Whether `source` has no `name` at or after `from`. */
+  absentFrom(name: string, from: number): boolean {
+    let index = this.lastIndexes.get(name);
+    if (index === undefined) {
+      index = this.source.lastIndexOf(name);
+      this.lastIndexes.set(name, index);
+    }
+    return index < from;
+  }
+
+  /**
+   * The ends that searches for bodies of `tagName` under `rule` found, by where
+   * a search from that position starts.
+   */
+  knownEnds(tagName: string, rule: RawBodyRule): Map<number, RawBodyEnd | null> {
+    let entry = this.known.get(tagName);
+    if (entry?.rule !== rule) {
+      entry = { rule, ends: new Map() };
+      this.known.set(tagName, entry);
+    }
+    return entry.ends;
+  }
+}
+
+/**
+ * Where the body of `tagName` that starts at `bodyStart` ends under `rule`,
+ * reading the source as `Liquid::Tokenizer` tokens. Returns null where Liquid
+ * reports the tag as never closed, or rejects a tag nested inside it.
+ *
+ * With a `cache` for this source and registry, a search returns early when the
+ * closing name doesn't occur after the body, a nesting body reuses what an
+ * enclosing search found for it, and a search under any other rule stops where it
+ * reaches a token an earlier search read.
+ */
+export function findRawBodyEnd(
+  source: string,
+  bodyStart: number,
+  tagName: string,
+  rule: RawBodyRule,
+  ruleFor: RawBodyRuleFor,
+  cache?: RawBodyEndCache,
+): RawBodyEnd | null {
+  const endName = `end${tagName}`;
+  // A body only closes at a tag named `end<name>`.
+  if (cache?.absentFrom(endName, bodyStart)) return null;
+  const knownEnds = cache?.knownEnds(tagName, rule);
+  const known = knownEnds?.get(bodyStart);
+  if (known !== undefined) return known;
+  const nests = rule.sameName === 'nests';
+  // Where the bodies of the nested openers still open start. Each closes at the
+  // closing tag that brings the depth back below it, as its own search would find.
+  const open: number[] = [];
+  // Under a rule that doesn't nest, each position this search reads a token from.
+  // A search from any of them reads the same tokens after it, so it ends where this one does.
+  const read: number[] = [];
+  const finish = (end: RawBodyEnd | null): RawBodyEnd | null => {
+    if (knownEnds) {
+      for (const start of open) knownEnds.set(start, null);
+      for (const start of read) knownEnds.set(start, end);
+    }
+    return end;
+  };
+  let tokenStart = bodyStart;
+  let depth = 1;
+
+  while (tokenStart < source.length) {
+    if (knownEnds && !nests) {
+      const earlier = knownEnds.get(tokenStart);
+      if (earlier !== undefined) return finish(earlier);
+      read.push(tokenStart);
+    }
+    // Text cannot name a tag. Advance straight to the next Liquid token,
+    // without slicing or inspecting the intervening text as another token.
+    TAG_OR_VARIABLE_START.lastIndex = tokenStart;
+    if (
+      source[tokenStart] !== '{' ||
+      (source[tokenStart + 1] !== '%' && source[tokenStart + 1] !== '{')
+    ) {
+      const next = TAG_OR_VARIABLE_START.exec(source);
+      if (!next) return finish(null);
+      tokenStart = next.index;
+    }
+    const tokenEnd =
+      source[tokenStart + 1] === '%'
+        ? tagTokenEnd(source, tokenStart + 2)
+        : variableTokenEnd(source, tokenStart + 2);
+    const token = source.slice(tokenStart, tokenEnd);
+    const tag = tokenTag(token, rule.delimiter);
+
+    if (tag?.[1] === endName) {
+      depth -= 1;
+      const tagStart = tokenStart + tag.index;
+      const end: RawBodyEnd = {
+        tagStart,
+        tagEnd: tokenEnd,
+        wsStart: source[tagStart + 2] === '-' ? '-' : '',
+        wsEnd: token[token.length - 3] === '-' ? '-' : '',
+      };
+      if (depth === 0) return finish(end);
+      const nested = open.pop();
+      if (knownEnds && nested !== undefined) knownEnds.set(nested, end);
+    } else if (tag?.[1] === tagName) {
+      if (rule.sameName === 'rejected') return finish(null);
+      if (nests) {
+        depth += 1;
+        if (knownEnds) open.push(tokenEnd);
+      }
+    } else if (tag && rule.opaque.includes(tag[1])) {
+      const innerRule = ruleFor(tag[1]);
+      if (innerRule) {
+        const innerEnd = findRawBodyEnd(source, tokenEnd, tag[1], innerRule, ruleFor, cache);
+        if (!innerEnd) return finish(null);
+        tokenStart = innerEnd.tagEnd;
+        continue;
+      }
+    }
+    tokenStart = tokenEnd;
+  }
+
+  return finish(null);
+}
+
+/**
+ * The index of the line that ends the body of `tagName` starting at `lines[from]`
+ * inside `{% liquid %}`, where each line is a token named by its leading `#` or
+ * word. Returns null where Liquid reports the tag as never closed there.
+ */
+export function findRawLineBodyEnd(
+  source: string,
+  lines: readonly LiquidLine[],
+  from: number,
+  tagName: string,
+  rule: RawBodyRule,
+  ruleFor: RawBodyRuleFor,
+): number | null {
+  if (!rule.closesInLiquidTag) return null;
+
+  const endName = `end${tagName}`;
+  let depth = 1;
+
+  for (let index = from; index < lines.length; index++) {
+    const name = lineTagName(source, lines[index]);
+
+    if (name === endName) {
+      depth -= 1;
+      if (depth === 0) return index;
+    } else if (name === tagName) {
+      if (rule.sameName === 'rejected') return null;
+      if (rule.sameName === 'nests') depth += 1;
+    } else if (name !== undefined && rule.opaque.includes(name)) {
+      const innerRule = ruleFor(name);
+      if (innerRule) {
+        const innerEnd = findRawLineBodyEnd(source, lines, index + 1, name, innerRule, ruleFor);
+        if (innerEnd === null) return null;
+        index = innerEnd;
+      }
+    }
+  }
+
+  return null;
+}
+
+// The tag a token names under `delimiter`, and where that tag starts in the token.
+function tokenTag(token: string, delimiter: RawBodyRule['delimiter']): RegExpExecArray | undefined {
+  if (!token.endsWith('%}')) return undefined;
+  if (delimiter === 'leading') {
+    return FULL_TOKEN.exec(token) ?? undefined;
+  }
+  // Raw accepts the last tag opener in a Liquid token, including one inside
+  // an unfinished output. Search backwards without backtracking over its text.
+  for (
+    let offset = token.lastIndexOf('{%', token.length - 3);
+    offset !== -1;
+    offset = token.lastIndexOf('{%', offset - 1)
+  ) {
+    TRAILING_TAG_NAME.lastIndex = offset;
+    const match = TRAILING_TAG_NAME.exec(token);
+    if (match) return match;
+    if (offset === 0) break;
+  }
+  return undefined;
+}
+
+// `BlockBody::LiquidTagToken` indents only with ASCII whitespace, so a line
+// indented with a character such as U+00A0 has no name.
+function lineTagName(source: string, line: LiquidLine): string | undefined {
+  const lineStart = source.lastIndexOf('\n', line.nameOffset - 1) + 1;
+  if (!RUBY_LINE_INDENT.test(source.slice(lineStart, line.nameOffset))) return undefined;
+  return LIQUID_TAG_NAME.exec(line.tagName)?.[1];
+}
+
+// `Tokenizer#next_tag_token`: an unterminated `{%` is a token of its own.
+function tagTokenEnd(source: string, afterOpen: number): number {
+  const close = source.indexOf('%}', afterOpen);
+  return close === -1 ? afterOpen : close + 2;
+}
+
+// `Tokenizer#next_variable_token`: a `{%` inside an unfinished `{{` extends it to that tag's `%}`.
+function variableTokenEnd(source: string, afterOpen: number): number {
+  let position = afterOpen;
+  let current = source[position++];
+  let next = current;
+
+  while (next !== undefined) {
+    while (current !== undefined && current !== '}' && current !== '{') {
+      current = source[position++];
+    }
+    if (current === undefined || position >= source.length) return source.length;
+
+    next = source[position++];
+    if (current === '}') return next === '}' ? position : position - 1;
+    if (current === '{' && next === '%') return tagTokenEnd(source, position);
+    current = next;
+  }
+
+  return source.length;
+}
