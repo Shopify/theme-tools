@@ -33,6 +33,7 @@ import glob = require('glob');
 
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
+import { LoadConfigOptions } from './config/types';
 import { NodeFileSystem } from './NodeFileSystem';
 import { fileURLToPath } from 'node:url';
 
@@ -42,9 +43,9 @@ export * from '@shopify/theme-check-common';
 export * from './config/types';
 export { NodeFileSystem };
 
-export const loadConfig: typeof resolveConfig = async (configPath, root) => {
+export const loadConfig: typeof resolveConfig = async (configPath, root, options = {}) => {
   configPath ??= await findConfigPath(root);
-  return resolveConfig(configPath, root);
+  return resolveConfig(configPath, root, options);
 };
 
 export type ThemeCheckRun = {
@@ -64,13 +65,21 @@ export async function toSourceCode(
   }
 }
 
-export async function check(root: string, configPath?: string): Promise<Offense[]> {
-  const run = await themeCheckRun(root, configPath);
+export async function check(
+  root: string,
+  configPath?: string,
+  options: LoadConfigOptions = {},
+): Promise<Offense[]> {
+  const run = await themeCheckRun(root, configPath, undefined, options);
   return run.offenses;
 }
 
-export async function checkAndAutofix(root: string, configPath?: string) {
-  const { theme, offenses } = await themeCheckRun(root, configPath);
+export async function checkAndAutofix(
+  root: string,
+  configPath?: string,
+  options: LoadConfigOptions = {},
+) {
+  const { theme, offenses } = await themeCheckRun(root, configPath, undefined, options);
   await autofix(theme, offenses);
 }
 
@@ -78,8 +87,9 @@ export async function themeCheckRun(
   root: string,
   configPath?: string,
   log: (message: string) => void = () => {},
+  options: LoadConfigOptions = {},
 ): Promise<ThemeCheckRun> {
-  const { theme, config } = await getThemeAndConfig(root, configPath);
+  const { theme, config } = await getThemeAndConfig(root, configPath, options);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   // This does feel a bit heavy handed, but I'm in a rush.
@@ -214,8 +224,9 @@ export async function themeCheckRun(
 export async function getThemeAndConfig(
   root: string,
   configPath?: string,
+  options: LoadConfigOptions = {},
 ): Promise<{ theme: Theme; config: Config }> {
-  const config = await loadConfig(configPath, root);
+  const config = await loadConfig(configPath, root, options);
   const theme = await getTheme(config);
   return {
     theme,

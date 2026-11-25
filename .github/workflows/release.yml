@@ -13,6 +13,8 @@ env:
 jobs:
   publish-packages:
     runs-on: ubuntu-latest
+    outputs:
+      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
     permissions:
       contents: write
       pull-requests: write
@@ -26,12 +28,12 @@ jobs:
           persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           registry-url: "https://registry.npmjs.org"
@@ -93,3 +95,54 @@ jobs:
         run: pnpm publish:ovsx
         env:
           OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
+
+  # Its own job, so no npm package runs where a crates.io token can be had.
+  publish-crates:
+    needs: publish-packages
+    if: needs.publish-packages.outputs.hasChangesets == 'false'
+    runs-on: ubuntu-latest
+    environment: crates-io
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Until theme-check is on crates.io, published once by hand with a trusted publisher for
+      # this workflow and environment, this publishes nothing. After a partial publish, the next
+      # run does the rest.
+      - name: List the crates whose version isn't on crates.io
+        id: crates
+        run: |
+          version=$(jq -r .version crates/theme-check/package.json)
+          on_crates_io() {
+            code=$(curl -s --retry 3 -o /dev/null -w '%{http_code}' -A 'Shopify/theme-tools release' "https://crates.io/api/v1/crates/$1")
+            case $code in
+              200) return 0 ;;
+              404) return 1 ;;
+              *) echo "::error::crates.io answered $code for $1"; exit 1 ;;
+            esac
+          }
+          list=
+          if on_crates_io theme-check; then
+            for crate in liquid-ast liquid-parser theme-check; do
+              on_crates_io "$crate/$version" || list="$list $crate"
+            done
+          fi
+          echo "list=$list" >> $GITHUB_OUTPUT
+
+      - name: Exchange the Actions identity token for a crates.io token
+        id: crates-io-auth
+        if: steps.crates.outputs.list != ''
+        uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
+
+      # In dependency order.
+      - name: Publish the crates to crates.io
+        if: steps.crates.outputs.list != ''
+        run: for crate in $CRATES; do cargo publish -p "$crate" --locked; done
+        env:
+          CRATES: ${{ steps.crates.outputs.list }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
