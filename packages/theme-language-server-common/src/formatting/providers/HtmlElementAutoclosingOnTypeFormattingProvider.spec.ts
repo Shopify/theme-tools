@@ -110,6 +110,30 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
     }
   });
 
+  it('should close the newly opened element when something unclosed follows the cursor', async () => {
+    // The parse error names the later construct, not the element you just opened.
+    const CURSOR = '█';
+    const scenarios = [
+      '<ul>\n  <li>█{% if x %}\n</ul>',
+      '<ul>\n  <li>█{{ unfinished\n</ul>',
+      '<ul>\n  <li>█<span>\n</ul>',
+    ];
+    for (const source of scenarios) {
+      documentManager.open(uri, source.replace(CURSOR, ''), 1);
+      const document = documentManager.get(uri)?.textDocument!;
+      const params: DocumentOnTypeFormattingParams = {
+        textDocument: { uri },
+        position: document.positionAt(source.indexOf(CURSOR)),
+        ch: '>',
+        options,
+      };
+      assert(document);
+      const result = await onTypeFormattingProvider.onTypeFormatting(params);
+      assert(result, 'expected results for source:\n' + source);
+      expect(result).to.applyEdits(document, source.replace(CURSOR, '</li>'));
+    }
+  });
+
   it('should close an unclosed <script> or <style>', async () => {
     const CURSOR = '█';
     const scenarios: [source: string, closingTag: string][] = [
