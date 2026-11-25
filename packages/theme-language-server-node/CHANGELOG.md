@@ -1,5 +1,49 @@
 # @shopify/theme-language-server-node
 
+## 3.0.2
+
+### Patch Changes
+
+- @shopify/theme-check-node@4.0.2
+- @shopify/theme-language-server-common@3.0.2
+- @shopify/theme-check-docs-updater@4.0.2
+
+## 3.0.1
+
+### Patch Changes
+
+- Updated dependencies [fe8a2f1f]
+  - @shopify/theme-language-server-common@3.0.1
+  - @shopify/theme-check-node@4.0.1
+  - @shopify/theme-check-docs-updater@4.0.1
+
+## 3.0.0
+
+### Major Changes
+
+- 803a88a5: Require consent for third-party Theme Checks and expose structured skipped-check diagnostics to callers.
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [803a88a5]
+- Updated dependencies [7cb4970d]
+  - @shopify/theme-language-server-common@3.0.0
+  - @shopify/theme-check-node@4.0.0
+  - @shopify/theme-check-docs-updater@4.0.0
+
+## 2.23.2
+
+### Patch Changes
+
+- Updated dependencies [286b04fb]
+- Updated dependencies [04110ed6]
+- Updated dependencies [fca4a62b]
+- Updated dependencies [b9a862fb]
+  - @shopify/theme-check-node@3.31.0
+  - @shopify/theme-language-server-common@2.23.2
+  - @shopify/theme-check-docs-updater@3.31.0
+
 ## 2.23.1
 
 ### Patch Changes
