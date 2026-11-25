@@ -151,6 +151,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
         const parent = last(ancestors);
         if (isLiquidTag(parent) && isLiquidTagCapture(parent)) return;
+        if (isForOffsetContinue(node, ancestors)) return;
 
         variables.push(node);
       },
@@ -296,6 +297,26 @@ function isDefinedInScope(variablePosition: Position, scope: Scope) {
   const isVariableBeforeScopeEnd = !scope.end || start < scope.end;
 
   return isVariableAfterScopeStart && isVariableBeforeScopeEnd;
+}
+
+/**
+ * {% for x in y offset: continue %}
+ *
+ * `continue` is a keyword here, not a variable: it resumes the loop where the
+ * last loop over the same collection stopped. Only `for` supports it, not
+ * `tablerow`.
+ */
+function isForOffsetContinue(node: LiquidVariableLookup, ancestors: LiquidHtmlNode[]): boolean {
+  if (node.name !== 'continue' || node.lookups.length > 0) return false;
+
+  const [tag, markup, argument] = ancestors.slice(-3);
+  return (
+    argument?.type === NodeTypes.NamedArgument &&
+    argument.name === 'offset' &&
+    markup?.type === NodeTypes.ForMarkup &&
+    isLiquidTag(tag) &&
+    tag.name === NamedTags.for
+  );
 }
 
 function isLiquidTag(node?: LiquidHtmlNode): node is LiquidTag {

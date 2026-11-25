@@ -1,0 +1,28 @@
+check: UniqueDocParamNames
+severity: error
+cases:
+  - name: should not report an error when a all doc params have unique names
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+          @param param2 - Example param
+          @param param3 - Example param
+        {% enddoc %}
+  - name: should report an error when a param name appears more than once
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+          @param param1 - Example param
+          @param param1 - Example param
+        {% enddoc %}
+    offenses:
+      - file: file.liquid
+        message: "The parameter 'param1' is defined more than once."
+        start: [2, 9]
+        highlight: param1
+      - file: file.liquid
+        message: "The parameter 'param1' is defined more than once."
+        start: [3, 9]
+        highlight: param1

@@ -14,10 +14,11 @@ import {
   Manifests,
   Resource,
   ThemeLiquidDocsSchemaRoot,
-  downloadResource,
-  downloadThemeLiquidDocs,
+  download,
   exists,
+  replaceThemeLiquidDocs,
   resourcePath,
+  resourceUrl,
   root,
   schemaPath,
 } from './themeLiquidDocsDownloader';
@@ -86,7 +87,9 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
    * Shopify/theme-liquid-docs. If there's a diff in revision, it means
    * that the documentations that you have locally are out of date.
    *
-   * The setup method then downloads the other files.
+   * The setup method then replaces the local docs with the latest ones, which
+   * include latest.json. Until that succeeds, latest.json keeps the old revision,
+   * so a failed update is retried on the next run.
    */
   setup = memo(async (): Promise<void> => {
     try {
@@ -95,10 +98,9 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
       }
 
       const local = await this.latestRevision();
-      await downloadResource('latest', root, this.log);
-      const remote = await this.latestRevision();
+      const remote = JSON.parse(await download(resourceUrl('latest'), this.log)).revision ?? '';
       if (local !== remote) {
-        await downloadThemeLiquidDocs(root, this.log);
+        await replaceThemeLiquidDocs(root, this.log);
       }
     } catch (error) {
       if (error instanceof Error) {

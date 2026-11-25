@@ -6,7 +6,6 @@ import {
   type TagDefinitionBlock,
   type TagDefinitionTag,
   type TagDefinitionRaw,
-  type TagDefinitionHybrid,
 } from './environment';
 import { assertNever } from './utils';
 
@@ -21,11 +20,12 @@ function makeStandaloneDef(): TagDefinitionTag {
 }
 
 function makeRawDef(parseLiquidInBody?: boolean): TagDefinitionRaw {
-  return { kind: TagKind.Raw, parse: stubParse, parseLiquidInBody };
-}
-
-function makeHybridDef(): TagDefinitionHybrid {
-  return { kind: TagKind.Hybrid, parse: stubParse };
+  return {
+    kind: TagKind.Raw,
+    parse: stubParse,
+    parseLiquidInBody,
+    body: { delimiter: 'trailing', sameName: 'ignored', opaque: [], closesInLiquidTag: false },
+  };
 }
 
 describe('Unit: Environment', () => {
@@ -52,6 +52,13 @@ describe('Unit: Environment', () => {
     it('returns undefined for unknown tag names', () => {
       const env = new Environment();
       expect(env.tagForName('nonexistent')).toBeUndefined();
+    });
+
+    it('returns undefined for Object.prototype names', () => {
+      const env = new Environment({ if: makeBlockDef(['elsif', 'else']) });
+      for (const name of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+        expect(env.tagForName(name)).toBeUndefined();
+      }
     });
 
     it('returns the builtin definition when constructed with builtins', () => {
@@ -84,7 +91,6 @@ describe('Unit: Environment', () => {
       expect(TagKind.Block).toBe('block');
       expect(TagKind.Tag).toBe('tag');
       expect(TagKind.Raw).toBe('raw');
-      expect(TagKind.Hybrid).toBe('hybrid');
     });
   });
 
@@ -98,8 +104,6 @@ describe('Unit: Environment', () => {
             return 'tag';
           case TagKind.Raw:
             return `raw(parseLiquid=${def.parseLiquidInBody ?? false})`;
-          case TagKind.Hybrid:
-            return 'hybrid';
           default:
             return assertNever(def);
         }
@@ -109,7 +113,6 @@ describe('Unit: Environment', () => {
       expect(describeKind(makeStandaloneDef())).toBe('tag');
       expect(describeKind(makeRawDef(true))).toBe('raw(parseLiquid=true)');
       expect(describeKind(makeRawDef())).toBe('raw(parseLiquid=false)');
-      expect(describeKind(makeHybridDef())).toBe('hybrid');
     });
   });
 });
