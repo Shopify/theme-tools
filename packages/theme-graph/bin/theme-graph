@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
-const { buildThemeGraph, serializeThemeGraph, toSourceCode } = require('@shopify/theme-graph');
+const {
+  buildThemeGraph,
+  serializeThemeGraph,
+  toSourceCode,
+  getWebComponentMap,
+} = require('@shopify/theme-graph');
 const {
   memoize,
   toSchema,
@@ -73,7 +78,9 @@ async function main(root) {
   });
 
   /** @type {import('@shopify/theme-graph').WebComponentMap} */
-  const webComponentDefs = new Map();
+  const webComponentDefs = await bench('Discovering web components', () =>
+    getWebComponentMap(rootUri, { fs: NodeFileSystem, getSourceCode }),
+  );
 
   /** @type {import('@shopify/theme-graph').Dependencies} */
   const dependencies = {

@@ -7,10 +7,16 @@ describe('DocumentLinksProvider', () => {
   let documentLinksProvider: DocumentLinksProvider;
   let rootUri: string;
   let uriString: string;
+  let files: Set<string>;
 
   beforeEach(() => {
+    files = new Set();
     documentManager = new DocumentManager();
-    documentLinksProvider = new DocumentLinksProvider(documentManager, async () => rootUri);
+    documentLinksProvider = new DocumentLinksProvider(
+      documentManager,
+      async () => rootUri,
+      async (uri) => files.has(uri),
+    );
   });
 
   it('should return an empty array for non-LiquidHtml documents', async () => {
@@ -68,6 +74,44 @@ describe('DocumentLinksProvider', () => {
     for (let i = 0; i < expectedUrls.length; i++) {
       expect(result[i].target).toBe(expectedUrls[i]);
     }
+  });
+
+  it('links an asset to the file Shopify serves it from', async () => {
+    rootUri = 'file:///path/to/project';
+    uriString = `${rootUri}/layout/theme.liquid`;
+    files = new Set(
+      [
+        'theme.css',
+        'theme.css.liquid',
+        'theme.js.liquid',
+        'theme.scss.liquid',
+        'plain.scss',
+        'logo.png',
+      ].map((file) => `${rootUri}/assets/${file}`),
+    );
+
+    documentManager.open(
+      uriString,
+      `
+      {{ 'theme.css' | asset_url }}
+      {{ 'theme.js' | asset_url }}
+      {{ 'theme.scss.css' | asset_url }}
+      {{ 'plain.scss.css' | asset_url }}
+      {{ 'logo.png' | asset_url }}
+      {{ 'missing.css' | asset_url }}
+    `,
+      1,
+    );
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result.map((link) => link.target)).toEqual([
+      `${rootUri}/assets/theme.css.liquid`,
+      `${rootUri}/assets/theme.js.liquid`,
+      `${rootUri}/assets/theme.scss.liquid`,
+      `${rootUri}/assets/plain.scss`,
+      `${rootUri}/assets/logo.png`,
+      `${rootUri}/assets/missing.css`,
+    ]);
   });
 
   it.each([

@@ -683,7 +683,8 @@ impl<'a> Parser<'a> {
                     ),
                     bsp.start,
                     bsp.end,
-                ));
+                )
+                .unclosed("LiquidTag", env.tag_name, bsp));
             }
         }
         Ok(())
@@ -726,6 +727,7 @@ impl<'a> Parser<'a> {
             bsp.start,
             bsp.end,
         )
+        .unclosed("LiquidTag", env.tag_name, bsp)
     }
 
     pub(crate) fn parse_block_body(
@@ -750,7 +752,8 @@ impl<'a> Parser<'a> {
                         format!("Attempting to open LiquidBranch '{tag_name}' before LiquidTag '{parent}' was closed"),
                         bsp.start,
                         bsp.end,
-                    ));
+                    )
+                    .unclosed("LiquidTag", parent, bsp));
                 }
             }
             if !self.parse_block_child(parent, &mut children)? {
@@ -871,7 +874,8 @@ impl<'a> Parser<'a> {
                 format!("Attempting to end parsing before LiquidRawTag '{tag_name}' was closed"),
                 bsp.start,
                 bsp.end,
-            ));
+            )
+            .unclosed("LiquidRawTag", tag_name, bsp));
         };
         let (body_start, body_end) = (close.end, end_tag.tag_start);
         let body = slice(self.source, body_start, body_end);

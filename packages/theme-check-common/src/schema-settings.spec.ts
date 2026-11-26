@@ -32,6 +32,7 @@ describe('schemaSettingLiquidType', () => {
     ['video', 'video'],
     ['collection_list', 'collection[]'],
     ['product_list', 'product[]'],
+    ['article_list', 'article[]'],
   ] as const)('maps %s settings to their Liquid type', (type, expected) => {
     expect(schemaSettingLiquidType(type)).toBe(expected);
   });

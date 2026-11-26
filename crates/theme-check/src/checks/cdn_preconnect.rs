@@ -1,6 +1,7 @@
 use super::utils::{get_html_node_name, is_attr, value_includes, valued_html_attribute};
 use crate::context::{CheckDef, CheckResult, Context, Create, LiquidCheck, Severity};
-use liquid_ast::{Node, NodeKind, NodeRef};
+use crate::js;
+use liquid_ast::{Attr, Node, NodeKind, NodeRef};
 use regex::Regex;
 use std::sync::LazyLock;
 
@@ -15,16 +16,26 @@ pub static CDN_PRECONNECT: CheckDef = CheckDef {
     create: Create::Liquid(create),
 };
 
-/// `valueIncludes(attr, '.+cdn.shopify.com.+')`: the word is a regex, `(^|\s)<word>(\s|$)` with
-/// JS `\s` and `.`.
-static SHOPIFY_CDN: LazyLock<Regex> = LazyLock::new(|| {
-    let s = r"[\t\n\x0B\x0C\r \u{a0}\u{1680}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}]";
-    let dot = r"[^\n\r\u{2028}\u{2029}]";
-    Regex::new(&format!(
-        "(?:^|{s}){dot}+cdn{dot}shopify{dot}com{dot}+(?:{s}|$)"
-    ))
-    .unwrap()
-});
+/// `/^(https?:)?\/\/cdn\.shopify\.com(:443)?/i`. JS `i` without `u` folds ASCII letters
+/// only, so `(?i-u)` keeps the Kelvin sign and long s from matching `k` and `s`.
+static SHOPIFY_CDN_ORIGIN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i-u)^(?:https?:)?//cdn\.shopify\.com(?::443)?").unwrap());
+
+/// `isShopifyCdnUrl(attr)`: the href starts with the cdn.shopify.com origin in static text, and
+/// the host ends there: at a path, query or fragment, or at the end of the whole value.
+fn is_shopify_cdn_url(attr: &Attr) -> bool {
+    let [Node::TextNode(first), rest @ ..] = attr.value.as_slice() else {
+        return false;
+    };
+    let url = js::trim(&first.value);
+    let Some(origin) = SHOPIFY_CDN_ORIGIN.find(url) else {
+        return false;
+    };
+    match &url[origin.end()..] {
+        "" => rest.is_empty(),
+        after => after.starts_with(['/', '?', '#']),
+    }
+}
 
 struct Check;
 
@@ -50,13 +61,7 @@ impl<'a> LiquidCheck<'a> for Check {
         if !valued().any(|a| is_attr(&a.name, "rel") && value_includes(a, "preconnect")) {
             return Ok(());
         }
-        let is_shopify_cdn = valued().any(|a| {
-            is_attr(&a.name, "href")
-                && a.value
-                    .iter()
-                    .any(|v| matches!(v, Node::TextNode(t) if SHOPIFY_CDN.is_match(&t.value)))
-        });
-        if !is_shopify_cdn {
+        if !valued().any(|a| is_attr(&a.name, "href") && is_shopify_cdn_url(a)) {
             return Ok(());
         }
         let p = node.span();

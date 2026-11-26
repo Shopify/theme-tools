@@ -91,6 +91,18 @@ cases:
         message: "Type mismatch for argument 'products': expected product[], got mixed[]"
         start: [0, 27]
         highlight: "['one', 2]"
+  - name: checks article_list settings as article arrays
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"articles","type":"article_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', articles: ['one', 'two'] %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'articles': expected article[], got string[]"
+        start: [0, 27]
+        highlight: "['one', 'two']"
   - name: does not speculate about variable lookups or empty and partly unknown arrays
     files:
       blocks/card.liquid: |-

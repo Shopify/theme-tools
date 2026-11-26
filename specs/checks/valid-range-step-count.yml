@@ -1,0 +1,212 @@
+check: ValidRangeStepCount
+severity: error
+cases:
+  - name: reports no offense for 101 steps
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "width", "min": 0, "max": 100, "step": 1 }
+            ]
+          }
+        {% endschema %}
+  - name: reports more than 101 steps
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "width", "min": 0, "max": 200, "step": 1 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Range setting "width" has 201 steps (min 0, max 200, step 1). Shopify allows at most 101 steps.'
+        start: [4, 70]
+        highlight: '1'
+  - name: reports 102 steps
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "width", "min": 0, "max": 101, "step": 1 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Range setting "width" has 102 steps (min 0, max 101, step 1). Shopify allows at most 101 steps.'
+        start: [4, 70]
+        highlight: '1'
+  - name: reports no offense for a fractional step within the limit
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "rating", "min": 1, "max": 5, "step": 0.1 }
+            ]
+          }
+        {% endschema %}
+  - name: reports a fractional step with more than 101 steps
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "value", "min": 0, "max": 20, "step": 0.1 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Range setting "value" has 201 steps (min 0, max 20, step 0.1). Shopify allows at most 101 steps.'
+        start: [4, 69]
+        highlight: '0.1'
+  - name: uses a step of 1 when the setting has no step
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "width", "min": 0, "max": 200 },
+              { "type": "range", "id": "height", "min": 0, "max": 100 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Range setting "width" has 201 steps (min 0, max 200, step 1). Shopify allows at most 101 steps.'
+        start: [4, 57]
+        highlight: '200'
+  - name: reports no offense for a range setting without min and max
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "width", "default": 50 }
+            ]
+          }
+        {% endschema %}
+  - name: reports no offense for other setting types
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "number", "id": "count", "default": 7 }
+            ]
+          }
+        {% endschema %}
+  - name: reports each range setting with too many steps
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "a", "min": 0, "max": 500, "step": 1 },
+              { "type": "range", "id": "b", "min": 0, "max": 50, "step": 1 },
+              { "type": "range", "id": "c", "min": 0, "max": 1000, "step": 1 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Range setting "a" has 501 steps (min 0, max 500, step 1). Shopify allows at most 101 steps.'
+        start: [4, 66]
+        highlight: '1'
+      - file: sections/example.liquid
+        message: 'Range setting "c" has 1001 steps (min 0, max 1000, step 1). Shopify allows at most 101 steps.'
+        start: [6, 67]
+        highlight: '1'
+  - name: reports a local block's range setting with too many steps
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+            ],
+            "blocks": [
+              {
+                "type": "slide",
+                "name": "Slide",
+                "settings": [
+                  { "type": "range", "id": "speed", "min": 0, "max": 1000, "step": 5 }
+                ]
+              }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Range setting "speed" has 201 steps (min 0, max 1000, step 5). Shopify allows at most 101 steps.'
+        start: [10, 75]
+        highlight: '5'
+  - name: reports too many steps in config/settings_schema.json
+    files:
+      config/settings_schema.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 0, "max": 200, "step": 1 }
+            ]
+          }
+        ]
+    offenses:
+      - file: config/settings_schema.json
+        message: 'Range setting "logo_width" has 201 steps (min 0, max 200, step 1). Shopify allows at most 101 steps.'
+        start: [4, 75]
+        highlight: '1'
+  - name: uses a step of 1 when a setting in config/settings_schema.json has no step
+    files:
+      config/settings_schema.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 0, "max": 200 }
+            ]
+          }
+        ]
+    offenses:
+      - file: config/settings_schema.json
+        message: 'Range setting "logo_width" has 201 steps (min 0, max 200, step 1). Shopify allows at most 101 steps.'
+        start: [4, 62]
+        highlight: '200'
+  - name: reports no offense within the limit in config/settings_schema.json
+    files:
+      config/settings_schema.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 50, "max": 200, "step": 2 }
+            ]
+          }
+        ]
+  - name: reports no offense in JSON files other than config/settings_schema.json
+    files:
+      config/other.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 0, "max": 200, "step": 1 }
+            ]
+          }
+        ]

@@ -39,6 +39,14 @@ fn plain_name<'n, 'a>(name: &'n [Node<'a>]) -> Option<&'n str> {
     }
 }
 
+/// The element name as written, Liquid included: `h{{ level }}` for `<h{{ level }}>`.
+fn name_source<'s>(source: &'s str, name: &[Node]) -> &'s str {
+    match (name.first(), name.last()) {
+        (Some(first), Some(last)) => slice(source, first.span().start, last.span().end),
+        _ => "",
+    }
+}
+
 /// `plainName || 'compound'`
 fn display_name(name: Option<&str>) -> &str {
     match name {
@@ -149,7 +157,8 @@ impl<'a> Parser<'a> {
                         ),
                         open_start,
                         open_end,
-                    ));
+                    )
+                    .unclosed("HtmlElement", name_source(source, &name), bsp));
                 }
                 break;
             }
@@ -165,7 +174,8 @@ impl<'a> Parser<'a> {
                     ),
                     open_start,
                     open_end,
-                ));
+                )
+                .unclosed("HtmlElement", name_source(source, &name), bsp));
             }
             let end = children.last().map_or(open_end, |c| c.span().end);
             return Ok(Node::HtmlElement(HtmlElement {
@@ -193,7 +203,8 @@ impl<'a> Parser<'a> {
                 ),
                 close_start,
                 close_end,
-            ));
+            )
+            .unclosed("HtmlElement", name_source(source, &name), bsp));
         }
         Ok(Node::HtmlElement(HtmlElement {
             name,
@@ -237,7 +248,8 @@ impl<'a> Parser<'a> {
                         format!("Attempting to end parsing before HtmlRawNode '{name}' was closed"),
                         bsp.start,
                         bsp.end,
-                    ));
+                    )
+                    .unclosed("HtmlRawNode", &name, bsp));
                 };
                 self.retokenize_raw_text(body_start, start, end);
                 start

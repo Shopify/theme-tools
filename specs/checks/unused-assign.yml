@@ -71,6 +71,72 @@ cases:
           {{ usedVar }}
         {% endstyle %}
 
+  - name: counts assigns and captures echoed inside a style tag inside a liquid tag
+    files:
+      file.liquid: |
+        {% liquid
+          assign shopName = shop.name
+          capture example
+            echo 'Shopify'
+          endcapture
+          style
+            echo example
+            echo shopName
+          endstyle
+        %}
+
+  - name: counts uses in any tag inside a style tag inside a liquid tag
+    files:
+      file.liquid: |
+        {% liquid
+          assign accent = settings.accent
+          assign items = section.blocks
+          style
+            if accent
+              for item in items
+                echo item.id
+              endfor
+            endif
+          endstyle
+        %}
+
+  - name: reports an unused assign inside a style tag inside a liquid tag
+    files:
+      file.liquid: |
+        {% liquid
+          style
+            assign color = 'red'
+          endstyle
+        %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'color' is assigned but not used
+        start: [2, 4]
+        highlight: "assign color = 'red'"
+        suggest:
+          - message: Remove the unused variable 'color'
+            result: "{% liquid\n  style\n    \n  endstyle\n%}\n"
+
+  - name: does not count echo as Liquid in the CSS of a style tag
+    files:
+      file.liquid: |
+        {% assign shopName = shop.name %}
+        {% style %}
+          echo shopName
+        {% endstyle %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'shopName' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign shopName = shop.name %}"
+        suggest:
+          - message: Remove the unused variable 'shopName'
+            result: |
+
+              {% style %}
+                echo shopName
+              {% endstyle %}
+
   - name: does not count uses inside a schema tag
     files:
       file.liquid: |

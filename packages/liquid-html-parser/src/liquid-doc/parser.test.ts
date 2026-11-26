@@ -330,6 +330,15 @@ describe('Unit: liquid-doc parser', () => {
       // Content should start with \n because the annotation is on its own line
       expect(prompt.content.value[0]).toBe('\n');
     });
+
+    it('skips the blank line left by a non-breaking space after @prompt', () => {
+      const nodes = parseDoc('\n@prompt\u00a0\n\nBuild it\n');
+      expect(nodes.length).toBe(1);
+      const prompt = asPrompt(nodes[0]);
+      expect(prompt.content.value).toBe('\n\nBuild it\n');
+      // The range keeps the skipped NBSP line, as it keeps blank lines inside content, so start is 17.
+      expect(prompt.content.position.start).toBe(17);
+    });
   });
 
   describe('unsupported annotations', () => {

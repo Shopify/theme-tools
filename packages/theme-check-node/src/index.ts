@@ -136,7 +136,7 @@ export async function themeCheckRun(
   ]));
   const docDefinitions = new Map(
     theme.map((file) => [
-      path.relative(URI.file(root).toString(), file.uri),
+      pathUtils.relative(file.uri, config.rootUri),
       memo(async (): Promise<DocDefinition | undefined> => {
         const ast = file.ast;
         if (!isLiquidHtmlNode(ast)) {

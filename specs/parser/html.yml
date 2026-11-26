@@ -2407,6 +2407,10 @@ cases:
       message: Attempting to close LiquidTag 'endfor' before HtmlElement 'details' was closed
       start: [0, 16]
       text: <details>
+      unclosed:
+        type: HtmlElement
+        name: details
+        blockStartPosition: { start: [0, 16], text: <details> }
   - name: should throw an error when writing an unclosed node inside any other tag (2)
     source: "{% tablerow x in y %}<details>{% endtablerow %}"
     parse: [html]
@@ -2414,6 +2418,10 @@ cases:
       message: Attempting to close LiquidTag 'endtablerow' before HtmlElement 'details' was closed
       start: [0, 21]
       text: <details>
+      unclosed:
+        type: HtmlElement
+        name: details
+        blockStartPosition: { start: [0, 21], text: <details> }
   - name: should throw an error when writing an unclosed node inside any other tag (3)
     source: '{% form "cart", cart %}<details>{% endform %}'
     parse: [html]
@@ -2421,6 +2429,10 @@ cases:
       message: Attempting to close LiquidTag 'endform' before HtmlElement 'details' was closed
       start: [0, 23]
       text: <details>
+      unclosed:
+        type: HtmlElement
+        name: details
+        blockStartPosition: { start: [0, 23], text: <details> }
   - name: should throw when trying to close the wrong node (1)
     source: <a><div></a>
     parse: [html]
@@ -2428,6 +2440,10 @@ cases:
       message: Attempting to close HtmlElement 'a' before HtmlElement 'div' was closed
       start: [0, 8]
       text: </a
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 3], text: <div> }
   - name: should throw when trying to close the wrong node (2)
     source: "{% for a in b %}<div>{% endfor %}"
     parse: [html]
@@ -2435,6 +2451,10 @@ cases:
       message: Attempting to close LiquidTag 'endfor' before HtmlElement 'div' was closed
       start: [0, 16]
       text: <div>
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 16], text: <div> }
   - name: should throw when trying to close the wrong node (3)
     source: "{% for a in b %}{% if condition %}{% endfor %}"
     parse: [html]
@@ -2442,6 +2462,10 @@ cases:
       message: Attempting to close LiquidTag 'for' before LiquidTag 'if' was closed
       start: [0, 16]
       text: "{% if condition %}"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 16], text: "{% if condition %}" }
   - name: should throw when trying to close the wrong node (4)
     source: "{% for a in b %}{% if condition %}<div>{% endfor %}"
     parse: [html]
@@ -2449,6 +2473,10 @@ cases:
       message: Attempting to close LiquidTag 'for' before LiquidTag 'if' was closed
       start: [0, 16]
       text: "{% if condition %}"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 16], text: "{% if condition %}" }
   - name: should throw when trying to close the wrong node (5)
     source: <{{ node_type }}><div></{{ node_type }}>
     parse: [html]
@@ -2456,6 +2484,10 @@ cases:
       message: Attempting to close HtmlElement 'compound' before HtmlElement 'div' was closed
       start: [0, 22]
       text: </{{ node_type }}
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 17], text: <div> }
   - name: should throw when trying to close the wrong node (6)
     source: <{{ node_type }}></{{ wrong_end_node }}>
     parse: [html]
@@ -2463,6 +2495,35 @@ cases:
       message: Attempting to close HtmlElement 'compound' before HtmlElement 'compound' was closed
       start: [0, 17]
       text: </{{ wrong_end_node }}
+      unclosed:
+        type: HtmlElement
+        name: "{{ node_type }}"
+        blockStartPosition: { start: [0, 0], text: "<{{ node_type }}>" }
+  - name: should name the child as unclosed when its parent's close tag comes first
+    source: |-
+      <ul>
+        <li>
+      </ul>
+    parse: [html]
+    error:
+      message: Attempting to close HtmlElement 'ul' before HtmlElement 'li' was closed
+      start: [2, 0]
+      text: </ul
+      unclosed:
+        type: HtmlElement
+        name: li
+        blockStartPosition: { start: [1, 2], text: <li> }
+  - name: should name a compound element as written when it is unclosed
+    source: <div><h{{ level }} class="a"></div>
+    parse: [html]
+    error:
+      message: Attempting to close HtmlElement 'div' before HtmlElement 'compound' was closed
+      start: [0, 29]
+      text: </div
+      unclosed:
+        type: HtmlElement
+        name: h{{ level }}
+        blockStartPosition: { start: [0, 5], text: '<h{{ level }} class="a">' }
   - name: should throw when doing weird shit
     source: '{% if cond %}<a href="{% elsif cond %}">{% endif %}'
     parse: [html]
@@ -2477,6 +2538,10 @@ cases:
       message: Attempting to open LiquidBranch 'else' before LiquidTag 'form' was closed
       start: [0, 13]
       text: '{% form "cart", cart %}'
+      unclosed:
+        type: LiquidTag
+        name: form
+        blockStartPosition: { start: [0, 13], text: '{% form "cart", cart %}' }
   - name: should throw when trying to open a new branch when a Liquid node was not closed (2)
     source: '{% if cond %}{% form "cart", cart %}{% elsif cond %}{% endif %}'
     parse: [html]
@@ -2484,6 +2549,10 @@ cases:
       message: Attempting to open LiquidBranch 'elsif' before LiquidTag 'form' was closed
       start: [0, 13]
       text: '{% form "cart", cart %}'
+      unclosed:
+        type: LiquidTag
+        name: form
+        blockStartPosition: { start: [0, 13], text: '{% form "cart", cart %}' }
   - name: should throw when closing at the top level (1)
     source: <a>
     parse: [html]
@@ -2491,6 +2560,10 @@ cases:
       message: Attempting to end parsing before HtmlElement 'a' was closed
       start: [0, 0]
       text: <a
+      unclosed:
+        type: HtmlElement
+        name: a
+        blockStartPosition: { start: [0, 0], text: <a> }
   - name: should throw when closing at the top level (2)
     source: "{% if %}"
     parse: [html]
@@ -2498,6 +2571,10 @@ cases:
       message: Attempting to end parsing before LiquidTag 'if' was closed
       start: [0, 0]
       text: "{% if %"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 0], text: "{% if %}" }
   - name: should throw when forgetting to close (1)
     source: </a>
     parse: [html]
@@ -2519,6 +2596,10 @@ cases:
       message: Attempting to end parsing before HtmlElement 'div' was closed
       start: [0, 3]
       text: <div
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 3], text: <div> }
   - name: should throw when trying to end doc with unclosed nodes (2)
     source: "{% if condition %}"
     parse: [html]
@@ -2526,6 +2607,10 @@ cases:
       message: Attempting to end parsing before LiquidTag 'if' was closed
       start: [0, 0]
       text: "{% if condition %"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 0], text: "{% if condition %}" }
   - name: should throw when trying to end doc with unclosed nodes (3)
     source: <script>
     parse: [html]
@@ -2533,6 +2618,10 @@ cases:
       message: Attempting to end parsing before HtmlRawNode 'script' was closed
       start: [0, 0]
       text: <script
+      unclosed:
+        type: HtmlRawNode
+        name: script
+        blockStartPosition: { start: [0, 0], text: <script> }
   - name: should throw when trying to end doc with unclosed nodes (4)
     source: <{{ node_type }}>
     parse: [html]
@@ -2540,6 +2629,10 @@ cases:
       message: Attempting to end parsing before HtmlElement 'compound' was closed
       start: [0, 0]
       text: <{{ node_type }}
+      unclosed:
+        type: HtmlElement
+        name: "{{ node_type }}"
+        blockStartPosition: { start: [0, 0], text: "<{{ node_type }}>" }
   - name: should parse html comments as raw
     source: |-
       <!--
@@ -4522,6 +4615,10 @@ cases:
       message: Attempting to close HtmlElement 'div' before HtmlElement 'compound' was closed
       start: [0, 36]
       text: </div
+      unclosed:
+        type: HtmlElement
+        name: "{% if true %}div{% endif %}"
+        blockStartPosition: { start: [0, 0], text: "<{% if true %}div{% endif %}>" }
   - name: should parse HTML comments
     source: <!-- hello -->
     parse: [html]
@@ -6027,6 +6124,10 @@ cases:
       message: Attempting to end parsing before HtmlRawNode 'script' was closed
       start: [0, 0]
       text: <script>
+      unclosed:
+        type: HtmlRawNode
+        name: script
+        blockStartPosition: { start: [0, 0], text: <script> }
   - name: rejects a script body whose comment has a bare {{ that swallows the endcomment
     source: <script>{% comment %} {{ {% endcomment %}</script><p>after</p>
     parse: [html]
@@ -6034,6 +6135,10 @@ cases:
       message: Attempting to end parsing before HtmlRawNode 'script' was closed
       start: [0, 0]
       text: <script>
+      unclosed:
+        type: HtmlRawNode
+        name: script
+        blockStartPosition: { start: [0, 0], text: <script> }
   - name: rejects a script body with an unclosed comment
     source: <script>if(i<n){}{% comment %}</script>
     parse: [html]
@@ -6041,6 +6146,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'comment' was closed
       start: [0, 17]
       text: "{% comment %}"
+      unclosed:
+        type: LiquidRawTag
+        name: comment
+        blockStartPosition: { start: [0, 17], text: "{% comment %}" }
   - name: rejects a script with a < comparison that is never closed
     source: |
       <script>
@@ -6050,6 +6159,10 @@ cases:
       message: Attempting to end parsing before HtmlRawNode 'script' was closed
       start: [0, 0]
       text: <script>
+      unclosed:
+        type: HtmlRawNode
+        name: script
+        blockStartPosition: { start: [0, 0], text: <script> }
   - name: rejects a script body with an unterminated drop
     source: <script>if(a<b){} var t = "{{";</script>
     parse: [html]
@@ -6057,6 +6170,10 @@ cases:
       message: Attempting to end parsing before HtmlRawNode 'script' was closed
       start: [0, 0]
       text: <script>
+      unclosed:
+        type: HtmlRawNode
+        name: script
+        blockStartPosition: { start: [0, 0], text: <script> }
   - name: parses an HTML comment holding a tag opener
     source: <!-- a <b --><p>after</p>
     parse: [html]
@@ -7738,6 +7855,10 @@ cases:
       message: Attempting to end parsing before LiquidTag 'if' was closed
       start: [0, 5]
       text: "{% if a %}"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 5], text: "{% if a %}" }
   - name: parses a raw tag inside an HTML comment as a raw tag
     source: <!-- {% raw %}{{ a }} -->{% endraw %} -->
     parse: [html]
