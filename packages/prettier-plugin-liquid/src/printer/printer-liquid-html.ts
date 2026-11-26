@@ -128,13 +128,18 @@ function printAttribute<T extends Extract<LiquidHtmlNode, { attributePosition: P
     (valueNode) => isTextLikeNode(valueNode) && valueNode.value.includes(preferredQuote),
   );
   const quote = attributeValueContainsQuote ? oppositeQuotes[preferredQuote] : preferredQuote;
+  // A value that starts right after the quote has no indentation on its first
+  // line, so only the later lines set the indentation to strip. A value that
+  // starts on its own line keeps its indentation there, so that line counts too.
+  const valueStartsOnItsOwnLine = /^[ \t]*\r?\n/.test(value);
+  const lines = reindent(bodyLines(value), !valueStartsOnItsOwnLine);
 
   return [
     printAttributeName(path, options, print),
     '=',
     quote,
     hasLineBreakInRange(node.source, node.attributePosition.start, node.attributePosition.end)
-      ? group([indent([softline, join(hardline, reindent(bodyLines(value), true))]), softline], {
+      ? group([indent([softline, join(hardline, lines)]), softline], {
           id: attrGroupId,
         })
       : value,
