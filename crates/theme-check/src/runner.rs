@@ -437,6 +437,7 @@ fn get_next_node<'a>(parent: Option<NodeRef<'a>>, node: NodeRef<'a>) -> Option<N
         NodeRef::Document(d) => &d.children,
         NodeRef::LiquidBranch(b) => &b.children,
         NodeRef::HtmlElement(e) => &e.children,
+        NodeRef::RawMarkup(r) => &r.nodes,
         _ => &[],
     };
     let i = siblings.iter().position(|c| c.to_ref().ptr_eq(&node))?;
