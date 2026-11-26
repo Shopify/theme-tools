@@ -8,8 +8,8 @@ export interface DebouncedFunction<F extends Function> {
   (...args: ArgumentTypes<F>): void;
 
   /**
-   * Mark this call as forced. Later calls do not delay it. Without a merge
-   * function, later calls do not replace its arguments either.
+   * Mark this call as forced. Later calls, forced or not, do not delay it.
+   * Without a merge function, later normal calls do not replace its arguments.
    */
   force(...args: ArgumentTypes<F>): void;
 }
@@ -74,7 +74,7 @@ export function debounce<F extends Function>(
     }
 
     if (timeoutId !== null) {
-      if (forcePending && !force) return;
+      if (forcePending) return;
       clearTimeout(timeoutId);
       timeoutId = null;
     }
