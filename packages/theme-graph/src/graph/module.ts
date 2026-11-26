@@ -69,7 +69,11 @@ export function getModule(themeGraph: ThemeGraph, uri: UriString): ThemeModule |
   }
 }
 
-export function getTemplateModule(themeGraph: ThemeGraph, uri: UriString): ThemeModule {
+/**
+ * A template is a `.json` or `.liquid` file. Anything else in `templates/`,
+ * like a `.DS_Store` or a `.keep`, isn't one, so it has no module.
+ */
+export function getTemplateModule(themeGraph: ThemeGraph, uri: UriString): ThemeModule | undefined {
   const extension = extname(uri);
   switch (extension) {
     case 'json': {
@@ -93,7 +97,7 @@ export function getTemplateModule(themeGraph: ThemeGraph, uri: UriString): Theme
     }
 
     default: {
-      throw new Error(`Unknown template type for ${uri}`);
+      return undefined;
     }
   }
 }

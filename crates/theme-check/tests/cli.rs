@@ -563,3 +563,33 @@ fn finds_liquid_doc_definitions_wherever_the_theme_is() {
     let dir = fixture("liquid-doc-root", &files);
     assert_eq!(missing_arguments(&dir, "theme"), expected);
 }
+
+#[test]
+fn reports_the_same_orphaned_snippets_with_a_file_in_templates_that_is_not_a_template() {
+    let orphaned_snippets = |case: &str, templates: &[(&str, &str)]| {
+        let theme = [
+            ("theme/layout/theme.liquid", "{{ content_for_layout }}"),
+            ("theme/sections/main.liquid", "{% render 'greeting' %}"),
+            ("theme/snippets/greeting.liquid", "Hello"),
+            ("theme/snippets/orphan.liquid", "Orphan"),
+            (
+                "theme/templates/index.json",
+                r#"{ "sections": { "main": { "type": "main" } }, "order": ["main"] }"#,
+            ),
+        ];
+        let files: Vec<_> = theme.iter().chain(templates).copied().collect();
+        let (offenses, _, _) = parse(&theme_check(&fixture(case, &files), &["theme"]));
+        offenses
+            .into_iter()
+            .filter(|o| o.starts_with("OrphanedSnippet "))
+            .collect::<Vec<_>>()
+    };
+    let expected = ["OrphanedSnippet 1 snippets/orphan.liquid 0:0-0:1"];
+
+    assert_eq!(orphaned_snippets("templates", &[]), expected);
+    let stray = [
+        ("theme/templates/.DS_Store", ""),
+        ("theme/templates/customers/.keep", ""),
+    ];
+    assert_eq!(orphaned_snippets("templates-stray-files", &stray), expected);
+}

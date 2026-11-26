@@ -166,14 +166,14 @@ impl ThemeGraph {
     }
 
     /// `getModule(themeGraph, uri)`
-    fn get_module(&mut self, uri: &str) -> Result<Option<usize>, String> {
+    fn get_module(&mut self, uri: &str) -> Option<usize> {
         if let Some(&i) = self.cache.get(uri) {
-            return Ok(Some(i));
+            return Some(i);
         }
         let rel = path::relative(uri, &self.root_uri);
         let name = |ext| path::basename(uri, ext);
-        Ok(Some(if rel.starts_with("assets") {
-            return Ok(self.asset_module(&name(None)));
+        Some(if rel.starts_with("assets") {
+            return self.asset_module(&name(None));
         } else if rel.starts_with("blocks") {
             self.theme_block_module(&name(Some(".liquid")))
         } else if rel.starts_with("layout") {
@@ -187,20 +187,21 @@ impl ThemeGraph {
         } else if rel.starts_with("snippets") {
             self.snippet_module(&name(Some(".liquid")))
         } else if rel.starts_with("templates") {
-            self.template_module(uri)?
+            return self.template_module(uri);
         } else {
-            return Ok(None);
-        }))
+            return None;
+        })
     }
 
-    /// `getTemplateModule(themeGraph, uri)`
-    fn template_module(&mut self, uri: &str) -> Result<usize, String> {
+    /// `getTemplateModule(themeGraph, uri)`: a template is a `.json` or `.liquid` file. Anything
+    /// else in `templates/`, like a `.DS_Store` or a `.keep`, isn't one, so it has no module.
+    fn template_module(&mut self, uri: &str) -> Option<usize> {
         match extname(uri) {
-            "json" => Ok(self.module_at(ModuleType::Json, ModuleKind::Template, uri.to_string())),
+            "json" => Some(self.module_at(ModuleType::Json, ModuleKind::Template, uri.to_string())),
             "liquid" => {
-                Ok(self.module_at(ModuleType::Liquid, ModuleKind::Template, uri.to_string()))
+                Some(self.module_at(ModuleType::Liquid, ModuleKind::Template, uri.to_string()))
             }
-            _ => Err(format!("Unknown template type for {uri}")),
+            _ => None,
         }
     }
 
@@ -350,7 +351,7 @@ pub fn build_theme_graph(
         theme_block_names: None,
     };
     for uri in &entry_points {
-        if let Some(m) = b.g.get_module(uri)? {
+        if let Some(m) = b.g.get_module(uri) {
             b.g.entry_points.push(m);
         }
     }

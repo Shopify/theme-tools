@@ -15,7 +15,7 @@ describe('Unit: serializeThemeGraph', () => {
       rootUri,
     };
 
-    const template = getTemplateModule(graph, p('templates/index.json'));
+    const template = getTemplateModule(graph, p('templates/index.json'))!;
     const customSection = getSectionModule(graph, 'custom-section');
     const parentSnippet = getSnippetModule(graph, 'parent');
     const childSnippet = getSnippetModule(graph, 'child');
