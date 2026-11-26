@@ -1,5 +1,13 @@
 import { Template } from '@shopify/theme-check-common';
 
+/**
+ * The text that goes between the quotes of a JSON string to hold `value`. A
+ * file name can contain characters such as `"` that JSON must escape.
+ */
+export function escapeJsonString(value: string): string {
+  return JSON.stringify(value).slice(1, -1);
+}
+
 /** A preset, or the customized `current` settings, in config/settings_data.json */
 export interface SettingsDataPreset {
   sections?: Record<string, { type: string }>;

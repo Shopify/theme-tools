@@ -657,6 +657,67 @@ describe('Module: SectionRenameHandler', () => {
       expect(connection.spies.sendRequest).not.toHaveBeenCalled();
     });
 
+    it('escapes the new name in JSON strings', async () => {
+      const jsonFiles = (type: string) => ({
+        'sections/header.json': JSON.stringify(
+          {
+            type: 'header',
+            name: 'Header',
+            sections: { 'section-id': { type } },
+            order: ['section-id'],
+          },
+          null,
+          2,
+        ),
+        'templates/index.json': JSON.stringify(
+          { sections: { 'section-id': { type } }, order: ['section-id'] },
+          null,
+          2,
+        ),
+        'config/settings_data.json': JSON.stringify(
+          {
+            current: { sections: { 'header-id': { type } } },
+            presets: { Default: { sections: { 'header-id': { type } } } },
+          },
+          null,
+          2,
+        ),
+      });
+      fs = new MockFileSystem(
+        { 'sections/old-name.liquid': '', ...jsonFiles('old-name') },
+        mockRoot,
+      );
+      documentManager = new DocumentManager(
+        fs,
+        undefined,
+        undefined,
+        async () => 'theme',
+        async () => true,
+      );
+      handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
+
+      await handler.onDidRenameFiles({
+        files: [
+          {
+            oldUri: 'mock-fs:/sections/old-name.liquid',
+            newUri: 'mock-fs:/sections/new%22name.liquid',
+          },
+        ],
+      });
+
+      const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+      const expectedFs = new MockFileSystem(jsonFiles('new"name'), mockRoot);
+      assert(params.edit.documentChanges);
+      expect(params.edit.documentChanges).toHaveLength(3);
+      for (const docChange of params.edit.documentChanges) {
+        assert(TextDocumentEdit.is(docChange));
+        const uri = docChange.textDocument.uri;
+        const initialDoc = await fs.readFile(uri);
+        const expectedDoc = await expectedFs.readFile(uri);
+        expect(docChange.edits).to.applyEdits(initialDoc, expectedDoc);
+      }
+    });
+
     describe('when the name of a sibling theme starts with the name of the theme', () => {
       const shopRoot = `${mockRoot}/${shopDirectory}`;
       const shopPreviewRoot = `${mockRoot}/${shopPreviewDirectory}`;

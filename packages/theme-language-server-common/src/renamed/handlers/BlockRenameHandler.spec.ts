@@ -397,6 +397,75 @@ describe('Module: BlockRenameHandler', () => {
       expect(connection.spies.sendRequest).not.toHaveBeenCalled();
     });
 
+    it('escapes the new name in JSON strings', async () => {
+      const schema = (type: string) =>
+        JSON.stringify(
+          {
+            name: 'Section',
+            blocks: [{ type }],
+            presets: [
+              { name: 'List', blocks: [{ type }] },
+              { name: 'Keyed', blocks: { 'block-id': { type } } },
+            ],
+          },
+          null,
+          2,
+        );
+      const sectionWithBlock = (type: string) => ({
+        type: 'section',
+        blocks: { 'block-id': { type } },
+        block_order: ['block-id'],
+      });
+      const jsonFiles = (type: string) => ({
+        'sections/section.liquid': `{% schema %}\n${schema(type)}\n{% endschema %}`,
+        'sections/header.json': JSON.stringify(
+          {
+            type: 'header',
+            name: 'Header',
+            sections: { 'section-id': sectionWithBlock(type) },
+            order: ['section-id'],
+          },
+          null,
+          2,
+        ),
+        'templates/index.json': JSON.stringify(
+          { sections: { 'section-id': sectionWithBlock(type) }, order: ['section-id'] },
+          null,
+          2,
+        ),
+      });
+      fs = new MockFileSystem({ 'blocks/old-name.liquid': '', ...jsonFiles('old-name') }, mockRoot);
+      documentManager = new DocumentManager(
+        fs,
+        undefined,
+        undefined,
+        async () => 'theme',
+        async () => true,
+      );
+      handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
+
+      await handler.onDidRenameFiles({
+        files: [
+          {
+            oldUri: 'mock-fs:/blocks/old-name.liquid',
+            newUri: 'mock-fs:/blocks/new%22name.liquid',
+          },
+        ],
+      });
+
+      const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+      const expectedFs = new MockFileSystem(jsonFiles('new"name'), mockRoot);
+      assert(params.edit.documentChanges);
+      expect(params.edit.documentChanges).toHaveLength(3);
+      for (const docChange of params.edit.documentChanges) {
+        assert(TextDocumentEdit.is(docChange));
+        const uri = docChange.textDocument.uri;
+        const initialDoc = await fs.readFile(uri);
+        const expectedDoc = await expectedFs.readFile(uri);
+        expect(docChange.edits).to.applyEdits(initialDoc, expectedDoc);
+      }
+    });
+
     describe('when the name of a sibling theme starts with the name of the theme', () => {
       const shopRoot = `${mockRoot}/${shopDirectory}`;
       const shopPreviewRoot = `${mockRoot}/${shopPreviewDirectory}`;

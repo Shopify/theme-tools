@@ -37,6 +37,7 @@ import {
 } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 import {
+  escapeJsonString,
   isSettingsDataPreset,
   isValidSectionGroup,
   isValidSettingsData,
@@ -155,7 +156,7 @@ export class SectionRenameHandler implements BaseRenameHandler {
               const node = nodeAtPath(ast, ['sections', key, 'type']) as LiteralNode;
               return {
                 annotationId,
-                newText: newSectionName,
+                newText: escapeJsonString(newSectionName),
                 range: Range.create(
                   textDocument.positionAt(node.loc.start.offset + 1),
                   textDocument.positionAt(node.loc.end.offset - 1),
@@ -184,7 +185,7 @@ export class SectionRenameHandler implements BaseRenameHandler {
               const node = nodeAtPath(ast, ['sections', key, 'type']) as LiteralNode;
               return {
                 annotationId,
-                newText: newSectionName,
+                newText: escapeJsonString(newSectionName),
                 range: Range.create(
                   textDocument.positionAt(node.loc.start.offset + 1),
                   textDocument.positionAt(node.loc.end.offset - 1),
@@ -229,7 +230,7 @@ export class SectionRenameHandler implements BaseRenameHandler {
                 ]) as LiteralNode;
                 return {
                   annotationId,
-                  newText: newSectionName,
+                  newText: escapeJsonString(newSectionName),
                   range: Range.create(
                     textDocument.positionAt(node.loc.start.offset + 1),
                     textDocument.positionAt(node.loc.end.offset - 1),
