@@ -916,6 +916,58 @@
     "targets": []
   },
   {
+    "code": "ValidRangeDefault",
+    "name": "Validate default values and preset values for range settings",
+    "docs": {
+      "description": "Reports a range setting's default value, or a preset's value for it, that is outside [min, max] or not aligned to the step grid.",
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-range-default"
+    },
+    "severity": 0,
+    "schema": {},
+    "targets": [],
+    "type": "LiquidHtml"
+  },
+  {
+    "code": "ValidRangeDefault",
+    "name": "Validate default values and preset values for range settings",
+    "docs": {
+      "description": "Reports a range setting's default value, or a preset's value for it, that is outside [min, max] or not aligned to the step grid.",
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-range-default"
+    },
+    "severity": 0,
+    "schema": {},
+    "targets": [],
+    "type": "JSON"
+  },
+  {
+    "code": "ValidRangeStepCount",
+    "name": "Validate that range settings have at most 101 steps",
+    "docs": {
+      "description": "Reports a range setting with more than 101 discrete steps, which the storefront rejects with \"Range settings must have at most 101 steps\".",
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-range-step-count"
+    },
+    "severity": 0,
+    "schema": {},
+    "targets": [],
+    "type": "LiquidHtml"
+  },
+  {
+    "code": "ValidRangeStepCount",
+    "name": "Validate that range settings have at most 101 steps",
+    "docs": {
+      "description": "Reports a range setting with more than 101 discrete steps, which the storefront rejects with \"Range settings must have at most 101 steps\".",
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-range-step-count"
+    },
+    "severity": 0,
+    "schema": {},
+    "targets": [],
+    "type": "JSON"
+  },
+  {
     "code": "ValidRenderSnippetArgumentTypes",
     "name": "Valid Render Snippet Argument Types",
     "aliases": [
