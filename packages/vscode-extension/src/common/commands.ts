@@ -46,9 +46,14 @@ export async function fetchDeadCode(
  * user selects. Does not depend on the active editor, so it can be driven from
  * a startup check as well as the command.
  */
-export async function showDeadCodePicker(rootUri: string, deadCode: string[]): Promise<void> {
+export async function showDeadCodePicker(
+  rootUri: string,
+  deadCode: string[],
+  title?: string,
+): Promise<void> {
   const relativePaths = deadCode.map((file) => path.relative(file, rootUri));
   const selectedFiles = await window.showQuickPick(relativePaths, {
+    title,
     canPickMany: true,
     placeHolder: 'Select files to open',
   });

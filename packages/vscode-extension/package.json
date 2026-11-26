@@ -186,7 +186,7 @@
             "boolean"
           ],
           "description": "When true, show a notification on startup when your theme has orphaned (dead) files.",
-          "default": true
+          "default": false
         }
       }
     },

@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({
   findFiles: vi.fn(),
   getConfig: vi.fn(),
   updateConfig: vi.fn(),
+  getWorkspaceFolder: vi.fn(),
+  asRelativePath: vi.fn(),
 }));
 
 vi.mock('vscode', () => ({
@@ -21,6 +23,8 @@ vi.mock('vscode', () => ({
     getConfiguration: () => ({ get: mocks.getConfig, update: mocks.updateConfig }),
     findFiles: mocks.findFiles,
     openTextDocument: mocks.openTextDocument,
+    getWorkspaceFolder: mocks.getWorkspaceFolder,
+    asRelativePath: mocks.asRelativePath,
   },
   commands: { executeCommand: vi.fn() },
   ConfigurationTarget: { Global: 1 },
@@ -74,6 +78,17 @@ describe('checkOrphanedFilesOnBoot', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getConfig.mockReset().mockReturnValue(true);
+    mocks.getWorkspaceFolder.mockReset().mockReturnValue(undefined);
+  });
+
+  it('is off by default', async () => {
+    mocks.getConfig.mockImplementation((_key: string, defaultValue: boolean) => defaultValue);
+    const client = clientWith({});
+
+    await checkOrphanedFilesOnBoot(client);
+
+    expect(mocks.findFiles).not.toHaveBeenCalled();
+    expect(client.sendRequest).not.toHaveBeenCalled();
   });
 
   it('globs for every theme-root signal, not just .theme-check.yml', async () => {
@@ -100,7 +115,32 @@ describe('checkOrphanedFilesOnBoot', () => {
     await checkOrphanedFilesOnBoot(client);
 
     expect(mocks.showInformationMessage).toHaveBeenCalledTimes(1);
-    expect(mocks.showInformationMessage.mock.calls[0][0]).toContain('1 orphaned file');
+    expect(mocks.showInformationMessage.mock.calls[0][0]).toBe(
+      'Found 1 orphaned file in theme "theme".',
+    );
+  });
+
+  it('names a nested theme by its path in the workspace', async () => {
+    mocks.findFiles.mockResolvedValue([uriLike('file:///work/themes/horizon/.theme-check.yml')]);
+    mocks.getWorkspaceFolder.mockReturnValue({ uri: uriLike('file:///work') });
+    mocks.asRelativePath.mockReturnValue('themes/horizon');
+    mocks.showInformationMessage.mockResolvedValue('Review');
+    mocks.showQuickPick.mockResolvedValue(undefined);
+    const client = clientWith({
+      'file:///work/themes/horizon/.theme-check.yml': {
+        rootUri: 'file:///work/themes/horizon',
+        deadCode: ['file:///work/themes/horizon/snippets/a.liquid'],
+      },
+    });
+
+    await checkOrphanedFilesOnBoot(client);
+
+    expect(mocks.showInformationMessage.mock.calls[0][0]).toBe(
+      'Found 1 orphaned file in theme "themes/horizon".',
+    );
+    expect(mocks.showQuickPick.mock.calls[0][1]).toMatchObject({
+      title: 'Orphaned files in themes/horizon',
+    });
   });
 
   it('does not notify when there are no orphaned files', async () => {
@@ -261,8 +301,10 @@ describe('checkOrphanedFilesOnBoot', () => {
     // One notification per theme with orphans.
     expect(mocks.showInformationMessage).toHaveBeenCalledTimes(2);
     const messages = mocks.showInformationMessage.mock.calls.map((c) => c[0]);
-    expect(messages.some((m: string) => m.includes('1 orphaned file'))).toBe(true);
-    expect(messages.some((m: string) => m.includes('2 orphaned files'))).toBe(true);
+    expect(messages).toEqual([
+      'Found 1 orphaned file in theme "theme-a".',
+      'Found 2 orphaned files in theme "theme-b".',
+    ]);
 
     // Review opened a picker for each theme — the picker for theme-b must show
     // theme-b's two files, never theme-a's subset.
