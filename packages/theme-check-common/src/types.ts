@@ -3,6 +3,7 @@ import { LiquidHtmlNode, NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liqui
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { AbstractFileSystem, UriString } from './AbstractFileSystem';
+import type { GetBlockParameters } from './block-parameters';
 import { JSONCorrector, StringCorrector } from './fixes';
 
 import {
@@ -406,6 +407,12 @@ export interface Dependencies {
    * Returns an empty array if no dependencies found
    */
   getDependencies?: (uri: string) => Promise<Reference[]>;
+
+  /**
+   * Get the size in bytes of a remote file, such as a script on a CDN.
+   * Returns 0 when it can't be found. Defaults to the Content-Length of a HEAD request.
+   */
+  remoteFileSize?: (url: string) => Promise<number>;
 }
 
 export type ValidateJSON = (
@@ -416,8 +423,10 @@ export type ValidateJSON = (
 export type IsValidSchema = (uri: string, jsonString: string) => Promise<boolean>;
 
 export interface AugmentedDependencies extends Dependencies {
+  getBlockParameters: GetBlockParameters;
   fileExists: (uri: UriString) => Promise<boolean>;
   fileSize: (uri: UriString) => Promise<number>;
+  remoteFileSize: (url: string) => Promise<number>;
   getDefaultLocale: () => Promise<string>;
   getDefaultSchemaLocale: () => Promise<string>;
   getDefaultTranslations(): Promise<Translations>;

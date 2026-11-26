@@ -1,3 +1,4 @@
+export { BlockParameterCompletionProvider } from './BlockParameterCompletionProvider';
 export { ContentForCompletionProvider } from './ContentForCompletionProvider';
 export { ContentForBlockTypeCompletionProvider } from './ContentForBlockTypeCompletionProvider';
 export { ContentForParameterCompletionProvider } from './ContentForParameterCompletionProvider';

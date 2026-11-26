@@ -170,16 +170,15 @@ export function tokenizeParamContent(text: string, startOffset: number): ParamTo
     }
 
     // Type: {type}
-    TYPE_RE.lastIndex = pos;
-    if (TYPE_RE.test(text)) {
-      const end = TYPE_RE.lastIndex;
+    const typeEnd = readTypeEnd(text, pos);
+    if (typeEnd !== undefined) {
       tokens.push({
         type: ParamTokenType.Type,
-        value: text.slice(pos + 1, end - 1),
+        value: text.slice(pos + 1, typeEnd - 1),
         start: pos + startOffset,
-        end: end + startOffset,
+        end: typeEnd + startOffset,
       });
-      pos = end;
+      pos = typeEnd;
       continue;
     }
 
@@ -247,12 +246,34 @@ export function tokenizeParamContent(text: string, startOffset: number): ParamTo
   return tokens;
 }
 
+/** Returns the exclusive end of the `{type}` annotation at `start`. */
+function readTypeEnd(text: string, start: number): number | undefined {
+  if (text[start] !== '{') return undefined;
+
+  for (let pos = start + 1; pos < text.length; pos++) {
+    const ch = text[pos];
+
+    if (ch === "'" || ch === '"') {
+      const closeQuote = text.indexOf(ch, pos + 1);
+      if (closeQuote === -1) {
+        const typeEnd = text.indexOf('}', pos + 1);
+        return typeEnd === -1 ? undefined : typeEnd + 1;
+      }
+      pos = closeQuote;
+      continue;
+    }
+
+    if (ch === '}') return pos + 1;
+  }
+
+  return undefined;
+}
+
 const ANNOTATION_RE = /@(\w+)/y;
 const WHITESPACE_RE = /[ \t]+/y;
 const NEWLINE_RE = /\r?\n/y;
 /** Matches `@word` appearing after at least one character within a line (mid-line). */
 const MIDLINE_ANNOTATION_RE = /.@\w+/g;
-const TYPE_RE = /\{([^}]*)\}/y;
 const OPTIONAL_NAME_RE = /\[([^\]]*)\]/y;
 const WORD_RE = /[\w][\w-]*/y;
 const PARAM_WHITESPACE_RE = /[ \t]+/y;

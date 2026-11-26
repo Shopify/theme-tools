@@ -3,11 +3,10 @@ name: VS Code Release Workflow in a pinch
 on: workflow_dispatch
 
 env:
-  VSCE_PAT: ${{ secrets.VSCE_PAT }}
-  OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   npm_config_registry: "https://registry.npmjs.org"
+
+permissions:
+  contents: read
 
 jobs:
   publish-packages:
@@ -17,14 +16,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
+          persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: "pnpm"
@@ -40,6 +40,10 @@ jobs:
 
       - name: VS Code Marketplace publish
         run: pnpm publish:vsce
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Open VSX Registry publish
         run: pnpm publish:ovsx
+        env:
+          OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}

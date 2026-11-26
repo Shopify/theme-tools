@@ -80,6 +80,19 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
     });
   });
 
+  it.each(['{{ variant.█ }}', '{% assign style = variant %}{{ style.█ }}'])(
+    'offers string properties for enum variables: %s',
+    async (source) => {
+      await expect(provider).to.complete(
+        {
+          relativePath: 'snippets/text.liquid',
+          source: `{% doc %}\n@param {'heading' | 'small'} variant\n{% enddoc %}\n${source}`,
+        },
+        ['size'],
+      );
+    },
+  );
+
   it('does not complete number lookups', async () => {
     await expect(provider).to.complete('{{ product[01█ }}', []);
   });
