@@ -521,3 +521,20 @@ cases:
         {% schema %}
         {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
         {% endschema %}
+  - name: does not report an error for a template that is null
+    files:
+      templates/index.json: 'null'
+  - name: does not report an error for a template that is not an object
+    files:
+      templates/index.json: '[{ "sections": { "main-page": { "type": "main-page", "settings": { "heading_tagg": "h1" } } } }]'
+      templates/page.json: '404'
+      templates/product.json: '"sections"'
+      templates/collection.json: 'true'
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error for a template whose sections or section is null
+    files:
+      templates/index.json: '{ "sections": null, "order": [] }'
+      templates/page.json: '{ "sections": { "main-page": null }, "order": ["main-page"] }'
