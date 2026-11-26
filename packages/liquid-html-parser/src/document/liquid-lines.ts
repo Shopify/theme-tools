@@ -20,6 +20,7 @@ import type {
   LiquidNode,
   TextNode,
 } from '../ast';
+import { RawMarkupKinds } from '../ast';
 import type {
   LiquidLineContext,
   TagDefinitionBlock,
@@ -213,10 +214,13 @@ export function parseLineRawTag(
   const source = parser.getSource();
   const bodyString = source.slice(bodyContentStart, bodyEndOffset);
 
-  // Build body nodes: a TextNode wrapping the body content, matching
-  // the non-liquid path in parseRawTagBody (liquid-raw.ts).
-  const bodyNodes: (LiquidNode | TextNode)[] =
-    bodyContentStart < bodyEndOffset
+  // As in parseRawTagBody (liquid-raw.ts), a tag that parses Liquid in its
+  // body gets Liquid nodes, and any other tag gets one TextNode. Inside
+  // {% liquid %}, that Liquid is one statement per line.
+  const parsesLiquid = def.parseLiquidInBody === true;
+  const bodyNodes: (LiquidNode | TextNode)[] = parsesLiquid
+    ? parseLineRawBodyStatements(parser, ctx, endLineIndex)
+    : bodyContentStart < bodyEndOffset
       ? (filterChildren(
           ChildFilterMode.Syntactic,
           [makeTextNode(bodyString, bodyContentStart, bodyEndOffset, source)],
@@ -225,7 +229,7 @@ export function parseLineRawTag(
       : [];
 
   const body = makeRawMarkup(
-    rawMarkupKindForTag(tagName, bodyString),
+    parsesLiquid ? RawMarkupKinds.text : rawMarkupKindForTag(tagName, bodyString),
     bodyString,
     bodyNodes,
     positionStartOffset,
@@ -240,6 +244,29 @@ export function parseLineRawTag(
   ctx.index = endLineIndex + 1;
 
   return makeLiquidRawTag(envelope, body, endPosition, { start: '', end: '' });
+}
+
+// The statements of a raw tag's body, the lines before its `end` line.
+function parseLineRawBodyStatements(
+  parser: LineParserDelegate,
+  ctx: LiquidLineContext,
+  endLineIndex: number,
+): LiquidStatement[] {
+  const bodyCtx: LiquidLineContext = {
+    lines: ctx.lines.slice(0, endLineIndex),
+    index: ctx.index,
+  };
+  const statements: LiquidStatement[] = [];
+
+  while (bodyCtx.index < bodyCtx.lines.length) {
+    const line = bodyCtx.lines[bodyCtx.index];
+    bodyCtx.index++;
+    statements.push(
+      parseLiquidStatement(parser, line.tagName, line.markup, line.markupOffset, bodyCtx),
+    );
+  }
+
+  return statements;
 }
 
 // lineBlockBody := liquidStatement* "end" tagName

@@ -10,7 +10,7 @@ use crate::parser::{
     make_branch_named, make_branch_unnamed, make_raw_tag, make_tag, raw_markup_kind_for_tag, slice,
     text_node, Envelope, FilterMode, Parser,
 };
-use crate::raw_body::{find_raw_line_body_end, rule_for};
+use crate::raw_body::{find_raw_line_body_end, is_literal, rule_for};
 use crate::tags::{self, TagKind};
 use crate::{js_find_space, js_trim_end, js_trim_start};
 
@@ -205,7 +205,13 @@ impl<'a> Parser<'a> {
         let end_line = lines[end_index];
         let body_end = end_line.name_offset;
         let body = slice(self.source, content_start, body_end);
-        let nodes = if content_start < body_end {
+        // As in a raw tag outside `{% liquid %}`, a tag that parses Liquid in its body gets
+        // Liquid nodes, and any other tag gets one text node. Here that Liquid is one
+        // statement per line.
+        let parses_liquid = !is_literal(tag_name);
+        let nodes = if parses_liquid {
+            self.nested(|p| p.parse_line_raw_body_statements(ctx, end_index))?
+        } else if content_start < body_end {
             filter_children(
                 self.source,
                 FilterMode::Syntactic,
@@ -215,7 +221,11 @@ impl<'a> Parser<'a> {
             Vec::new()
         };
         let raw = RawMarkup {
-            kind: raw_markup_kind_for_tag(tag_name, body),
+            kind: if parses_liquid {
+                "text"
+            } else {
+                raw_markup_kind_for_tag(tag_name, body)
+            },
             value: Cow::Borrowed(body),
             nodes,
             span: Span::new(position_start, body_end),
@@ -227,6 +237,24 @@ impl<'a> Parser<'a> {
             false,
         );
         Ok(make_raw_tag(self.source, env, raw, end))
+    }
+
+    /// The statements of a raw tag's body, the lines before its `end` line at `end_index`.
+    fn parse_line_raw_body_statements(
+        &mut self,
+        ctx: &LineContext<'a>,
+        end_index: usize,
+    ) -> PResult<Vec<Node<'a>>> {
+        let mut body_ctx = LineContext {
+            lines: ctx.lines[..end_index].to_vec(),
+            index: ctx.index,
+        };
+        let mut statements = Vec::new();
+        while body_ctx.index < body_ctx.lines.len() {
+            body_ctx.index += 1;
+            statements.push(self.parse_liquid_statement(&mut body_ctx)?);
+        }
+        Ok(statements)
     }
 
     fn unclosed_line_block(&self, parent: &str, ctx: &LineContext<'a>) -> PResult<usize> {
