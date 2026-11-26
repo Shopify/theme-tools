@@ -501,37 +501,21 @@ async function traverseJsonModule(
     case JsonModuleKind.Template: {
       // Should only happen once per template
       const template = parseJSON(sourceCode.source) as Template.Template;
-      const promises: Promise<Void>[] = [];
-      for (const [key, section] of Object.entries(template.sections)) {
-        const sectionType = section.type;
-        const path = ['sections', key];
-        const node = nodeAtPath(ast, path)! as ObjectNode;
-        const sectionModule = getSectionModule(themeGraph, sectionType);
-        const typeProperty = node.children.find((child) => child.key.value === 'type')!;
-        const start = typeProperty.loc.start.offset;
-        const end = typeProperty.loc.end.offset;
-        const sourceRange: Range = [start, end];
-        // Link the template to the section
-        bind(module, sectionModule, { sourceRange });
-        promises.push(
-          // Traverse the section themeselves
-          traverseModule(sectionModule, themeGraph, deps),
-          // Link the blocks used in the section to the template
-          traverseSectionReferences(module, ast, path, section, themeGraph, deps),
-        );
-      }
+      const parent = (await getContextualParent(module, template, themeGraph, deps)) as
+        | Template.Template
+        | undefined;
+      const promises = traverseJsonSections(module, ast, template, parent, themeGraph, deps);
 
-      // Link the template to the layout
-      const layout = template.layout;
-      const layoutModule = getLayoutModule(themeGraph, template.layout);
+      // Link the template to the layout. A contextual template inherits its parent's.
+      const ownsLayout = template.layout !== undefined;
+      const layout = ownsLayout ? template.layout : parent?.layout;
+      const layoutModule = getLayoutModule(themeGraph, layout);
       if (layoutModule) {
         let sourceRange: Range | undefined = undefined;
-        let indirect = true;
-        if (layout !== false && layout !== undefined) {
+        if (ownsLayout) {
           const layoutPath = ['layout'];
           const node = nodeAtPath(ast, layoutPath)!;
           sourceRange = [node.loc.start.offset, node.loc.end.offset];
-          indirect = false; // this is a direct reference to the layout
         }
         bind(module, layoutModule, { sourceRange, type: 'indirect' });
         promises.push(traverseModule(layoutModule, themeGraph, deps));
@@ -542,35 +526,79 @@ async function traverseJsonModule(
 
     case JsonModuleKind.SectionGroup: {
       const sectionGroup = parseJSON(sourceCode.source) as Template.SectionGroup;
-      const promises: Promise<Void>[] = [];
-      for (const [key, section] of Object.entries(sectionGroup.sections)) {
-        const sectionType = section.type;
-        const path = ['sections', key];
-        const node = nodeAtPath(ast, path)! as ObjectNode;
-        const sectionModule = getSectionModule(themeGraph, sectionType);
-
-        const typeProperty = node.children.find((child) => child.key.value === 'type')!;
-        const start = typeProperty.loc.start.offset;
-        const end = typeProperty.loc.end.offset;
-        const sourceRange: Range = [start, end];
-
-        // Link the template to the section
-        bind(module, sectionModule, { sourceRange });
-        promises.push(
-          // Traverse the section themeselves
-          traverseModule(sectionModule, themeGraph, deps),
-          // Link the blocks used in the section to the template
-          traverseSectionReferences(module, ast, path, section, themeGraph, deps),
-        );
-      }
-
-      return Promise.all(promises);
+      const parent = await getContextualParent(module, sectionGroup, themeGraph, deps);
+      return Promise.all(traverseJsonSections(module, ast, sectionGroup, parent, themeGraph, deps));
     }
 
     default: {
       return assertNever(module.kind);
     }
   }
+}
+
+/**
+ * The file a contextual template or section group (`*.context.<name>.json`) overrides, named by
+ * its `parent`. Shopify deep-merges the override into it, so the override's sections and blocks
+ * that are already in the parent inherit their `type` from it.
+ *
+ * Returns undefined for a file without a `parent`, or whose parent can't be read.
+ */
+async function getContextualParent(
+  module: JsonModule,
+  json: unknown,
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+): Promise<Template.Template | Template.SectionGroup | undefined> {
+  const parent = (json as { parent?: unknown } | undefined)?.parent;
+  if (!isString(parent)) return undefined;
+
+  const dir = module.kind === JsonModuleKind.Template ? 'templates' : 'sections';
+  const uri = path.join(themeGraph.rootUri, dir, parent);
+  const sourceCode = await deps.getSourceCode(uri).catch(() => undefined);
+  if (sourceCode?.type !== SourceCodeType.JSON || sourceCode.ast instanceof Error) return undefined;
+
+  return parseJSON(sourceCode.source);
+}
+
+/**
+ * Links a template or section group to the sections and blocks in its `sections`.
+ *
+ * A contextual override may leave out `sections`, and its sections that override the parent's
+ * have no `type`. Those don't link to a section, but the blocks they add still link.
+ */
+function traverseJsonSections(
+  module: JsonModule,
+  ast: JSONNode,
+  json: Template.Template | Template.SectionGroup,
+  parent: Template.Template | Template.SectionGroup | undefined,
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+): Promise<Void>[] {
+  const promises: Promise<Void>[] = [];
+
+  for (const [key, section] of Object.entries(json.sections ?? {})) {
+    const path = ['sections', key];
+    const node = nodeAtPath(ast, path)! as ObjectNode;
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+    const inheritedType = parent?.sections?.[key]?.type;
+    const sectionType = typeProperty ? section.type : inheritedType;
+
+    if (typeProperty) {
+      const sectionModule = getSectionModule(themeGraph, section.type);
+      const sourceRange: Range = [typeProperty.loc.start.offset, typeProperty.loc.end.offset];
+      // Link the template or section group to the section
+      bind(module, sectionModule, { sourceRange });
+      // Traverse the section itself
+      promises.push(traverseModule(sectionModule, themeGraph, deps));
+    }
+
+    // Link the blocks used in the section to the template or section group
+    promises.push(
+      traverseSectionReferences(module, ast, path, section, sectionType, themeGraph, deps),
+    );
+  }
+
+  return promises;
 }
 
 /**
@@ -583,42 +611,30 @@ async function traverseSectionReferences(
   sourceAst: JSONNode,
   nodePath: string[] = [],
   section: Template.Section,
+  sectionType: unknown,
   themeGraph: ThemeGraph,
   deps: AugmentedDependencies,
 ): Promise<Void> {
   if (!section.blocks) return;
-  const sectionHasLocalBlocks = await acceptsLocalBlocks(section.type, deps);
+  // Without the section's type, there's no telling whether these are theme blocks.
+  if (!isString(sectionType)) return;
+  const sectionHasLocalBlocks = await acceptsLocalBlocks(sectionType, deps);
   if (sectionHasLocalBlocks) return;
 
-  const promises: Promise<Void>[] = [];
-
-  for (const [key, block] of Object.entries(section.blocks)) {
-    const blockType = block.type;
-    const blockModule = getThemeBlockModule(themeGraph, blockType);
-    const path = [...nodePath, 'blocks', key];
-    const node = nodeAtPath(sourceAst, path)! as ObjectNode;
-    const typeProperty = node.children.find((child) => child.key.value === 'type')!;
-    const start = typeProperty.loc.start.offset;
-    const end = typeProperty.loc.end.offset;
-    const sourceRange: Range = [start, end];
-    // Link the template to the block
-    bind(source, blockModule, { sourceRange });
-    promises.push(
-      // Traverse the block themselves
-      traverseModule(blockModule, themeGraph, deps),
-      // Traverse the block references
-      traverseBlockReferences(source, sourceAst, path, block, themeGraph, deps),
-    );
-  }
-
-  return Promise.all(promises);
+  return traverseBlockReferences(source, sourceAst, nodePath, section, themeGraph, deps);
 }
 
+/**
+ * Links a template or section group to the blocks inside a section or block, depth first.
+ *
+ * A contextual override's blocks that override the parent's have no `type`. Those don't link to
+ * a block, but the blocks they add still link.
+ */
 async function traverseBlockReferences(
   source: ThemeModule, // template or section group
   sourceAst: JSONNode,
   nodePath: string[] = [],
-  block: Template.Block,
+  block: Template.Section | Template.Block,
   themeGraph: ThemeGraph,
   deps: AugmentedDependencies,
 ): Promise<Void> {
@@ -626,22 +642,21 @@ async function traverseBlockReferences(
 
   const promises: Promise<Void>[] = [];
   for (const [key, childBlock] of Object.entries(block.blocks)) {
-    const childBlockType = childBlock.type;
-    const childBlockModule = getThemeBlockModule(themeGraph, childBlockType);
     const path = [...nodePath, 'blocks', key];
     const node = nodeAtPath(sourceAst, path)! as ObjectNode;
-    const typeProperty = node.children.find((child) => child.key.value === 'type')!;
-    const start = typeProperty.loc.start.offset;
-    const end = typeProperty.loc.end.offset;
-    const sourceRange: Range = [start, end];
-    // Link the template/section group to the block
-    bind(source, childBlockModule, { sourceRange });
-    promises.push(
-      // Traverse the child block themselves
-      traverseModule(childBlockModule, themeGraph, deps),
-      // Traverse the child block references
-      traverseBlockReferences(source, sourceAst, path, childBlock, themeGraph, deps),
-    );
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+
+    if (typeProperty) {
+      const childBlockModule = getThemeBlockModule(themeGraph, childBlock.type);
+      const sourceRange: Range = [typeProperty.loc.start.offset, typeProperty.loc.end.offset];
+      // Link the template or section group to the block
+      bind(source, childBlockModule, { sourceRange });
+      // Traverse the block itself
+      promises.push(traverseModule(childBlockModule, themeGraph, deps));
+    }
+
+    // Traverse the block's own blocks
+    promises.push(traverseBlockReferences(source, sourceAst, path, childBlock, themeGraph, deps));
   }
 
   return Promise.all(promises);
