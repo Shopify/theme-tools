@@ -23,19 +23,19 @@ const ROOT_ANCHOR_GLOB = '**/{.theme-check.yml,shopify.extension.toml,snippets/*
 
 /**
  * On extension startup, surface orphaned (dead) files with a dismissable
- * notification instead of requiring the user to run the dead-code command. Gated
- * by the `themeCheck.checkOrphanedFilesOnBoot` setting, and off when
+ * notification instead of requiring the user to run the dead-code command. Opt in
+ * with the `themeCheck.checkOrphanedFilesOnBoot` setting. It stays off when
  * `themeCheck.preloadOnBoot` is false because finding dead code builds the theme
  * graph that setting turns off.
  *
  * A workspace can contain more than one theme, so this prompts once per theme root
- * that has orphaned files — each notification's count matches the files its own
- * "Review" picker opens (no cross-theme aggregation).
+ * that has orphaned files. Each notification names its theme, and its count
+ * matches the files its own "Review" picker opens (no cross-theme aggregation).
  */
 export async function checkOrphanedFilesOnBoot(client: BaseLanguageClient): Promise<void> {
   const config = workspace.getConfiguration();
   if (!config.get(PRELOAD_ON_BOOT_SETTING, true)) return;
-  if (!config.get(CHECK_ORPHANED_ON_BOOT_SETTING, true)) return;
+  if (!config.get(CHECK_ORPHANED_ON_BOOT_SETTING, false)) return;
 
   const anchors = await workspace.findFiles(ROOT_ANCHOR_GLOB, '**/node_modules/**');
   const roots = await themeRoots(client, anchors);
@@ -79,14 +79,15 @@ async function themeRoots(client: BaseLanguageClient, anchors: Uri[]) {
  */
 async function promptForRoot(rootUri: string, deadCode: string[]): Promise<boolean> {
   const count = deadCode.length;
+  const name = themeName(rootUri);
   const choice = await window.showInformationMessage(
-    `Found ${count} orphaned file${count === 1 ? '' : 's'} in your theme.`,
+    `Found ${count} orphaned file${count === 1 ? '' : 's'} in theme "${name}".`,
     REVIEW,
     DONT_SHOW_AGAIN,
   );
 
   if (choice === REVIEW) {
-    await showDeadCodePicker(rootUri, deadCode);
+    await showDeadCodePicker(rootUri, deadCode, `Orphaned files in ${name}`);
   } else if (choice === DONT_SHOW_AGAIN) {
     await workspace
       .getConfiguration()
@@ -95,4 +96,15 @@ async function promptForRoot(rootUri: string, deadCode: string[]): Promise<boole
   }
 
   return false;
+}
+
+/**
+ * Names a theme by its path in the workspace, or by its folder name when the
+ * theme is a workspace folder.
+ */
+function themeName(rootUri: string): string {
+  const uri = Uri.parse(rootUri);
+  const folder = workspace.getWorkspaceFolder(uri);
+  if (!folder || folder.uri.toString() === uri.toString()) return path.basename(rootUri);
+  return workspace.asRelativePath(uri, false);
 }

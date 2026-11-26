@@ -42,4 +42,34 @@ describe('Module: ThemeGraphManager', () => {
 
     expect(await manager.getReferences(card)).toHaveLength(1);
   });
+
+  it('reports only orphaned theme files the graph can link to', async () => {
+    const rootUri = path.normalize('file:/theme');
+    const fs = new MockFileSystem(
+      {
+        'layout/theme.liquid': "{{ 'theme.css' | asset_url }}",
+        'assets/theme.css.liquid': '',
+        'assets/unused.js': '',
+        'assets/unused.css.liquid': '',
+        'assets/icon.svg.liquid': '',
+        'assets/jsconfig.json': '{}',
+        'assets/package.json': '{}',
+        'assets-old/unused.js': '',
+        'snippets/unused.liquid': '',
+      },
+      rootUri,
+    );
+    const manager = new ThemeGraphManager(
+      mockConnection(rootUri),
+      new DocumentManager(fs),
+      fs,
+      async () => rootUri,
+    );
+
+    expect(await manager.deadCode(rootUri)).toEqual(
+      ['assets/unused.css.liquid', 'assets/unused.js', 'snippets/unused.liquid'].map((file) =>
+        path.join(rootUri, file),
+      ),
+    );
+  });
 });
