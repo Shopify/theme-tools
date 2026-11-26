@@ -62,6 +62,8 @@ export * from './to-schema';
 export * from './to-source-code';
 export * from './types';
 export * from './utils/error';
+export { getFileSize, type GetFileSizeOptions } from './utils/file-utils';
+export { isPublicIpAddress, toRemoteAssetUrl } from './utils/remote-asset-url';
 export * from './utils/indexBy';
 export * from './utils/memo';
 export * from './utils/types';

@@ -12,7 +12,7 @@ import { Reference } from '@shopify/theme-graph';
 
 export type Dependencies = WithOptional<
   RequiredDependencies,
-  'log' | 'getMetafieldDefinitions' | 'fetchMetafieldDefinitionsForURI'
+  'log' | 'getMetafieldDefinitions' | 'fetchMetafieldDefinitionsForURI' | 'remoteFileSize'
 >;
 
 export interface RequiredDependencies {
@@ -98,6 +98,13 @@ export interface RequiredDependencies {
    * This should only be used in node environments; not on the browser.
    */
   fetchMetafieldDefinitionsForURI: (uri: URI) => Promise<void>;
+
+  /**
+   * The size of a remote asset, for AssetSizeCSS and AssetSizeJavaScript. Theme Check's default
+   * refuses local and private URLs, but it can't see what a host name resolves to. In Node,
+   * theme-check-node's `remoteFileSize` checks the resolved addresses too.
+   */
+  remoteFileSize: NonNullable<ThemeCheckDependencies['remoteFileSize']>;
 }
 
 export namespace ThemeGraphReferenceRequest {

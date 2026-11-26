@@ -479,6 +479,49 @@ fn looks_up_theme_files_only_in_the_theme() {
 }
 
 #[test]
+fn sends_no_request_to_a_loopback_address() {
+    use std::io::{BufRead, BufReader, Write};
+    // A server on 127.0.0.1 that records the paths it is asked for, and answers each with a large
+    // `Content-Length`.
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let requests = std::sync::Arc::new(std::sync::Mutex::new(Vec::<String>::new()));
+    let recorded = requests.clone();
+    std::thread::spawn(move || {
+        for mut stream in listener.incoming().flatten() {
+            let mut lines = BufReader::new(stream.try_clone().unwrap()).lines();
+            let line = lines.next().and_then(Result::ok).unwrap_or_default();
+            while lines
+                .next()
+                .and_then(Result::ok)
+                .is_some_and(|l| !l.is_empty())
+            {}
+            recorded.lock().unwrap().push(line);
+            let _ = stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 1000000\r\n\r\n");
+        }
+    });
+    let config = "extends: nothing\nAssetSizeCSS:\n  enabled: true\n  thresholdInBytes: 1\nAssetSizeJavaScript:\n  enabled: true\n  thresholdInBytes: 1\n";
+    let liquid = format!(
+        "<link rel=\"stylesheet\" href=\"http://127.0.0.1:{port}/link.css\">\n\
+         {{{{ 'http://127.0.0.1:{port}/tag.css' | stylesheet_tag }}}}\n\
+         <script src=\"http://localhost:{port}/script.js\"></script>\n\
+         {{{{ 'http://0x7f000001:{port}/tag.js' | script_tag }}}}\n"
+    );
+    let dir = fixture(
+        "loopback",
+        &[
+            ("theme/.theme-check.yml", config),
+            ("theme/snippets/assets.liquid", &liquid),
+        ],
+    );
+
+    let (offenses, _, _) = parse(&theme_check(&dir, &["theme"]));
+
+    assert_eq!(offenses, Vec::<String>::new());
+    assert_eq!(*requests.lock().unwrap(), Vec::<String>::new());
+}
+
+#[test]
 fn finds_liquid_doc_definitions_wherever_the_theme_is() {
     let theme = |root: &str| {
         [

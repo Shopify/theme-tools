@@ -1,5 +1,10 @@
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
-import { AbstractFileSystem, LoadConfigOptions, NodeFileSystem } from '@shopify/theme-check-node';
+import {
+  AbstractFileSystem,
+  LoadConfigOptions,
+  NodeFileSystem,
+  remoteFileSize,
+} from '@shopify/theme-check-node';
 import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
@@ -27,5 +32,6 @@ export function startServer(
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
     fetchMetafieldDefinitionsForURI,
+    remoteFileSize,
   });
 }

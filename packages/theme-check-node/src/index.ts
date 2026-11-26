@@ -35,6 +35,7 @@ import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
 import { LoadConfigOptions } from './config/types';
 import { NodeFileSystem } from './NodeFileSystem';
+import { remoteFileSize } from './remote-file-size';
 import { fileURLToPath } from 'node:url';
 
 const asyncGlob = promisify(glob);
@@ -42,6 +43,7 @@ const asyncGlob = promisify(glob);
 export * from '@shopify/theme-check-common';
 export * from './config/types';
 export { NodeFileSystem };
+export { remoteFileSize };
 
 export const loadConfig: typeof resolveConfig = async (configPath, root, options = {}) => {
   configPath ??= await findConfigPath(root);
@@ -191,6 +193,7 @@ export async function themeCheckRun(
     fs: NodeFileSystem,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
+    remoteFileSize,
 
     // This is kind of gross, but we want those things to be lazy and called by name so...
     // In the language server, this is memo'ed in DocumentManager, but we don't have that kind

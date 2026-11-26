@@ -29,11 +29,17 @@ export function makeRunChecks(
     themeDocset,
     jsonValidationSet,
     getMetafieldDefinitions,
+    remoteFileSize,
     cssLanguageService,
     themeGraphManager,
   }: Pick<
     Dependencies,
-    'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet' | 'getMetafieldDefinitions'
+    | 'fs'
+    | 'loadConfig'
+    | 'themeDocset'
+    | 'jsonValidationSet'
+    | 'getMetafieldDefinitions'
+    | 'remoteFileSize'
   > & { cssLanguageService?: CSSLanguageService; themeGraphManager?: ThemeGraphManager },
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
@@ -68,6 +74,7 @@ export function makeRunChecks(
         themeDocset,
         jsonValidationSet,
         getMetafieldDefinitions,
+        remoteFileSize,
 
         async getReferences(uri: string): Promise<Reference[]> {
           if (!themeGraphManager) return [];
