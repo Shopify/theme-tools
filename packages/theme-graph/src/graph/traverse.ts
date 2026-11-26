@@ -207,12 +207,15 @@ async function traverseLiquidModule(
     },
   };
 
-  const references = await Promise.all(
-    visit(sourceCode.ast, visitor).map(async (reference) => ({
-      ...reference,
-      target: await servingAsset(reference.target, themeGraph, deps),
-    })),
+  const visited = visit(sourceCode.ast, visitor);
+  const servedTargets = new Map(
+    await Promise.all(
+      unique(visited.map((ref) => ref.target)).map(
+        async (target) => [target, await servingAsset(target, themeGraph, deps)] as const,
+      ),
+    ),
   );
+  const references = visited.map((ref) => ({ ...ref, target: servedTargets.get(ref.target)! }));
 
   for (const reference of references) {
     bind(module, reference.target, {
@@ -239,9 +242,9 @@ async function traverseLiquidModule(
 }
 
 /**
- * A reference to `theme.css` reaches `assets/theme.css.liquid` when
- * `assets/theme.css` doesn't exist, since Shopify serves the rendered Liquid
- * asset under that name. The same goes for `.js`.
+ * A reference to `theme.css` reaches `assets/theme.css.liquid` when that file
+ * exists, since Shopify renders it and serves it under that name. Otherwise it
+ * reaches `assets/theme.css`. The same goes for `.js`.
  */
 async function servingAsset(
   target: ThemeModule,
@@ -252,7 +255,6 @@ async function servingAsset(
 
   const asset = path.basename(target.uri);
   if (isLiquidAsset(asset)) return target;
-  if (await exists(deps.fs, target.uri)) return target;
 
   const liquidAsset = getAssetModule(themeGraph, `${asset}.liquid`)!;
   if (await exists(deps.fs, liquidAsset.uri)) return liquidAsset;

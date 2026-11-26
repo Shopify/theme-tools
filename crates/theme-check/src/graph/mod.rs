@@ -577,9 +577,12 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         });
 
+        let mut served = HashMap::new();
         let mut seen = HashSet::new();
         for &(target, source_range, target_range) in &refs {
-            let target = self.serving_asset(target);
+            let target = *served
+                .entry(target)
+                .or_insert_with(|| self.serving_asset(target));
             self.bind(m, target, Some(source_range), target_range, RefType::Direct);
             if seen.insert(target) {
                 self.queue.push_back(target);
@@ -625,14 +628,15 @@ impl<'d, 'a> Builder<'d, 'a> {
     }
 
     /// `servingAsset(target, themeGraph, deps)`: a reference to `theme.css` reaches
-    /// `assets/theme.css.liquid` when `assets/theme.css` doesn't exist. The same goes for `.js`.
+    /// `assets/theme.css.liquid` when that file exists, and `assets/theme.css` otherwise. The
+    /// same goes for `.js`.
     fn serving_asset(&mut self, target: usize) -> usize {
         let module = &self.g.all[target];
         if !matches!(module.module_type, ModuleType::Css | ModuleType::JavaScript) {
             return target;
         }
         let asset = path::basename(&module.uri, None);
-        if is_liquid_asset(&asset) || self.deps.fs.stat(&module.uri).is_ok() {
+        if is_liquid_asset(&asset) {
             return target;
         }
         let Some(liquid_asset) = self.g.asset_module(&format!("{asset}.liquid")) else {
