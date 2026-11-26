@@ -51,19 +51,32 @@ impl<'a> LiquidCheck<'a> for Check {
 
         let b = get_blocks(valid_schema)?;
         if !b.root_level_local_blocks.is_empty() {
+            // Presets may use the local blocks. `default` may use any type declared at the root,
+            // which also includes `@app`.
             let local_block_types: Vec<_> = b
                 .root_level_local_blocks
                 .iter()
                 .map(|block| block.ty())
                 .collect();
+            let root_block_types: Vec<_> = match get(valid_schema, "blocks")? {
+                Some(Value::Array(blocks)) => {
+                    blocks.iter().map(|block| block.get("type")).collect()
+                }
+                _ => Vec::new(),
+            };
             let references = b
                 .preset_level_blocks
                 .first()
                 .into_iter()
                 .flatten()
-                .chain(&b.default_level_blocks);
-            for block in references {
-                if !local_block_types.contains(&block.ty()) {
+                .map(|block| (block, &local_block_types))
+                .chain(
+                    b.default_level_blocks
+                        .iter()
+                        .map(|block| (block, &root_block_types)),
+                );
+            for (block, allowed) in references {
+                if !allowed.contains(&block.ty()) {
                     report_warning(
                         cx,
                         format!(
