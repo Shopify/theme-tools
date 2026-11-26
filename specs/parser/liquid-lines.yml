@@ -2431,3 +2431,551 @@ cases:
                   value: Y
                   position: { start: [4, 5], text: "'Y'" }
                 filters: []
+  - name: should parse a style body inside {% liquid %} as Liquid statements
+    source: |-
+      {% liquid
+        style
+          echo x
+          if a
+            echo b
+          endif
+        endstyle
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            style
+              echo x
+              if a
+                echo b
+              endif
+            endstyle
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  echo x
+                  if a
+                    echo b
+                  endif
+                endstyle
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                style
+                  echo x
+                  if a
+                    echo b
+                  endif
+                endstyle
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  echo x
+                  if a
+                    echo b
+                  endif
+                endstyle
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: style
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: style }
+              blockEndPosition: { start: [6, 2], text: endstyle }
+              position:
+                start: [1, 2]
+                text: |-
+                  style
+                      echo x
+                      if a
+                        echo b
+                      endif
+                    endstyle
+              body:
+                type: RawMarkup
+                kind: text
+                value: "    echo x
+
+                  \    if a
+
+                  \      echo b
+
+                  \    endif
+
+                  \  "
+                position:
+                  start: [1, 7]
+                  text: "
+
+                    \    echo x
+
+                    \    if a
+
+                    \      echo b
+
+                    \    endif
+
+                    \  "
+                nodes:
+                  - type: LiquidTag
+                    name: echo
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    blockStartPosition: { start: [2, 4], text: echo x }
+                    markupPosition: { start: [2, 9], text: x }
+                    position: { start: [2, 4], text: echo x }
+                    markup:
+                      type: LiquidVariable
+                      rawSource: x
+                      position: { start: [2, 9], text: x }
+                      expression:
+                        type: VariableLookup
+                        name: x
+                        position: { start: [2, 9], text: x }
+                        lookups: []
+                        lookupModes: []
+                      filters: []
+                  - type: LiquidTag
+                    name: if
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    delimiterWhitespaceStart: ""
+                    delimiterWhitespaceEnd: ""
+                    blockStartPosition: { start: [3, 4], text: if a }
+                    blockEndPosition: { start: [5, 4], text: endif }
+                    markupPosition: { start: [3, 7], text: a }
+                    position:
+                      start: [3, 4]
+                      text: |-
+                        if a
+                              echo b
+                            endif
+                    markup:
+                      type: VariableLookup
+                      name: a
+                      position: { start: [3, 7], text: a }
+                      lookups: []
+                      lookupModes: []
+                    children:
+                      - type: LiquidBranch
+                        name: null
+                        markup: ""
+                        whitespaceStart: ""
+                        whitespaceEnd: ""
+                        markupPosition: { start: [3, 8], text: "" }
+                        blockStartPosition: { start: [3, 8], text: "" }
+                        blockEndPosition: { start: [5, 4], text: "" }
+                        position:
+                          start: [3, 8]
+                          text: "\n      echo b\n    "
+                        children:
+                          - type: LiquidTag
+                            name: echo
+                            whitespaceStart: ""
+                            whitespaceEnd: ""
+                            blockStartPosition: { start: [4, 6], text: echo b }
+                            markupPosition: { start: [4, 11], text: b }
+                            position: { start: [4, 6], text: echo b }
+                            markup:
+                              type: LiquidVariable
+                              rawSource: b
+                              position: { start: [4, 11], text: b }
+                              expression:
+                                type: VariableLookup
+                                name: b
+                                position: { start: [4, 11], text: b }
+                                lookups: []
+                                lookupModes: []
+                              filters: []
+  - name: should parse an empty style body inside {% liquid %}
+    source: |-
+      {% liquid
+        style
+        endstyle
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            style
+            endstyle
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                endstyle
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                style
+                endstyle
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                endstyle
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: style
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: style }
+              blockEndPosition: { start: [2, 2], text: endstyle }
+              position:
+                start: [1, 2]
+                text: |-
+                  style
+                    endstyle
+              body:
+                type: RawMarkup
+                kind: text
+                value: "  "
+                position:
+                  start: [1, 7]
+                  text: "\n  "
+                nodes: []
+  - name: should keep a comment inside a style body inside {% liquid %} as text
+    source: |-
+      {% liquid
+        style
+          comment
+            .a { color: red; }
+          endcomment
+          echo x
+        endstyle
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            style
+              comment
+                .a { color: red; }
+              endcomment
+              echo x
+            endstyle
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  comment
+                    .a { color: red; }
+                  endcomment
+                  echo x
+                endstyle
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                style
+                  comment
+                    .a { color: red; }
+                  endcomment
+                  echo x
+                endstyle
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  comment
+                    .a { color: red; }
+                  endcomment
+                  echo x
+                endstyle
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: style
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: style }
+              blockEndPosition: { start: [6, 2], text: endstyle }
+              position:
+                start: [1, 2]
+                text: |-
+                  style
+                      comment
+                        .a { color: red; }
+                      endcomment
+                      echo x
+                    endstyle
+              body:
+                type: RawMarkup
+                kind: text
+                value: "    comment
+
+                  \      .a { color: red; }
+
+                  \    endcomment
+
+                  \    echo x
+
+                  \  "
+                position:
+                  start: [1, 7]
+                  text: "
+
+                    \    comment
+
+                    \      .a { color: red; }
+
+                    \    endcomment
+
+                    \    echo x
+
+                    \  "
+                nodes:
+                  - type: LiquidRawTag
+                    name: comment
+                    markup: ""
+                    markupPosition: { start: [2, 11], text: "" }
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    delimiterWhitespaceStart: ""
+                    delimiterWhitespaceEnd: ""
+                    blockStartPosition: { start: [2, 4], text: comment }
+                    blockEndPosition: { start: [4, 4], text: endcomment }
+                    position:
+                      start: [2, 4]
+                      text: |-
+                        comment
+                              .a { color: red; }
+                            endcomment
+                    body:
+                      type: RawMarkup
+                      kind: text
+                      value: "      .a { color: red; }\n    "
+                      position:
+                        start: [2, 11]
+                        text: "\n      .a { color: red; }\n    "
+                      nodes:
+                        - type: TextNode
+                          value: ".a { color: red; }"
+                          position: { start: [3, 6], text: ".a { color: red; }" }
+                  - type: LiquidTag
+                    name: echo
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    blockStartPosition: { start: [5, 4], text: echo x }
+                    markupPosition: { start: [5, 9], text: x }
+                    position: { start: [5, 4], text: echo x }
+                    markup:
+                      type: LiquidVariable
+                      rawSource: x
+                      position: { start: [5, 9], text: x }
+                      expression:
+                        type: VariableLookup
+                        name: x
+                        position: { start: [5, 9], text: x }
+                        lookups: []
+                        lookupModes: []
+                      filters: []
+  - name: should leave the liquid tag unparsed when a block inside its style body is unclosed
+    source: |-
+      {% liquid
+        style
+          if a
+        endstyle
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            style
+              if a
+            endstyle
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          markup: |-
+            style
+                if a
+              endstyle
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  if a
+                endstyle
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                style
+                  if a
+                endstyle
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  if a
+                endstyle
+              %}
+          reason: Unclosed block tag 'if' in {% liquid %} block
+  - name: should leave a block inside a style body inside {% liquid %} unclosed at endstyle
+    source: |-
+      {% liquid
+        style
+          if a
+        endstyle
+      %}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            style
+              if a
+            endstyle
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  if a
+                endstyle
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                style
+                  if a
+                endstyle
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                style
+                  if a
+                endstyle
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: style
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: style }
+              blockEndPosition: { start: [3, 2], text: endstyle }
+              position:
+                start: [1, 2]
+                text: |-
+                  style
+                      if a
+                    endstyle
+              body:
+                type: RawMarkup
+                kind: text
+                value: "    if a\n  "
+                position:
+                  start: [1, 7]
+                  text: "\n    if a\n  "
+                nodes:
+                  - type: LiquidTag
+                    name: if
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    delimiterWhitespaceStart: ""
+                    delimiterWhitespaceEnd: ""
+                    blockStartPosition: { start: [2, 4], text: if a }
+                    blockEndPosition: { start: [2, 8], text: "" }
+                    markupPosition: { start: [2, 7], text: a }
+                    position: { start: [2, 4], text: if a }
+                    markup:
+                      type: VariableLookup
+                      name: a
+                      position: { start: [2, 7], text: a }
+                      lookups: []
+                      lookupModes: []
+                    children:
+                      - type: LiquidBranch
+                        name: null
+                        markup: ""
+                        whitespaceStart: ""
+                        whitespaceEnd: ""
+                        markupPosition: { start: [2, 8], text: "" }
+                        blockStartPosition: { start: [2, 8], text: "" }
+                        blockEndPosition: { start: [2, 8], text: "" }
+                        position: { start: [2, 8], text: "" }
+                        children: []

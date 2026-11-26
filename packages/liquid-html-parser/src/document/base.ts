@@ -84,6 +84,15 @@ export class ParserBase {
     return this.tokens.length;
   }
 
+  /**
+   * The token array the parser reads. Raw-boundary recovery and raw-text
+   * retokenization replace this array and never change it in place, so a result
+   * read from the array stays true while the parser reads the same array.
+   */
+  tokenList(): readonly Token[] {
+    return this.tokens;
+  }
+
   getPosition(): number {
     return this.p;
   }

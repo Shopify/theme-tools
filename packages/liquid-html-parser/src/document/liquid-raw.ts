@@ -11,6 +11,7 @@ import type { TagDefinition, TagDefinitionRaw } from '../environment';
 import { findRawBodyEnd, rawBodyRuleLookup } from './raw-body';
 import type { RawBodyEndCache } from './raw-body';
 import { LiquidHTMLASTParsingError } from '../errors';
+import { NodeTypes } from '../types';
 import { parseLiquidDoc } from '../liquid-doc/parser';
 
 /**
@@ -52,6 +53,11 @@ export function parseRawTag(
       parser.getSource(),
       envelope.blockStartPosition.start,
       envelope.blockStartPosition.end,
+      {
+        type: NodeTypes.LiquidRawTag,
+        name: tagName,
+        blockStartPosition: envelope.blockStartPosition,
+      },
     );
   }
 

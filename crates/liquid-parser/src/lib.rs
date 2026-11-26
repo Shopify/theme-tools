@@ -9,7 +9,7 @@
 //! Spans in the tree are byte offsets in the source.
 
 pub use liquid_ast as ast;
-use liquid_ast::Document;
+use liquid_ast::{Document, Span};
 use std::ops::Range;
 
 mod html;
@@ -85,13 +85,27 @@ pub struct ParseError {
     pub message: String,
     /// Where, in byte offsets.
     pub range: Range<usize>,
-    /// TS's error class: `LiquidHTMLParsingError`, with `loc` set (TS's `unclosed` is always null
-    /// on these code paths), or `RangeError` for too-deep input, without it.
+    /// The node the error says was never closed, if any. Boxed to keep `Result`s small.
+    pub unclosed: Option<Box<Unclosed>>,
+    /// TS's error class: `LiquidHTMLParsingError`, with `loc` set, or `RangeError` for too-deep
+    /// input, without it.
     #[doc(hidden)]
     pub name: &'static str,
     /// TS's 1-based, UTF-16 `loc`.
     #[doc(hidden)]
     pub loc: Option<Loc>,
+}
+
+/// The node a parse error says was never closed.
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct Unclosed {
+    /// Its TS node type, such as `HtmlElement` or `LiquidTag`.
+    pub kind: &'static str,
+    /// As written in the template: `h{{ level }}` for `<h{{ level }}>`.
+    pub name: String,
+    /// Its opening tag, in byte offsets.
+    pub start_tag: Range<usize>,
 }
 
 impl ParseError {
@@ -100,8 +114,19 @@ impl ParseError {
             name: "LiquidHTMLParsingError",
             message,
             range: start..end,
+            unclosed: None,
             loc: None,
         }
+    }
+
+    /// Names the node this error says was never closed.
+    pub(crate) fn unclosed(mut self, kind: &'static str, name: &str, start_tag: Span) -> Self {
+        self.unclosed = Some(Box::new(Unclosed {
+            kind,
+            name: name.to_string(),
+            start_tag: start_tag.start..start_tag.end,
+        }));
+        self
     }
 
     pub(crate) fn plain(message: String) -> Self {
@@ -109,6 +134,7 @@ impl ParseError {
             name: "Error",
             message,
             range: 0..0,
+            unclosed: None,
             loc: None,
         }
     }

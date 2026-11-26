@@ -1345,6 +1345,10 @@ cases:
       message: Attempting to close LiquidTag 'section' before LiquidTag 'if' was closed
       start: [0, 0]
       text: "{% if a %}"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 0], text: "{% if a %}" }
   - name: should still throw on stray end tags for other registered tags (1)
     source: "{% endrender %}"
     parse: [html, liquid]
@@ -1366,6 +1370,10 @@ cases:
       message: Attempting to close LiquidTag 'render' before LiquidTag 'if' was closed
       start: [0, 0]
       text: "{% if a %}"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 0], text: "{% if a %}" }
   - name: should correctly report the position of branches (1)
     source: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}"
     parse: [html]

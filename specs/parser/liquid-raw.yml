@@ -1270,6 +1270,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'raw' was closed
       start: [0, 0]
       text: "{% raw %}"
+      unclosed:
+        type: LiquidRawTag
+        name: raw
+        blockStartPosition: { start: [0, 0], text: "{% raw %}" }
   - name: should work with toLiquidAST
     source: "{% raw %}hello{% endraw %}"
     parse: [liquid]
@@ -2012,6 +2016,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'doc' was closed
       start: [0, 0]
       text: "{% doc %}"
+      unclosed:
+        type: LiquidRawTag
+        name: doc
+        blockStartPosition: { start: [0, 0], text: "{% doc %}" }
   - name: nests a style tag and skips raw bodies inside it, as Liquid::Block does
     source: "{% style %}a{% style %}b{% endstyle %}{% comment %}{% endstyle %}{% endcomment %}c{% endstyle %}Y"
     parse: [html]
@@ -2290,6 +2298,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'comment' was closed
       start: [0, 0]
       text: "{% comment %}"
+      unclosed:
+        type: LiquidRawTag
+        name: comment
+        blockStartPosition: { start: [0, 0], text: "{% comment %}" }
   - name: rejects an open tag that runs into a nested endcomment
     source: |-
       {% comment %}
@@ -2302,6 +2314,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'comment' was closed
       start: [0, 0]
       text: "{% comment %}"
+      unclosed:
+        type: LiquidRawTag
+        name: comment
+        blockStartPosition: { start: [0, 0], text: "{% comment %}" }
   - name: rejects an open variable that runs into the endcomment
     source: |-
       {% comment %}
@@ -2311,6 +2327,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'comment' was closed
       start: [0, 0]
       text: "{% comment %}"
+      unclosed:
+        type: LiquidRawTag
+        name: comment
+        blockStartPosition: { start: [0, 0], text: "{% comment %}" }
   - name: closes child comment tags
     source: |-
       {% comment %}
@@ -2388,6 +2408,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'comment' was closed
       start: [0, 0]
       text: "{% comment %}"
+      unclosed:
+        type: LiquidRawTag
+        name: comment
+        blockStartPosition: { start: [0, 0], text: "{% comment %}" }
   - name: skips a closed child raw tag in a comment
     source: |-
       {% comment %}
@@ -2464,6 +2488,10 @@ cases:
       message: Attempting to end parsing before LiquidRawTag 'comment' was closed
       start: [0, 0]
       text: "{% comment %}"
+      unclosed:
+        type: LiquidRawTag
+        name: comment
+        blockStartPosition: { start: [0, 0], text: "{% comment %}" }
   - name: closes a nested comment on an endcomment with extra strings
     source: |-
       {% comment %}

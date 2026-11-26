@@ -1,12 +1,37 @@
 //! `utils/file-utils.ts`
 
 use crate::context::{CheckError, Context};
-use crate::js;
+use crate::{js, path};
 use serde_json::{json, Value};
+
+/// `isAssetFileName(context, fileName)`: only files directly in `assets`, both as written
+/// and after the file system decodes the URI.
+pub fn is_asset_file_name(cx: &Context, file_name: &str) -> bool {
+    let uri = cx.to_uri(&format!("assets/{file_name}"));
+    let base_name = path::basename(&uri, None);
+    !file_name.contains(['/', '\\'])
+        && !base_name.contains(['/', '\\'])
+        && base_name != "."
+        && base_name != ".."
+        && path::dirname(&uri) == cx.to_uri("assets")
+}
+
+/// `isInThemeDirectory(context, relativePath)`: whether the path stays in the theme directory that
+/// its first segment names, as the file system reads the path.
+fn is_in_theme_directory(cx: &Context, relative_path: &str) -> bool {
+    let directory = relative_path
+        .split_once('/')
+        .map_or("", |(directory, _)| directory);
+    let mut directory_path = path::file_system_path(&cx.to_uri(directory));
+    if !directory_path.ends_with('/') {
+        directory_path.push('/');
+    }
+    path::file_system_path(&cx.to_uri(relative_path)).starts_with(&directory_path)
+}
 
 /// `doesFileExist(context, relativePath)`
 pub fn does_file_exist(cx: &Context, relative_path: &str) -> bool {
-    cx.file_exists(&cx.to_uri(relative_path))
+    is_in_theme_directory(cx, relative_path) && cx.file_exists(&cx.to_uri(relative_path))
 }
 
 /// `doesFileExceedThreshold(context, relativePath, thresholdInBytes)`: `[fileSize > threshold,
@@ -16,6 +41,9 @@ pub fn does_file_exceed_threshold(
     relative_path: &str,
     threshold: &Value,
 ) -> (bool, usize) {
+    if !is_in_theme_directory(cx, relative_path) {
+        return (false, 0);
+    }
     let size = cx.file_size(&cx.to_uri(relative_path));
     (size as f64 > js::to_number(threshold), size)
 }

@@ -43,6 +43,8 @@ export function schemaSettingLiquidType(settingType: string): string | undefined
       return 'collection[]';
     case 'product_list':
       return 'product[]';
+    case 'article_list':
+      return 'article[]';
     default:
       return undefined;
   }

@@ -1,5 +1,18 @@
 # @shopify/liquid-html-parser
 
+## 2.12.2
+
+### Patch Changes
+
+- 61cae020: Keep tolerant parsing proportional to the source for documents with many unclosed `{% raw %}` or `{% comment %}` tags followed by plain `endraw` or `endcomment` text. Each unclosed tag no longer searches the rest of the document again when that text appears after it.
+
+## 2.12.1
+
+### Patch Changes
+
+- f1f29bdd: Parse a run of blank lines in a `{% doc %}` body in one pass when text follows it. Before, the parser looked ahead to the end of the run again from each newline in the run, so the parse time grew with the square of the number of blank lines. The parsed nodes are unchanged.
+- cbe4c7f2: Keep tolerant parsing proportional to the source for documents with many unclosed `{% raw %}` or `{% comment %}` tags. Each unclosed tag no longer searches the rest of the document again, and nested comments reuse what an enclosing search found.
+
 ## 2.12.0
 
 ### Minor Changes

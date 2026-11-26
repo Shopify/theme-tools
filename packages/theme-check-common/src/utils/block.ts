@@ -53,7 +53,8 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema) {
     currentPath: string[],
     depth: number = 0,
   ) {
-    if (!block) return;
+    // Section presets may also name a block with a plain string; only objects are checked.
+    if (!block || typeof block !== 'object') return;
 
     if (!presetLevelBlocks[depth]) {
       presetLevelBlocks[depth] = [];
@@ -82,14 +83,13 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema) {
   }
 
   function categorizeDefaultLevelBlocks(block: Preset.Block, index: number) {
-    const hasName = 'name' in block;
+    // `default` may also name a block with a plain string; only objects are checked.
+    if (!block || typeof block !== 'object') return;
 
-    if (hasName) {
-      defaultLevelBlocks.push({
-        node: block,
-        path: ['default', 'blocks', String(index), 'type'],
-      });
-    }
+    defaultLevelBlocks.push({
+      node: block,
+      path: ['default', 'blocks', String(index), 'type'],
+    });
   }
 
   if (Array.isArray(rootLevelBlocks)) {

@@ -12,8 +12,6 @@ const SYNTAX_ERROR: &str = "Syntax error in 'block' tag";
 const BARE_ARRAY_ACCESS: &str = "Bare bracket access is not allowed in strict2 mode";
 const DOTTED_ARGUMENT: &str =
     "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
-const APP_BLOCK_ARGUMENTS: &str =
-    "Liquid syntax error: in 'block' - app blocks do not accept arguments";
 const APP_BLOCK_CONTENT: &str =
     "Liquid syntax error: in 'block' - app blocks do not accept content";
 const UNCLOSED_BLOCK_PARSER_ERROR: &str =
@@ -50,24 +48,34 @@ pub fn block_tag_syntax_error(node: &LiquidTag, source: &str) -> Option<Problem>
         _ => return syntax_problem(node.span, SYNTAX_ERROR),
     };
 
-    // The parser only accepts theme block names and canonical app block paths
-    // (shopify://apps/<app>/blocks/<handle>/<uuid>). App blocks render with the settings their app
-    // provides, so they take no arguments and no content.
-    if is_app_block_path(&markup.name.value) {
-        if markup.args.iter().any(|a| a.name != "block.name") {
-            return syntax_problem(node.span, APP_BLOCK_ARGUMENTS);
-        }
-        if has_content(node) {
-            return syntax_problem(node.span, APP_BLOCK_CONTENT);
-        }
-    }
-
     // Ruby Liquid still accepts the unsupported experimental block.settings.<id> and
     // block.content caller forms. Theme Check intentionally rejects every dotted argument except
     // block.name so authors move to plain arguments. Report the first one so body-form children
     // stay outside the offense.
     if let Some(dotted) = markup.args.iter().find(|a| is_dotted_argument(a)) {
         return syntax_problem(dotted.span, dotted_argument_message(&dotted.name));
+    }
+
+    // App settings map to JSON settings: only fixed scalars or flat arrays of them are allowed.
+    // Check every occurrence so a later fixed duplicate does not hide an earlier expression.
+    // block.name is metadata, not a setting.
+    if is_app_block_path(&markup.name.value) {
+        if let Some(dynamic) = markup
+            .args
+            .iter()
+            .find(|a| a.name != "block.name" && !is_fixed_app_setting(&a.value))
+        {
+            return syntax_problem(
+                dynamic.span,
+                format!(
+                    "Liquid syntax error: in 'block' - app block settings must be fixed values; '{}' is not a string, number, boolean or array of those",
+                    dynamic.name
+                ),
+            );
+        }
+        if has_content(node) {
+            return syntax_problem(node.span, APP_BLOCK_CONTENT);
+        }
     }
 
     if markup.args.iter().any(is_invalid_block_name_argument) {
@@ -119,6 +127,18 @@ fn syntax_problem(span: Span, message: impl Into<Cow<'static, str>>) -> Option<P
 
 fn is_app_block_path(value: &str) -> bool {
     value.starts_with("shopify://apps/")
+}
+
+fn is_fixed_app_setting(value: &Node) -> bool {
+    match value {
+        Node::BlockArrayLiteral(array) => array.elements.iter().all(is_fixed_app_scalar),
+        _ => is_fixed_app_scalar(value),
+    }
+}
+
+fn is_fixed_app_scalar(value: &Node) -> bool {
+    matches!(value, Node::String(_) | Node::Number(_))
+        || matches!(value, Node::LiquidLiteral(literal) if matches!(literal.keyword, "true" | "false"))
 }
 
 fn has_content(node: &LiquidTag) -> bool {

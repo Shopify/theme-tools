@@ -4,6 +4,7 @@ import {
   LiquidHtmlNode,
   NodeTypes,
   toLiquidHtmlAST,
+  toTolerantLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
 import {
   DocumentOnTypeFormattingParams,
@@ -66,18 +67,24 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider implements BaseOnTyp
       // here we fix `>` with `</$unclosed>`
       case '>': {
         const ast = document.ast;
+        const offset = textDocument.offsetAt(params.position);
+        let closedLater: boolean | undefined;
+        const elementIsClosedLater = () => (closedLater ??= isClosedLater(textDocument, offset));
         if (
           ast instanceof LiquidHTMLASTParsingError &&
           ast.unclosed &&
-          ast.unclosed.type === NodeTypes.HtmlElement &&
+          // <script> and <style> are HtmlRawNodes
+          (ast.unclosed.type === NodeTypes.HtmlElement ||
+            ast.unclosed.type === NodeTypes.HtmlRawNode) &&
           (ast.unclosed.blockStartPosition.end === textDocument.offsetAt(params.position) ||
-            shouldClose(ast.unclosed, nodeAtCursor(textDocument, params.position)))
+            (shouldClose(ast.unclosed, nodeAtCursor(textDocument, params.position)) &&
+              !elementIsClosedLater()))
         ) {
           defer(() => this.setCursorPosition(textDocument, params.position));
           return [TextEdit.insert(Position.create(line, character), `</${ast.unclosed.name}>`)];
         } else if (ast instanceof LiquidHTMLASTParsingError) {
           const node = nodeAtCursor(textDocument, params.position);
-          if (node && isDanglingHtmlElement(node)) {
+          if (node && isDanglingHtmlElement(node) && !elementIsClosedLater()) {
             defer(() => this.setCursorPosition(textDocument, params.position));
             return [TextEdit.insert(Position.create(line, character), `</${getName(node)}>`)];
           }
@@ -103,13 +110,53 @@ function nodeAtCursor(textDocument: TextDocument, position: Position) {
       mode: 'tolerant',
     });
 
-    const [node, ancestors] = findCurrentNode(ast, textDocument.offsetAt(position));
+    const offset = textDocument.offsetAt(position);
+    const [node, ancestors] = findCurrentNode(ast, offset);
+    if (node.type === NodeTypes.HtmlElement && node.blockStartPosition.end === offset) {
+      return node;
+    }
     if (ancestors.at(-1)?.type === NodeTypes.HtmlElement) return ancestors.at(-1)!;
     if (node.type === NodeTypes.LiquidBranch) return ancestors.at(-1)!;
     return node;
   } catch {
     return null;
   }
+}
+
+/**
+ * Whether the element whose opening tag ends at `offset` already has its
+ * closing tag further down, as the `<p>` in `<div><p>|</p>`. A closing tag
+ * that an unclosed ancestor of the same name could own doesn't count: in
+ * `<div><div>|</div>`, it's the outer `<div>`'s.
+ */
+function isClosedLater(textDocument: TextDocument, offset: number): boolean {
+  // The recovering parser keeps the closing tags it recognized before a later
+  // parse error, as in `<div><p>|</p>{{ unfinished`.
+  let ast: LiquidHtmlNode;
+  try {
+    ast = toTolerantLiquidHtmlAST(textDocument.getText());
+  } catch {
+    return false;
+  }
+
+  const ancestors: LiquidHtmlNode[] = [];
+  const find = (node: LiquidHtmlNode): HtmlElement | null => {
+    if (node.type === NodeTypes.HtmlElement && node.blockStartPosition.end === offset) return node;
+    const children = 'children' in node ? node.children : undefined;
+    if (!Array.isArray(children)) return null;
+    ancestors.push(node);
+    for (const child of children) {
+      const found = find(child);
+      if (found) return found;
+    }
+    ancestors.pop();
+    return null;
+  };
+
+  const element = find(ast);
+  if (!element || isDanglingHtmlElement(element)) return false;
+  const name = getName(element);
+  return !ancestors.some((node) => isDanglingHtmlElement(node) && getName(node) === name);
 }
 
 function shouldClose(unclosed: any, node: LiquidHtmlNode | null) {

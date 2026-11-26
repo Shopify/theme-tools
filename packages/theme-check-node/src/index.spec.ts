@@ -1,7 +1,16 @@
 import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest';
-import { Config, SourceCodeType, getTheme, getThemeFilesPathPattern } from './index';
+import os from 'node:os';
+import path from 'node:path';
+import {
+  Config,
+  Offense,
+  SourceCodeType,
+  getTheme,
+  getThemeFilesPathPattern,
+  themeCheckRun,
+} from './index';
 import { Workspace, makeTempWorkspace } from './test/test-helpers';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 describe('Unit: getTheme', () => {
   let workspace: Workspace;
@@ -47,5 +56,46 @@ describe('Unit: getThemeFilesPathPattern', () => {
     const normalizedGlob = getThemeFilesPathPattern(rootUri.toString());
 
     expect(normalizedGlob).to.equal(__dirname.replace(/\\/g, '/') + '/**/*.{liquid,json}');
+  });
+});
+
+describe('Integration: themeCheckRun', () => {
+  const theme = {
+    sections: {
+      'main.liquid': "{% render 'card' %}",
+    },
+    snippets: {
+      'card.liquid': `
+        {% doc %}
+          @param {string} title - The card title
+        {% enddoc %}
+      `,
+    },
+  };
+
+  const missingArguments = (offenses: Offense[]) =>
+    offenses.filter(({ check }) => check === 'MissingRenderSnippetArguments');
+
+  it('reports cross-file LiquidDoc errors when the root path has a space', async () => {
+    const workspace = await makeTempWorkspace(theme, path.join(os.tmpdir(), 'theme check.XXXXX'));
+    try {
+      const { offenses } = await themeCheckRun(fileURLToPath(workspace.rootUri));
+      expect(missingArguments(offenses)).toHaveLength(1);
+    } finally {
+      await workspace.clean();
+    }
+  });
+
+  it('reports cross-file LiquidDoc errors under the root set in the config', async () => {
+    const workspace = await makeTempWorkspace({
+      '.theme-check.yml': 'root: ./dist',
+      dist: theme,
+    });
+    try {
+      const { offenses } = await themeCheckRun(fileURLToPath(workspace.rootUri));
+      expect(missingArguments(offenses)).toHaveLength(1);
+    } finally {
+      await workspace.clean();
+    }
   });
 });

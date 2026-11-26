@@ -90,3 +90,14 @@ cases:
           <head>
           </head>
         </html>
+  - name: should not report the size of a file outside the assets directory
+    files:
+      outside.js: "console.log('hello world'); console.log('Oh. Hi Mark!')"
+      templates/index.liquid: |
+        <html>
+          <head>
+            <script src="{{ '../outside.js' | asset_url }}" defer></script>
+          </head>
+        </html>
+    config:
+      AssetSizeJavaScript: { thresholdInBytes: 2 }

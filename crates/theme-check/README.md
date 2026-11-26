@@ -45,9 +45,13 @@ let report = Checker::new()
     .run(&fs, "/theme")?;
 ```
 
-It also takes the docs, schemas, check settings and files to ignore. Without them, it runs the
-recommended checks, with the docs and schemas downloaded from theme-liquid-docs. Checks of your
-own walk the AST, as in the [crate docs](https://docs.rs/theme-check).
+It also takes the docs, schemas, check settings, files to ignore and a thread count. Without
+them, it runs the recommended checks on every core, with the docs and schemas downloaded from
+theme-liquid-docs. Checks of your own walk the AST, as in the
+[crate docs](https://docs.rs/theme-check).
+
+`checker.cancelable(&|| stop.load(Relaxed)).run(&fs, "/theme")` stops between files once the
+closure returns true, with an error whose `is_cancelled()` is true.
 
 ## The CLI
 

@@ -1,0 +1,331 @@
+check: LiquidSyntaxError
+severity: error
+cases:
+  - name: accepts strings, numbers, booleans, flat arrays and dynamic source strings on app blocks
+    files:
+      templates/test.liquid: |-
+        {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: "Hello", quoted_keyword: 'empty', count: -1, ratio: 1.5, enabled: true, disabled: false, empty_items: [], items: ['x', 2, true, false,], title: '{{ closest.product.title }}' %}
+          {% endblock %}
+  - name: accepts fixed app settings inside liquid tags
+    files:
+      templates/test.liquid: |-
+        {% liquid
+          block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: "Hello", quoted_keyword: 'empty', count: -1, ratio: 1.5, enabled: true, disabled: false, empty_items: [], items: ['x', 2, true, false,], title: '{{ closest.product.title }}'
+          endblock
+        %}
+  - name: does not treat whitespace as overriding an app setting named content
+    checks:
+      [
+        LiquidSyntaxError,
+        LiquidHTMLSyntaxError,
+        MissingBlockArguments,
+        UnrecognizedBlockArguments,
+        ValidBlockArgumentTypes,
+        DuplicateBlockArguments,
+      ]
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', content: 'Explicit' %}\n  {% endblock %}"
+  - name: accepts a string block.name alongside fixed app settings
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', block.name: 'Example', heading: 'Hi' %}{% endblock %}"
+  - name: 'rejects a non-fixed app setting: product.title'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: product.title, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: product.title"
+  - name: 'rejects a non-fixed app setting: title'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: title, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: title"
+  - name: "rejects a non-fixed app setting: product['title']"
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: product['title'], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: product['title']"
+  - name: 'rejects a non-fixed app setting: true.size'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: true.size, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: true.size"
+  - name: 'rejects a non-fixed app setting: true[0]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: true[0], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: true[0]"
+  - name: 'rejects a non-fixed app setting: (1..3)'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: (1..3), other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: (1..3)"
+  - name: 'rejects a non-fixed app setting: (1..n)'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: (1..n), other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: (1..n)"
+  - name: 'rejects a non-fixed app setting: nil'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: nil, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: nil"
+  - name: 'rejects a non-fixed app setting: null'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: null, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: null"
+  - name: 'rejects a non-fixed app setting: empty'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: empty, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: empty"
+  - name: 'rejects a non-fixed app setting: blank'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: blank, other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: blank"
+  - name: "rejects a non-fixed app setting: ['a', product.title]"
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: ['a', product.title], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: ['a', product.title]"
+  - name: 'rejects a non-fixed app setting: [nil]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: [nil], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: [nil]"
+  - name: 'rejects a non-fixed app setting: [null]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: [null], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: [null]"
+  - name: 'rejects a non-fixed app setting: [empty]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: [empty], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: [empty]"
+  - name: 'rejects a non-fixed app setting: [blank]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: [blank], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: [blank]"
+  - name: 'rejects a non-fixed app setting: [(1..3)]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: [(1..3)], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: [(1..3)]"
+  - name: 'rejects a non-fixed app setting: [true.size]'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', count: 1, title: [true.size], other: product.title %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 107
+        highlight: "title: [true.size]"
+  - name: rejects a dynamic app setting even when a later duplicate is fixed
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: product.title, title: 'fixed' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 97
+        highlight: "title: product.title"
+  - name: rejects a dynamic app setting inside liquid tags
+    files:
+      templates/test.liquid: |-
+        {% liquid
+          block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: product.title
+          endblock
+        %}
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 1
+          - 96
+        highlight: "title: product.title"
+  - name: reports namespaced app settings before dynamic values
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: product.title, block.settings.color: 'red' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'color:' instead of 'block.settings.color:' when calling a block."
+        start:
+          - 0
+          - 119
+        highlight: "block.settings.color: 'red'"
+  - name: 'rejects app body content with fixed settings: <p>inner</p>'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}<p>inner</p>{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app blocks do not accept content"
+        start:
+          - 0
+          - 0
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}<p>inner</p>{% endblock %}"
+  - name: 'rejects app body content with fixed settings: {{ product.title }}'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}{{ product.title }}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app blocks do not accept content"
+        start:
+          - 0
+          - 0
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}{{ product.title }}{% endblock %}"
+  - name: 'rejects app body content with fixed settings: {% assign x = 1 %}'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}{% assign x = 1 %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app blocks do not accept content"
+        start:
+          - 0
+          - 0
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}{% assign x = 1 %}{% endblock %}"
+  - name: 'rejects app body content with fixed settings: {% comment %}note{% endcomment %}'
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}{% comment %}note{% endcomment %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app blocks do not accept content"
+        start:
+          - 0
+          - 0
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: 'hello' %}{% comment %}note{% endcomment %}{% endblock %}"
+  - name: rejects a nested app setting array
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: [[1]] %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: Syntax error in 'block' tag
+        start:
+          - 0
+          - 0
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: [[1]] %}{% endblock %}"
+  - name: rejects a non-string block type
+    checks: [LiquidSyntaxError, LiquidHTMLSyntaxError]
+    files:
+      templates/test.liquid: '{% block false %}{% endblock %}'
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: Syntax error in 'block' tag
+        start:
+          - 0
+          - 0
+        highlight: '{% block false %}{% endblock %}'
+  - name: keeps dynamic theme block values unchanged
+    files:
+      templates/test.liquid: "{% block 'card', title: product.title, items: [x, nil, blank], range: (1..n) %}{% endblock %}"
+  - name: reports only the fixed-value error across block checks
+    files:
+      templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', title: product.title, title: 'fixed' %}{% endblock %}"
+    checks: &a1
+      - LiquidSyntaxError
+      - LiquidHTMLSyntaxError
+      - MissingBlockArguments
+      - UnrecognizedBlockArguments
+      - ValidBlockArgumentTypes
+      - DuplicateBlockArguments
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - app block settings must be fixed values; 'title' is not a string, number, boolean or array of those"
+        start:
+          - 0
+          - 97
+        highlight: "title: product.title"
+  - name: accepts fixed app settings across syntax and block parameter checks
+    files:
+      templates/test.liquid: '{% block ''shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'', heading: "Hello", quoted_keyword: ''empty'', count: -1, ratio: 1.5, enabled: true, disabled: false, empty_items: [], items: [''x'', 2, true, false,], title: ''{{ closest.product.title }}'' %}{% endblock %}'
+    checks: *a1

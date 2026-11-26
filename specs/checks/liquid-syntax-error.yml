@@ -799,22 +799,17 @@ cases:
   - name: "produces no diagnostics for {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', block.name: 'Example' %}{% endblock %}"
     files:
       templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', block.name: 'Example' %}{% endblock %}"
-  - name: "reports {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hello' %}{% endblock %}"
+  - name: produces no diagnostics for an app block with a fixed setting
     files:
       templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hello' %}{% endblock %}"
-    offenses:
-      - file: templates/test.liquid
-        message: "Liquid syntax error: in 'block' - app blocks do not accept arguments"
-        start: [0, 0]
-        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hello' %}{% endblock %}"
   - name: "reports {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', block.settings.heading: 'Hello' %}{% endblock %}"
     files:
       templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', block.settings.heading: 'Hello' %}{% endblock %}"
     offenses:
       - file: templates/test.liquid
-        message: "Liquid syntax error: in 'block' - app blocks do not accept arguments"
-        start: [0, 0]
-        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', block.settings.heading: 'Hello' %}{% endblock %}"
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 97]
+        highlight: "block.settings.heading: 'Hello'"
   - name: "reports {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}Hello{% endblock %}"
     files:
       templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}Hello{% endblock %}"
@@ -855,17 +850,17 @@ cases:
         message: "Syntax error in 'block' tag"
         start: [0, 0]
         highlight: "{% block 'shopify://apps/example_app/snippets/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}"
-  - name: "reports only the app syntax error across block checks: {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'First', heading: 'Second' %}{% endblock %}"
+  - name: reports duplicate fixed app settings without local block parameter diagnostics
     checks: [LiquidSyntaxError, MissingBlockArguments, UnrecognizedBlockArguments, ValidBlockArgumentTypes, DuplicateBlockArguments]
     docset: default
     files:
       templates/test.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'First', heading: 'Second' %}{% endblock %}"
     offenses:
-      - check: LiquidSyntaxError
+      - check: DuplicateBlockArguments
         file: templates/test.liquid
-        message: "Liquid syntax error: in 'block' - app blocks do not accept arguments"
-        start: [0, 0]
-        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'First', heading: 'Second' %}{% endblock %}"
+        message: "Duplicate argument 'heading' in block tag for 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'."
+        start: [0, 115]
+        highlight: "heading: 'Second'"
   - name: "reports only the app syntax error across block checks: {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', content: 'Explicit' %}Inline{% endblock %}"
     checks: [LiquidSyntaxError, MissingBlockArguments, UnrecognizedBlockArguments, ValidBlockArgumentTypes, DuplicateBlockArguments]
     docset: default
@@ -874,7 +869,7 @@ cases:
     offenses:
       - check: LiquidSyntaxError
         file: templates/test.liquid
-        message: "Liquid syntax error: in 'block' - app blocks do not accept arguments"
+        message: "Liquid syntax error: in 'block' - app blocks do not accept content"
         start: [0, 0]
         highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', content: 'Explicit' %}Inline{% endblock %}"
   - name: produces no block parameter diagnostics for app block paths

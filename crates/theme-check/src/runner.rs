@@ -4,7 +4,7 @@ use crate::context::{
     CheckDef, CheckError, Config, Context, Create, Deps, JsonCheck, LiquidCheck, Offense,
 };
 use crate::json::{visit_json, JsonKind};
-use crate::minimatch::Minimatch;
+use crate::minimatch::{Minimatch, Options};
 use crate::source::SourceCode;
 use crate::visitor::find_current_node;
 use liquid_ast::{visit_liquid, Markup, NodeKind, NodeRef, Span};
@@ -28,8 +28,14 @@ pub struct CheckOutput {
 }
 
 /// `check(theme, config, dependencies)`. Files are independent, so they run on `threads` threads
-/// (`0` = all cores); output is in file order either way.
-pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> CheckOutput {
+/// (`0` = all cores, `1` = the calling thread); output is in file order either way. A panic in a
+/// check is resumed on the calling thread. `None` if `cancelled` returned true before a file.
+pub fn check<'a>(
+    config: &'a Config,
+    deps: &'a Deps<'a>,
+    threads: usize,
+    cancelled: &(dyn Fn() -> bool + Sync),
+) -> Option<CheckOutput> {
     let ignores: Vec<Vec<Minimatch>> = config
         .checks
         .iter()
@@ -45,33 +51,37 @@ pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> Chec
     }
     .min(n.max(1));
     let next = AtomicUsize::new(0);
-    let mut per_file: Vec<(usize, CheckOutput)> = std::thread::scope(|s| {
-        let handles: Vec<_> = (0..threads)
-            .map(|_| {
-                s.spawn(|| {
-                    let mut out = Vec::new();
-                    loop {
-                        let i = next.fetch_add(1, Ordering::Relaxed);
-                        if i >= n {
-                            break out;
-                        }
-                        out.push((i, run(i)));
-                    }
-                })
-            })
-            .collect();
-        handles
-            .into_iter()
-            .flat_map(|h| h.join().expect("check thread panicked"))
-            .collect()
-    });
+    let work = || {
+        let mut out = Vec::new();
+        loop {
+            let i = next.fetch_add(1, Ordering::Relaxed);
+            if i >= n || cancelled() {
+                break out;
+            }
+            out.push((i, run(i)));
+        }
+    };
+    let mut per_file: Vec<(usize, CheckOutput)> = if threads == 1 {
+        work()
+    } else {
+        std::thread::scope(|s| {
+            let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();
+            handles
+                .into_iter()
+                .flat_map(|h| h.join().unwrap_or_else(|e| std::panic::resume_unwind(e)))
+                .collect()
+        })
+    };
+    if per_file.len() < n {
+        return None;
+    }
     per_file.sort_by_key(|(i, _)| *i);
     let mut out = CheckOutput::default();
     for (_, o) in per_file {
         out.offenses.extend(o.offenses);
         out.errors.extend(o.errors);
     }
-    out
+    Some(out)
 }
 
 struct Slot<'a, C: ?Sized> {
@@ -427,6 +437,7 @@ fn get_next_node<'a>(parent: Option<NodeRef<'a>>, node: NodeRef<'a>) -> Option<N
         NodeRef::Document(d) => &d.children,
         NodeRef::LiquidBranch(b) => &b.children,
         NodeRef::HtmlElement(e) => &e.children,
+        NodeRef::RawMarkup(r) => &r.nodes,
         _ => &[],
     };
     let i = siblings.iter().position(|c| c.to_ref().ptr_eq(&node))?;
@@ -473,7 +484,8 @@ pub(crate) fn ignore_patterns(
             if let Some(stem) = p.strip_suffix("/*") {
                 p = format!("{stem}/**");
             }
-            Minimatch::new(&p)
+            // `dot`, so `**` also matches when the root is inside a dot-directory, like `.worktrees/`.
+            Minimatch::with_options(&p, Options { dot: true })
         })
         .collect()
 }
@@ -498,6 +510,29 @@ mod tests {
         assert!(!ignored("file:///other/snippets/a.liquid"));
         assert!(ignored("file:///root/x/tests/a.liquid"));
         assert!(ignored("file:///root/templates/index.json"));
-        assert!(!ignored("file:///root/.x/a.json"));
+        assert!(ignored("file:///root/.x/a.json"));
+    }
+
+    #[test]
+    fn globs_with_root_inside_a_dot_directory() {
+        let root = "file:///path/.worktrees/theme";
+        let check = crate::checks::find("UnknownFilter").unwrap();
+        let settings = serde_json::json!({
+            "UnknownFilter": { "ignore": ["templates/product.json", "/snippets/*"] }
+        });
+        let config = Config::new(
+            vec![check],
+            settings.as_object().unwrap().clone(),
+            vec!["node_modules/**".into()],
+        );
+        let ignored = |def: Option<&CheckDef>, path: &str| {
+            ignore_patterns(&config, def, root)
+                .iter()
+                .any(|m| m.matches(&format!("{root}/{path}")))
+        };
+        assert!(ignored(Some(check), "templates/product.json"));
+        assert!(ignored(Some(check), "snippets/a.liquid"));
+        assert!(ignored(None, "node_modules/some-library/foo.liquid"));
+        assert!(!ignored(Some(check), "templates/index.json"));
     }
 }

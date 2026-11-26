@@ -1,3 +1,4 @@
+use super::file_utils::does_file_exist;
 use crate::context::{CheckDef, CheckResult, Context, Create, LiquidCheck, Severity};
 use crate::minimatch::minimatch;
 use liquid_ast::{Node, NodeKind, NodeRef, Span};
@@ -21,7 +22,7 @@ fn create<'a>(_cx: &mut Context<'a>) -> Option<Box<dyn LiquidCheck<'a> + 'a>> {
 
 /// `maybeReportMissing(relativePath, { position })`
 fn maybe_report_missing(cx: &mut Context, relative_path: String, span: Span) {
-    if cx.file_exists(&cx.to_uri(&relative_path)) {
+    if does_file_exist(cx, &relative_path) {
         return;
     }
     if cx
