@@ -2,6 +2,9 @@ import { allChecks, path } from '@shopify/theme-check-common';
 import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  CancellationToken,
+  CompletionItem,
+  CompletionRequest,
   DidChangeConfigurationNotification,
   DidChangeWatchedFilesNotification,
   DidRenameFilesNotification,
@@ -20,6 +23,7 @@ describe('Module: server', () => {
   const filePath = 'snippets/code.liquid';
   const fileURI = path.join(mockRoot, filePath);
   const fileContents = `{% render 'foo' %}`;
+  const renderMarkup = `{% render '`;
   let checkOnChange: boolean | null = null;
   let checkOnSave: boolean | null = null;
   let checkOnOpen: boolean | null = null;
@@ -310,6 +314,78 @@ describe('Module: server', () => {
     );
   });
 
+  it.each([
+    { order: 'a rename notification, then watched files', notifications: ['rename', 'watched'] },
+    { order: 'watched files, then a rename notification', notifications: ['watched', 'rename'] },
+    { order: 'watched files only', notifications: ['watched'] },
+  ])(
+    'should keep the cached theme root listing when the only snippet is renamed, reported as $order',
+    async ({ notifications }) => {
+      connection.setup();
+      await flushAsync();
+
+      const pagePath = 'sections/page.liquid';
+      delete fileTree[filePath];
+      fileTree[pagePath] = renderMarkup;
+      fileTree['snippets/bar.liquid'] = '...';
+      connection.openDocument(pagePath, renderMarkup);
+      await flushAsync();
+      expect(await snippetCompletions(pagePath)).toEqual(['bar']);
+      vi.mocked(dependencies.fs.readDirectory).mockClear();
+
+      fileTree['snippets/foo.liquid'] = fileTree['snippets/bar.liquid'];
+      delete fileTree['snippets/bar.liquid'];
+      const oldUri = path.join(mockRoot, 'snippets/bar.liquid');
+      const newUri = path.join(mockRoot, 'snippets/foo.liquid');
+      for (const notification of notifications) {
+        if (notification === 'rename') {
+          connection.triggerNotification(DidRenameFilesNotification.type, {
+            files: [{ oldUri, newUri }],
+          });
+        } else {
+          connection.triggerNotification(DidChangeWatchedFilesNotification.type, {
+            changes: [
+              { uri: oldUri, type: FileChangeType.Deleted },
+              { uri: newUri, type: FileChangeType.Created },
+            ],
+          });
+        }
+        await flushAsync();
+      }
+
+      expect(await snippetCompletions(pagePath)).toEqual(['foo']);
+      expect(dependencies.fs.readDirectory).toHaveBeenCalledWith(path.join(mockRoot, 'snippets'));
+      expect(dependencies.fs.readDirectory).not.toHaveBeenCalledWith(mockRoot);
+    },
+  );
+
+  it('should list the remaining snippets when an unwatched file is deleted with the last watched one', async () => {
+    connection.setup();
+    await flushAsync();
+
+    const pagePath = 'sections/page.liquid';
+    delete fileTree[filePath];
+    fileTree[pagePath] = renderMarkup;
+    fileTree['snippets/keep.liquid'] = '...';
+    fileTree['snippets/nested/card.liquid'] = '...';
+    fileTree['snippets/nested/README.md'] = '...';
+    connection.openDocument(pagePath, renderMarkup);
+    await flushAsync();
+    expect(await snippetCompletions(pagePath)).toEqual(['card', 'keep']);
+
+    // Only Liquid files are watched, so README.md is deleted without a notification.
+    delete fileTree['snippets/nested/card.liquid'];
+    delete fileTree['snippets/nested/README.md'];
+    connection.triggerNotification(DidChangeWatchedFilesNotification.type, {
+      changes: [
+        { uri: path.join(mockRoot, 'snippets/nested/card.liquid'), type: FileChangeType.Deleted },
+      ],
+    });
+    await flushAsync();
+
+    expect(await snippetCompletions(pagePath)).toEqual(['keep']);
+  });
+
   it('should trigger a re-check on did delete files notifications', async () => {
     connection.setup();
     await flushAsync();
@@ -365,6 +441,19 @@ describe('Module: server', () => {
     return Promise.all([vi.advanceTimersByTimeAsync(1), sleep(1)]);
   }
 
+  // triggerRequest drops the response, so this calls the registered handler.
+  async function snippetCompletions(relativePath: string) {
+    const [, onCompletion] = connection.spies.onRequest.mock.calls.find(
+      ([type]) => type.method === CompletionRequest.method,
+    )!;
+    const params = {
+      textDocument: { uri: path.join(mockRoot, relativePath) },
+      position: { line: 0, character: renderMarkup.length },
+    };
+    const completions: CompletionItem[] = await onCompletion(params, CancellationToken.None);
+    return completions.map((item) => item.label).sort();
+  }
+
   function advanceAndFlush(ms: number) {
     vi.advanceTimersByTime(ms);
     return flushAsync();
@@ -373,8 +462,15 @@ describe('Module: server', () => {
   function getDependencies(logger: any, fileTree: MockTheme): Dependencies {
     const MissingTemplate = allChecks.filter((c) => c.meta.code === 'MissingTemplate');
 
+    const fs = new MockFileSystem(fileTree, mockRoot);
+
     return {
-      fs: new MockFileSystem(fileTree, mockRoot),
+      fs: {
+        readFile: (uri) => fs.readFile(uri),
+        // A spy that leaves out the directory reads MockFileSystem.stat makes.
+        readDirectory: vi.fn((uri: string) => fs.readDirectory(uri)),
+        stat: (uri) => fs.stat(uri),
+      },
       log: logger,
       loadConfig: async () => ({
         context: 'theme',
