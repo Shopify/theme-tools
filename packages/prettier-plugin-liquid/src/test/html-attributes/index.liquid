@@ -142,3 +142,17 @@ printWidth: 1
     {% if x == "b" %}c{% endif %}
   "
 ></div>
+
+It should keep the indentation of a one-line attribute value that starts on its own line
+<img
+  sizes="
+    (min-width: 750px){% if small %} 311px{% else %} 720px{% endif %},{% if small %} 120px{% else %} calc(100vw - 6.4rem){% endif %}"
+>
+
+It should keep the relative indentation of an attribute value whose first line is the least indented
+<div
+  class="
+    a
+      b
+  "
+></div>
