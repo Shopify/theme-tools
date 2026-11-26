@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { window } from 'vscode';
 import type * as vscode from 'vscode';
 import * as prettier from 'prettier';
 import { vscodePrettierFormat, nodePrettierFormat } from './formatter';
@@ -14,6 +15,9 @@ vi.mock('vscode', () => ({
     getWorkspaceFolder: vi.fn(() => ({
       uri: { fsPath: '/workspace' },
     })),
+  },
+  window: {
+    showWarningMessage: vi.fn(),
   },
 }));
 
@@ -48,11 +52,17 @@ describe('formatter', () => {
     });
 
     it('should format local files with config options', async () => {
+      vi.mocked(prettier.getFileInfo).mockResolvedValue({
+        ignored: false,
+      } as prettier.FileInfoResult);
+      vi.mocked(prettier.resolveConfig).mockResolvedValue({ liquidSingleQuote: false });
+
       await vscodePrettierFormat(localFile);
 
       expect(prettier.getFileInfo).toHaveBeenCalled();
       expect(prettier.resolveConfig).toHaveBeenCalled();
       expect(prettier.format).toHaveBeenCalledWith('<div>{{ product.title }}</div>', {
+        liquidSingleQuote: false,
         parser: 'liquid-html',
         plugins: [expect.anything()],
       });
@@ -69,6 +79,42 @@ describe('formatter', () => {
       expect(prettier.resolveConfig).not.toHaveBeenCalled();
       expect(prettier.format).not.toHaveBeenCalled();
       expect(result).toBe('<div>{{ product.title }}</div>');
+    });
+
+    it('should unwrap ESM Prettier config exports', async () => {
+      vi.mocked(prettier.getFileInfo).mockResolvedValue({
+        ignored: false,
+      } as prettier.FileInfoResult);
+      const esmConfig = { default: { liquidSingleQuote: false } } as unknown as prettier.Options;
+      Object.defineProperty(esmConfig, '__esModule', { value: true });
+      vi.mocked(prettier.resolveConfig).mockResolvedValue(esmConfig);
+
+      await nodePrettierFormat(localFile);
+
+      expect(prettier.format).toHaveBeenCalledWith('<div>{{ product.title }}</div>', {
+        liquidSingleQuote: false,
+        parser: 'liquid-html',
+        plugins: [expect.anything()],
+      });
+      expect(window.showWarningMessage).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to default options when the Prettier config cannot be loaded', async () => {
+      vi.mocked(prettier.getFileInfo).mockResolvedValue({
+        ignored: false,
+      } as prettier.FileInfoResult);
+      vi.mocked(prettier.resolveConfig).mockRejectedValue(new Error('Unsupported ESM config'));
+      vi.mocked(prettier.format).mockReturnValue('formatted');
+
+      const result = await nodePrettierFormat(localFile);
+      await nodePrettierFormat(localFile);
+
+      expect(result).toBe('formatted');
+      expect(prettier.format).toHaveBeenCalledWith('<div>{{ product.title }}</div>', {
+        parser: 'liquid-html',
+        plugins: [expect.anything()],
+      });
+      expect(window.showWarningMessage).toHaveBeenCalledTimes(1);
     });
   });
 });

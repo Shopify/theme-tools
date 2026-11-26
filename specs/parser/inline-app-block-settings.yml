@@ -1,0 +1,279 @@
+cases:
+  - name: preserves fixed settings on an inline app block
+    source: |-
+      {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000',
+        heading: "Hello",
+        quoted_keyword: 'empty',
+        count: -1,
+        ratio: 1.5,
+        enabled: true,
+        disabled: false,
+        empty_items: [],
+        items: ['x', 2, true, false,],
+        title: '{{ closest.product.title }}'
+      %}{% endblock %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000',
+            heading: "Hello",
+            quoted_keyword: 'empty',
+            count: -1,
+            ratio: 1.5,
+            enabled: true,
+            disabled: false,
+            empty_items: [],
+            items: ['x', 2, true, false,],
+            title: '{{ closest.product.title }}'
+          %}{% endblock %}
+      children:
+        - type: LiquidTag
+          name: block
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000',
+                heading: "Hello",
+                quoted_keyword: 'empty',
+                count: -1,
+                ratio: 1.5,
+                enabled: true,
+                disabled: false,
+                empty_items: [],
+                items: ['x', 2, true, false,],
+                title: '{{ closest.product.title }}'
+              %}
+          blockEndPosition: { start: [10, 2], text: "{% endblock %}" }
+          markupPosition:
+            start: [0, 9]
+            text: |
+              'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000',
+                heading: "Hello",
+                quoted_keyword: 'empty',
+                count: -1,
+                ratio: 1.5,
+                enabled: true,
+                disabled: false,
+                empty_items: [],
+                items: ['x', 2, true, false,],
+                title: '{{ closest.product.title }}'
+          position:
+            start: [0, 0]
+            text: |-
+              {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000',
+                heading: "Hello",
+                quoted_keyword: 'empty',
+                count: -1,
+                ratio: 1.5,
+                enabled: true,
+                disabled: false,
+                empty_items: [],
+                items: ['x', 2, true, false,],
+                title: '{{ closest.product.title }}'
+              %}{% endblock %}
+          markup:
+            type: BlockMarkup
+            position:
+              start: [0, 9]
+              text: |
+                'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000',
+                  heading: "Hello",
+                  quoted_keyword: 'empty',
+                  count: -1,
+                  ratio: 1.5,
+                  enabled: true,
+                  disabled: false,
+                  empty_items: [],
+                  items: ['x', 2, true, false,],
+                  title: '{{ closest.product.title }}'
+            name:
+              type: String
+              single: true
+              value: shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000
+              position: { start: [0, 9], text: "'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'" }
+            args:
+              - type: NamedArgument
+                name: heading
+                position: { start: [1, 2], text: 'heading: "Hello"' }
+                value:
+                  type: String
+                  single: false
+                  value: Hello
+                  position: { start: [1, 11], text: '"Hello"' }
+              - type: NamedArgument
+                name: quoted_keyword
+                position: { start: [2, 2], text: "quoted_keyword: 'empty'" }
+                value:
+                  type: String
+                  single: true
+                  value: empty
+                  position: { start: [2, 18], text: "'empty'" }
+              - type: NamedArgument
+                name: count
+                position: { start: [3, 2], text: "count: -1" }
+                value:
+                  type: Number
+                  value: "-1"
+                  position: { start: [3, 9], text: "-1" }
+              - type: NamedArgument
+                name: ratio
+                position: { start: [4, 2], text: "ratio: 1.5" }
+                value:
+                  type: Number
+                  value: "1.5"
+                  position: { start: [4, 9], text: "1.5" }
+              - type: NamedArgument
+                name: enabled
+                position: { start: [5, 2], text: "enabled: true" }
+                value:
+                  type: LiquidLiteral
+                  keyword: "true"
+                  value: true
+                  position: { start: [5, 11], text: "true" }
+              - type: NamedArgument
+                name: disabled
+                position: { start: [6, 2], text: "disabled: false" }
+                value:
+                  type: LiquidLiteral
+                  keyword: "false"
+                  value: false
+                  position: { start: [6, 12], text: "false" }
+              - type: NamedArgument
+                name: empty_items
+                position: { start: [7, 2], text: "empty_items: []" }
+                value:
+                  type: BlockArrayLiteral
+                  position: { start: [7, 15], text: "[]" }
+                  elements: []
+              - type: NamedArgument
+                name: items
+                position: { start: [8, 2], text: "items: ['x', 2, true, false,]" }
+                value:
+                  type: BlockArrayLiteral
+                  position: { start: [8, 9], text: "['x', 2, true, false,]" }
+                  elements:
+                    - type: String
+                      single: true
+                      value: x
+                      position: { start: [8, 10], text: "'x'" }
+                    - type: Number
+                      value: "2"
+                      position: { start: [8, 15], text: "2" }
+                    - type: LiquidLiteral
+                      keyword: "true"
+                      value: true
+                      position: { start: [8, 18], text: "true" }
+                    - type: LiquidLiteral
+                      keyword: "false"
+                      value: false
+                      position: { start: [8, 24], text: "false" }
+              - type: NamedArgument
+                name: title
+                position: { start: [9, 2], text: "title: '{{ closest.product.title }}'" }
+                value:
+                  type: String
+                  single: true
+                  value: "{{ closest.product.title }}"
+                  position: { start: [9, 9], text: "'{{ closest.product.title }}'" }
+          children: []
+  - name: preserves fixed app settings inside liquid tags
+    source: |-
+      {% liquid
+        block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'
+        endblock
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'
+            endblock
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'
+                endblock
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+
+                block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'
+                endblock
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'
+                endblock
+              %}
+          markup:
+            - type: LiquidTag
+              name: block
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: "block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'" }
+              blockEndPosition: { start: [2, 2], text: endblock }
+              markupPosition: { start: [1, 8], text: "'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'" }
+              position:
+                start: [1, 2]
+                text: |-
+                  block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'
+                    endblock
+              markup:
+                type: BlockMarkup
+                position: { start: [1, 8], text: "'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', items: ['x', false, 0], heading: '{{ closest.product.title }}'" }
+                name:
+                  type: String
+                  single: true
+                  value: shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000
+                  position: { start: [1, 8], text: "'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'" }
+                args:
+                  - type: NamedArgument
+                    name: items
+                    position: { start: [1, 96], text: "items: ['x', false, 0]" }
+                    value:
+                      type: BlockArrayLiteral
+                      position: { start: [1, 103], text: "['x', false, 0]" }
+                      elements:
+                        - type: String
+                          single: true
+                          value: x
+                          position: { start: [1, 104], text: "'x'" }
+                        - type: LiquidLiteral
+                          keyword: "false"
+                          value: false
+                          position: { start: [1, 109], text: "false" }
+                        - type: Number
+                          value: "0"
+                          position: { start: [1, 116], text: "0" }
+                  - type: NamedArgument
+                    name: heading
+                    position: { start: [1, 120], text: "heading: '{{ closest.product.title }}'" }
+                    value:
+                      type: String
+                      single: true
+                      value: "{{ closest.product.title }}"
+                      position: { start: [1, 129], text: "'{{ closest.product.title }}'" }
+              children: []

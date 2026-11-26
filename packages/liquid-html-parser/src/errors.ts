@@ -7,10 +7,15 @@ interface LineColPosition {
   column: number;
 }
 
+/**
+ * The node a parse error says was never closed: its type, its name as written
+ * in the source (`h{{ level }}` for `<h{{ level }}>`), and its opening tag.
+ */
 export type UnclosedNode = { type: NodeTypes; name: string; blockStartPosition: Position };
 
 export class LiquidHTMLASTParsingError extends SyntaxError {
   loc?: { start: LineColPosition; end: LineColPosition };
+  /** Set when the error is about a node that was never closed, null otherwise. */
   unclosed: UnclosedNode | null;
 
   constructor(

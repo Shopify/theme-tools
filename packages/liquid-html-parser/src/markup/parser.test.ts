@@ -11,6 +11,7 @@ import type {
   LiquidBooleanExpression,
   LiquidNamedArgument,
 } from '../ast';
+import { LiquidLiteralValues } from '../ast';
 
 function parser(markup: string): MarkupParser {
   return new MarkupParser(tokenizeMarkup(markup), markup);
@@ -268,6 +269,28 @@ describe('Unit: MarkupParser expression parsing', () => {
           value: '',
         });
       });
+
+      it.each(Object.entries(LiquidLiteralValues))(
+        'recognizes %s as a literal',
+        (keyword, value) => {
+          expect(parser(keyword).valueExpression()).toMatchObject({
+            type: NodeTypes.LiquidLiteral,
+            keyword,
+            value,
+          });
+        },
+      );
+
+      it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__', 'valueOf'])(
+        'parses Object.prototype name %s as a variable, not a literal',
+        (name) => {
+          expect(parser(name).valueExpression()).toMatchObject({
+            type: NodeTypes.VariableLookup,
+            name,
+            lookups: [],
+          });
+        },
+      );
     });
 
     describe('variable lookups', () => {
@@ -902,6 +925,19 @@ describe('Unit: MarkupParser structured primitives', () => {
   });
 
   describe('filters()', () => {
+    it.each(['x | t:', 'x | upcase:  '])(
+      'includes the empty argument colon in the filter position: %s',
+      (source) => {
+        const p = parser(source);
+        p.expression();
+        const result = p.filters(1);
+        expect(result).toHaveLength(1);
+        expect(result[0].args).toEqual([]);
+        expect(result[0].position).toEqual({ start: 1, end: source.trimEnd().length });
+        expect(p.isAtEnd()).toBe(true);
+      },
+    );
+
     it('parses filter with no args', () => {
       const p = parser('x | upcase');
       p.expression(); // consume the expression first

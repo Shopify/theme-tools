@@ -7,7 +7,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude],
     pool: 'forks',
     maxWorkers: 1,
-    isolate: true,
+    isolate: false,
     globalSetup: ['./src/test/test-setup.js'],
   },
 });

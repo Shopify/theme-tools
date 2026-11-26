@@ -10,7 +10,8 @@ export function isIgnored(uri: UriString, config: Config, checkDef?: CheckDefini
         .replace(/\/\*$/, '/**'), // "/*" patterns are really "/**"
   );
 
-  return ignorePatterns.some((pattern) => minimatch(uri, pattern));
+  // dot: true so that "**" also matches when the root is inside a dot-directory (e.g. .worktrees/)
+  return ignorePatterns.some((pattern) => minimatch(uri, pattern, { dot: true }));
 }
 
 function checkIgnorePatterns(checkDef: CheckDefinition | undefined, config: Config) {

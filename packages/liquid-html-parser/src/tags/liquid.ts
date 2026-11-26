@@ -14,10 +14,10 @@ import type { LiquidStatement } from '../ast';
  * trimmed content ends with `,` and the current line looks like a named
  * argument (`identifier:`) rather than a new tag statement.
  */
-function isContinuationLine(prevTrimmed: string, currentTrimmed: string): boolean {
+function isContinuationLine(prevTrimmed: string, currentRaw: string): boolean {
   if (!prevTrimmed.endsWith(',')) return false;
   // A named-argument continuation: `word:` at the start (e.g. `bar: baz,`)
-  return /^\w+\s*:/.test(currentTrimmed);
+  return /^\w+\s*:/.test(currentRaw.trimStart());
 }
 
 function parseLines(body: string, bodyStart: number): LiquidLine[] {
@@ -34,12 +34,11 @@ function parseLines(body: string, bodyStart: number): LiquidLine[] {
   for (let i = 0; i < rawLines.length; i++) {
     const rawLine = rawLines[i];
     const lineStart = bodyStart + offset;
-    const trimmed = rawLine.trimStart();
 
-    if (trimmed.length > 0 && joined.length > 0) {
+    if (joined.length > 0) {
       const prev = joined[joined.length - 1];
       const prevTrimmed = prev.raw.trimEnd();
-      if (isContinuationLine(prevTrimmed, trimmed)) {
+      if (isContinuationLine(prevTrimmed, rawLine)) {
         // Append to previous logical line (preserve raw text for offset calc)
         prev.raw += '\n' + rawLine;
         offset += rawLine.length + 1;
@@ -56,17 +55,17 @@ function parseLines(body: string, bodyStart: number): LiquidLine[] {
     const trimmed = raw.trimStart();
     const leadingWs = raw.length - trimmed.length;
 
-    // For joined lines, the "trimmed" content may span multiple raw lines.
-    // We only care about the first raw line's leading whitespace for the
-    // name/markup offsets, and the last raw line's end for lineEnd.
-    const lastNewline = raw.lastIndexOf('\n');
-    const lastRawLine = lastNewline === -1 ? raw : raw.slice(lastNewline + 1);
-    const lineEnd =
-      lastNewline === -1
-        ? startIndex + raw.trimEnd().length
-        : startIndex + lastNewline + 1 + lastRawLine.trimEnd().length;
-
     if (trimmed.length > 0) {
+      // For joined lines, the "trimmed" content may span multiple raw lines.
+      // We only care about the first raw line's leading whitespace for the
+      // name/markup offsets, and the last raw line's end for lineEnd.
+      const lastNewline = raw.lastIndexOf('\n');
+      const lastRawLine = lastNewline === -1 ? raw : raw.slice(lastNewline + 1);
+      const lineEnd =
+        lastNewline === -1
+          ? startIndex + raw.trimEnd().length
+          : startIndex + lastNewline + 1 + lastRawLine.trimEnd().length;
+
       let tagName: string;
       let markup: string;
       let markupOffset: number;

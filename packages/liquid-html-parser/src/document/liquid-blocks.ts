@@ -20,8 +20,11 @@ import type {
   LiquidBranchNamed,
   AttributeNode,
 } from '../ast';
+import { isStructuralEndTag } from '../environment';
 import type { TagDefinitionBlock, BranchName, Parser } from '../environment';
 import { LiquidHTMLASTParsingError } from '../errors';
+import type { UnclosedNode } from '../errors';
+import { NodeTypes } from '../types';
 import { assertNever } from '../utils';
 import { MarkupParser } from '../markup/parser';
 import { tokenizeMarkup } from '../markup/tokenizer';
@@ -44,6 +47,7 @@ export interface BlockParserDelegate extends ParserBase, Parser {
   readonly blockInAttributeValueContext: boolean;
 
   parseNode(): LiquidHtmlNode;
+  parseNodeInScope(scope: LiquidHtmlNode[]): LiquidHtmlNode;
   peekTagName(): string | null;
   consumeEndTag(): {
     position: Position;
@@ -126,12 +130,13 @@ export function parseBlockBody(
 
       if (tagName && tagName.startsWith('end')) {
         const innerName = tagName.slice(3);
-        if (parser.blockEnv.tagForName(innerName)) {
+        if (isStructuralEndTag(innerName, parser.blockEnv.tagForName(innerName))) {
           throw new LiquidHTMLASTParsingError(
             `Attempting to close LiquidTag '${innerName}' before LiquidTag '${parentName}' was closed`,
             parser.getSource(),
             envelope.blockStartPosition.start,
             envelope.blockStartPosition.end,
+            unclosedTag(envelope),
           );
         }
       }
@@ -142,6 +147,7 @@ export function parseBlockBody(
           parser.getSource(),
           envelope.blockStartPosition.start,
           envelope.blockStartPosition.end,
+          unclosedTag(envelope),
         );
       }
     }
@@ -149,7 +155,7 @@ export function parseBlockBody(
     if (parser.blockInAttributeContext && !parser.blockInAttributeValueContext) {
       children.push(...(parser.parseBranchAttributes() as unknown as LiquidHtmlNode[]));
     } else {
-      children.push(parser.parseNode());
+      children.push(parser.parseNodeInScope(children));
     }
     if (parser.getPosition() === progressStart) {
       if (!parser.blockAllowUnclosedDocumentNode) {
@@ -186,6 +192,7 @@ export function parseBlockBody(
       parser.getSource(),
       envelope.blockStartPosition.start,
       envelope.blockStartPosition.end,
+      unclosedTag(envelope),
     );
   }
 }
@@ -252,12 +259,13 @@ export function parseBranchedBody(
 
       if (tagName && tagName.startsWith('end')) {
         const innerName = tagName.slice(3);
-        if (parser.blockEnv.tagForName(innerName)) {
+        if (isStructuralEndTag(innerName, parser.blockEnv.tagForName(innerName))) {
           throw new LiquidHTMLASTParsingError(
             `Attempting to close LiquidTag '${innerName}' before LiquidTag '${parentName}' was closed`,
             parser.getSource(),
             envelope.blockStartPosition.start,
             envelope.blockStartPosition.end,
+            unclosedTag(envelope),
           );
         }
       }
@@ -266,7 +274,7 @@ export function parseBranchedBody(
     if (parser.blockInAttributeContext && !parser.blockInAttributeValueContext) {
       currentChildren.push(...(parser.parseBranchAttributes() as unknown as LiquidHtmlNode[]));
     } else {
-      currentChildren.push(parser.parseNode());
+      currentChildren.push(parser.parseNodeInScope(currentChildren));
     }
     if (parser.getPosition() === progressStart) {
       if (!parser.blockAllowUnclosedDocumentNode) {
@@ -304,6 +312,7 @@ export function parseBranchedBody(
       parser.getSource(),
       envelope.blockStartPosition.start,
       envelope.blockStartPosition.end,
+      unclosedTag(envelope),
     );
   }
 }
@@ -400,6 +409,15 @@ export function isBlockTerminator(parser: ParserBase): boolean {
  * In strict mode this throws a clean parse error; tolerant callers should break
  * and let the graceful "unclosed" return degrade the result.
  */
+/** The block tag an error says was never closed. */
+function unclosedTag(envelope: LiquidTagEnvelope): UnclosedNode {
+  return {
+    type: NodeTypes.LiquidTag,
+    name: envelope.tagName,
+    blockStartPosition: envelope.blockStartPosition,
+  };
+}
+
 function throwUnexpectedBlockTag(parser: ParserBase, parentName: string): never {
   const tok = parser.peek();
   const tagName = peekTagName(parser);

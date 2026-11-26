@@ -13,9 +13,20 @@ import {
   NodeTypes,
   Position,
 } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Mode, Severity, SourceCodeType, ThemeDocset } from '../../types';
+import { BLOCK_CONTENT_PARAMETER } from '../../block-parameters';
+import * as path from '../../path';
+import { isBlock } from '../../to-schema';
+import {
+  Context,
+  LiquidCheckDefinition,
+  Mode,
+  Severity,
+  SourceCodeType,
+  ThemeDocset,
+} from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
+import { getAncestorUris } from '../../utils/traversal';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
 
 type Scope = { start?: number; end?: number };
@@ -55,7 +66,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
     const themeDocset = context.themeDocset;
     const scopedVariables: Map<string, Scope[]> = new Map();
-    const fileScopedVariables: Set<string> = new Set();
+    const fileScopedVariables: Set<string> = new Set(builtInVariables(relativePath));
     const variables: LiquidVariableLookup[] = [];
 
     function indexVariableScope(variableName: string | null, scope: Scope) {
@@ -141,14 +152,16 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
         const parent = last(ancestors);
         if (isLiquidTag(parent) && isLiquidTagCapture(parent)) return;
+        if (isForOffsetContinue(node, ancestors)) return;
 
         variables.push(node);
       },
 
       async onCodePathEnd() {
-        const objects = await globalObjects(themeDocset, relativePath, context.mode);
+        const objects = await globalObjects(themeDocset, context);
 
         objects.forEach((obj) => fileScopedVariables.add(obj.name));
+        (await themeBlockParameterNames(context)).forEach((name) => fileScopedVariables.add(name));
 
         variables.forEach((variable) => {
           if (!variable.name) return;
@@ -172,20 +185,65 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 };
 
-async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mode: Mode = 'theme') {
+async function globalObjects(
+  themeDocset: ThemeDocset,
+  context: Context<SourceCodeType.LiquidHtml>,
+) {
   const objects = await themeDocset.objects();
-  const contextualObjects = getContextualObjects(relativePath, mode);
+  const relativePath = context.toRelativePath(context.file.uri);
+  const contextualObjects = new Set([
+    ...getContextualObjects(relativePath, context.mode),
+    ...(await callerContextualObjects(context, relativePath)),
+  ]);
 
-  const globalObjects = objects.filter(({ access, name }) => {
+  return objects.filter(({ access, name }) => {
     return (
-      contextualObjects.includes(name) ||
-      !access ||
-      access.global === true ||
-      access.template.length > 0
+      contextualObjects.has(name) || !access || access.global === true || access.template.length > 0
     );
   });
+}
 
-  return globalObjects;
+/**
+ * A snippet also sees the contextual objects of the files that render it,
+ * directly or through other files. A file whose references can't be read,
+ * such as when the theme graph fails to build, counts as rendered by nothing.
+ */
+async function callerContextualObjects(
+  context: Context<SourceCodeType.LiquidHtml>,
+  relativePath: string,
+): Promise<string[]> {
+  const { getReferences } = context;
+  if (!relativePath.startsWith('snippets/') || !getReferences) return [];
+
+  const ancestors = await getAncestorUris(context.file.uri, async (uri) => {
+    try {
+      return await getReferences(uri);
+    } catch {
+      return [];
+    }
+  });
+  return ancestors.flatMap((uri) =>
+    getContextualObjects(context.toRelativePath(uri), context.mode),
+  );
+}
+
+/** Theme blocks always receive the built-in `content` parameter as a variable. */
+function builtInVariables(relativePath: string): string[] {
+  return relativePath.startsWith('blocks/') ? [BLOCK_CONTENT_PARAMETER] : [];
+}
+
+/**
+ * A theme block's schema settings and LiquidDoc parameters are also plain
+ * variables in the block file. Returns no names when the block's parameters
+ * cannot be resolved, such as when its schema is invalid.
+ */
+async function themeBlockParameterNames(
+  context: Context<SourceCodeType.LiquidHtml>,
+): Promise<string[]> {
+  if (!isBlock(context.file.uri)) return [];
+
+  const parameters = await context.getBlockParameters(path.basename(context.file.uri, '.liquid'));
+  return [...(parameters?.keys() ?? [])];
 }
 
 const BLOCK_CONTEXTUAL_OBJECTS = ['app', 'section', 'recommendations', 'block'];
@@ -266,6 +324,26 @@ function isDefinedInScope(variablePosition: Position, scope: Scope) {
   const isVariableBeforeScopeEnd = !scope.end || start < scope.end;
 
   return isVariableAfterScopeStart && isVariableBeforeScopeEnd;
+}
+
+/**
+ * {% for x in y offset: continue %}
+ *
+ * `continue` is a keyword here, not a variable: it resumes the loop where the
+ * last loop over the same collection stopped. Only `for` supports it, not
+ * `tablerow`.
+ */
+function isForOffsetContinue(node: LiquidVariableLookup, ancestors: LiquidHtmlNode[]): boolean {
+  if (node.name !== 'continue' || node.lookups.length > 0) return false;
+
+  const [tag, markup, argument] = ancestors.slice(-3);
+  return (
+    argument?.type === NodeTypes.NamedArgument &&
+    argument.name === 'offset' &&
+    markup?.type === NodeTypes.ForMarkup &&
+    isLiquidTag(tag) &&
+    tag.name === NamedTags.for
+  );
 }
 
 function isLiquidTag(node?: LiquidHtmlNode): node is LiquidTag {
