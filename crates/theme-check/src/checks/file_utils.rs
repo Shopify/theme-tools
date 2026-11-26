@@ -278,44 +278,73 @@ fn is_public_ip(ip: IpAddr) -> bool {
     }
 }
 
-/// The address to connect to for `host`: the address itself, or the first address that a name
-/// resolves to. `None` when the name resolves to no address, or to any address that isn't public.
-fn connect_address(host: &Host) -> Option<IpAddr> {
+/// The addresses to connect to for `host`, in order: the address itself, or the addresses that a
+/// name resolves to. Empty when the name resolves to no address, or to any address that isn't
+/// public.
+fn connect_addresses(host: &Host) -> Vec<IpAddr> {
     let name = match host {
-        Host::Ip(ip) => return Some(*ip),
+        Host::Ip(ip) => return vec![*ip],
         Host::Name(name) => name,
     };
-    let addresses: Vec<IpAddr> = (name.as_str(), 0)
-        .to_socket_addrs()
-        .ok()?
-        .map(|a| a.ip())
-        .collect();
-    if addresses.iter().all(|&ip| is_public_ip(ip)) {
-        addresses.first().copied()
-    } else {
-        None
+    let Ok(resolved) = (name.as_str(), 0).to_socket_addrs() else {
+        return Vec::new();
+    };
+    let mut addresses: Vec<IpAddr> = Vec::new();
+    for ip in resolved.map(|a| a.ip()) {
+        if !is_public_ip(ip) {
+            return Vec::new();
+        }
+        if !addresses.contains(&ip) {
+            addresses.push(ip);
+        }
     }
+    addresses
 }
 
 /// `getFileSize(url)`: `fetch(url, { method: 'HEAD', redirect: 'manual' })` (cross-fetch, i.e.
 /// node-fetch 2), then `parseFloat(Content-Length)`; 0 when the header is missing, the status isn't
 /// ok (a redirect included), or anything throws. Only a URL that `remote_asset_host` allows is
-/// requested, and only at an address that `connect_address` checked. Same request as node-fetch:
-/// HTTP/1.1, its default headers, no proxy, no timeout.
+/// requested, and only at the addresses that `connect_addresses` checked. Same request as
+/// node-fetch: HTTP/1.1, its default headers, no proxy, no timeout.
 /// ponytail: shells out to curl rather than adding an HTTP client crate. node-fetch's URL handling
 /// is approximated: a URL with a scheme must parse as a WHATWG URL, one without goes through
 /// legacy `url.parse`'s trimming only, and curl gets `serialize_for_curl(url)` rather than the
 /// full WHATWG serialization (no IDNA, see `url_hostname`).
 pub fn get_file_size(url: &str) -> f64 {
-    let Some(address) = remote_asset_host(url).and_then(|host| connect_address(&host)) else {
+    let Some(host) = remote_asset_host(url) else {
         return 0.0;
     };
-    head_content_length(&serialize_for_curl(&node_fetch_url(url)), address)
+    head_content_length(
+        &serialize_for_curl(&node_fetch_url(url)),
+        &connect_addresses(&host),
+    )
 }
 
+/// node-fetch's `HEAD` request to `url`, at the first of `addresses` that accepts a connection,
+/// as Node tries each address of a name. It doesn't follow redirects.
+fn head_content_length(url: &str, addresses: &[IpAddr]) -> f64 {
+    for &address in addresses {
+        match head_content_length_at(url, address) {
+            Outcome::Unreachable => continue,
+            Outcome::Size(size) => return size,
+        }
+    }
+    0.0
+}
+
+/// What a request to one address gave: no connection, or the size, which is 0 when the request
+/// failed after it connected.
+enum Outcome {
+    Unreachable,
+    Size(f64),
+}
+
+/// curl's exit codes for a connection that was not made: "couldn't connect" and a timeout.
+const CURL_CONNECTION_FAILED: [i32; 2] = [7, 28];
+
 /// node-fetch's `HEAD` request to `url`, with curl connected to `address`, whatever host curl
-/// reads in the URL. It doesn't follow redirects.
-fn head_content_length(url: &str, address: IpAddr) -> f64 {
+/// reads in the URL.
+fn head_content_length_at(url: &str, address: IpAddr) -> Outcome {
     let connect_to = match address {
         IpAddr::V4(v4) => format!("::{v4}:"),
         IpAddr::V6(v6) => format!("::[{v6}]:"),
@@ -347,28 +376,37 @@ fn head_content_length(url: &str, address: IpAddr) -> f64 {
         .args(["-w", "%{http_code}\n%{header_json}", "--url", url])
         .output()
     else {
-        return 0.0;
+        return Outcome::Size(0.0);
     };
+    if out
+        .status
+        .code()
+        .is_some_and(|code| CURL_CONNECTION_FAILED.contains(&code))
+    {
+        return Outcome::Unreachable;
+    }
     if !out.status.success() {
-        return 0.0;
+        return Outcome::Size(0.0);
     }
     let text = String::from_utf8_lossy(&out.stdout);
     let (status, headers) = text.split_once('\n').unwrap_or((&text, ""));
     if !status.parse::<u16>().is_ok_and(|s| (200..300).contains(&s)) {
-        return 0.0;
+        return Outcome::Size(0.0);
     }
     // `headers.get('Content-Length')`: repeated headers are joined with ", ".
     let headers: Value = serde_json::from_str(headers).unwrap_or(Value::Null);
-    match headers.get("content-length").and_then(Value::as_array) {
-        Some(values) => js::parse_float(
-            &values
-                .iter()
-                .filter_map(Value::as_str)
-                .collect::<Vec<_>>()
-                .join(", "),
-        ),
-        None => 0.0,
-    }
+    Outcome::Size(
+        match headers.get("content-length").and_then(Value::as_array) {
+            Some(values) => js::parse_float(
+                &values
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+            None => 0.0,
+        },
+    )
 }
 
 /// Enough of the WHATWG URL serializer for curl, which rejects spaces and controls: strip leading
@@ -577,8 +615,31 @@ mod tests {
         let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
         let url = |path: &str| format!("http://assets.example.test:{port}{path}");
 
-        assert_eq!(head_content_length(&url("/asset.css"), loopback), 123456.0);
-        assert_eq!(head_content_length(&url("/redirect"), loopback), 0.0);
+        assert_eq!(
+            head_content_length(&url("/asset.css"), &[loopback]),
+            123456.0
+        );
+        assert_eq!(head_content_length(&url("/redirect"), &[loopback]), 0.0);
         assert_eq!(*requests.lock().unwrap(), ["/asset.css", "/redirect"]);
+    }
+
+    #[test]
+    fn tries_the_next_address_when_a_connection_fails() {
+        let (port, requests) = server();
+        // The server listens on 127.0.0.1 only, so a connection to ::1 fails.
+        let unreachable = IpAddr::V6(Ipv6Addr::LOCALHOST);
+        let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
+        let url = format!("http://assets.example.test:{port}/asset.css");
+
+        assert_eq!(
+            head_content_length(&url, &[unreachable, loopback]),
+            123456.0
+        );
+        assert_eq!(
+            head_content_length(&url, &[loopback, unreachable]),
+            123456.0
+        );
+        assert_eq!(head_content_length(&url, &[unreachable]), 0.0);
+        assert_eq!(*requests.lock().unwrap(), ["/asset.css", "/asset.css"]);
     }
 }
