@@ -1151,7 +1151,8 @@
     "name": "JavascriptOncePerFile",
     "docs": {
       "description": "{% javascript %} can only appear once per file.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/javascript-once-per-file"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1163,7 +1164,8 @@
     "name": "JavascriptTagInWrongFile",
     "docs": {
       "description": "{% javascript %} is only valid in section, block, or snippet files.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/javascript-tag-in-wrong-file"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1175,7 +1177,8 @@
     "name": "SchemaOncePerFile",
     "docs": {
       "description": "{% schema %} can only appear once per file.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/schema-once-per-file"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1187,7 +1190,8 @@
     "name": "SchemaSectionOrBlockOnly",
     "docs": {
       "description": "{% schema %} is only valid in section or block files.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/schema-section-or-block-only"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1199,7 +1203,8 @@
     "name": "StylesheetOncePerFile",
     "docs": {
       "description": "{% stylesheet %} can only appear once per file.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/stylesheet-once-per-file"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1211,7 +1216,8 @@
     "name": "StylesheetTagInWrongFile",
     "docs": {
       "description": "{% stylesheet %} is only valid in section, block, or snippet files.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/stylesheet-tag-in-wrong-file"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1249,7 +1255,8 @@
     "name": "ExcessiveSettingsCount",
     "docs": {
       "description": "Reports section or block schemas that declare more top-level settings than the configured maximum.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/excessive-settings-count"
     },
     "type": "LiquidHtml",
     "severity": 1,
@@ -1268,7 +1275,8 @@
     "name": "LiquidComplexity",
     "docs": {
       "description": "Reports Liquid files with high cyclomatic complexity.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-complexity"
     },
     "type": "LiquidHtml",
     "severity": 1,
@@ -1287,7 +1295,8 @@
     "name": "LiquidNestingDepth",
     "docs": {
       "description": "Reports Liquid files with deeply nested control-flow structures.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-nesting-depth"
     },
     "type": "LiquidHtml",
     "severity": 1,
@@ -1306,7 +1315,8 @@
     "name": "LiquidSyntaxError",
     "docs": {
       "description": "Reports Liquid syntax errors.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-syntax-error"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1318,7 +1328,8 @@
     "name": "MaxFileSize",
     "docs": {
       "description": "Reports theme files that exceed Shopify's maximum file size.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/max-file-size"
     },
     "type": "LiquidHtml",
     "severity": 0,
@@ -1330,7 +1341,8 @@
     "name": "MaxFileSize",
     "docs": {
       "description": "Reports theme files that exceed Shopify's maximum file size.",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/max-file-size"
     },
     "type": "JSON",
     "severity": 0,
