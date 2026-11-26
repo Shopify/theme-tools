@@ -36,6 +36,7 @@ import {
   getSectionModule,
   getSnippetModule,
   getThemeBlockModule,
+  assetSources,
 } from './module';
 
 export async function traverseModule(
@@ -206,7 +207,15 @@ async function traverseLiquidModule(
     },
   };
 
-  const references = visit(sourceCode.ast, visitor);
+  const visited = visit(sourceCode.ast, visitor);
+  const servedTargets = new Map(
+    await Promise.all(
+      unique(visited.map((ref) => ref.target)).map(
+        async (target) => [target, await servingAsset(target, themeGraph, deps)] as const,
+      ),
+    ),
+  );
+  const references = visited.map((ref) => ({ ...ref, target: servedTargets.get(ref.target)! }));
 
   for (const reference of references) {
     bind(module, reference.target, {
@@ -230,6 +239,25 @@ async function traverseLiquidModule(
   }
 
   return Promise.all(promises);
+}
+
+/**
+ * A reference reaches the first file Shopify would serve it from. See
+ * `assetSources`. A reference to a file that doesn't exist keeps its target.
+ */
+async function servingAsset(
+  target: ThemeModule,
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+): Promise<ThemeModule> {
+  if (target.type !== ModuleType.Css && target.type !== ModuleType.JavaScript) return target;
+
+  for (const source of assetSources(path.basename(target.uri))) {
+    const module = getAssetModule(themeGraph, source)!;
+    if (await exists(deps.fs, module.uri)) return module;
+  }
+
+  return target;
 }
 
 async function traverseLiquidSchema(

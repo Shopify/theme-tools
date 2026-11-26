@@ -225,10 +225,14 @@ impl ThemeGraph {
 
     /// `getAssetModule(themeGraph, asset)`: `None` for unsupported extensions.
     fn asset_module(&mut self, asset: &str) -> Option<usize> {
-        let module_type = match extname(asset) {
+        let served = match is_liquid_asset(asset) {
+            true => &asset[..asset.len() - ".liquid".len()],
+            false => asset,
+        };
+        let module_type = match extname(served) {
             "jpg" | "jpeg" | "png" | "gif" | "webp" | "heic" | "ico" => ModuleType::Image,
             "js" => ModuleType::JavaScript,
-            "css" => ModuleType::Css,
+            "css" | "scss" => ModuleType::Css,
             "svg" => ModuleType::Svg,
             _ => return None,
         };
@@ -249,6 +253,29 @@ impl ThemeGraph {
 }
 
 /// utils `extname(uri)`: `uri.split('.').pop()`
+/// `isLiquidAsset(asset)`: Shopify renders `assets/theme.css.liquid` and serves it as
+/// `theme.css`. The same goes for `.js` and `.scss`.
+fn is_liquid_asset(asset: &str) -> bool {
+    [".css.liquid", ".js.liquid", ".scss.liquid"]
+        .iter()
+        .any(|ext| asset.ends_with(ext))
+}
+
+/// `assetSources(asset)`: the files Shopify looks for, in order, when it serves `asset`.
+/// `theme.css` comes from `theme.css.liquid`, then `theme.css`. `theme.scss.css` also comes from
+/// `theme.scss.liquid`, then `theme.scss`. Other assets come from their own file.
+fn asset_sources(asset: &str) -> Vec<String> {
+    if !matches!(extname(asset), "css" | "js") {
+        return vec![asset.to_string()];
+    }
+    let mut sources = vec![format!("{asset}.liquid"), asset.to_string()];
+    if let Some(scss) = asset.strip_suffix(".css").filter(|a| a.ends_with(".scss")) {
+        sources.push(format!("{scss}.liquid"));
+        sources.push(scss.to_string());
+    }
+    sources
+}
+
 fn extname(uri: &str) -> &str {
     uri.rsplit('.').next().unwrap_or("")
 }
@@ -567,8 +594,12 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         });
 
+        let mut served = HashMap::new();
         let mut seen = HashSet::new();
         for &(target, source_range, target_range) in &refs {
+            let target = *served
+                .entry(target)
+                .or_insert_with(|| self.serving_asset(target));
             self.bind(m, target, Some(source_range), target_range, RefType::Direct);
             if seen.insert(target) {
                 self.queue.push_back(target);
@@ -611,6 +642,25 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         }
         Ok(false)
+    }
+
+    /// `servingAsset(target, themeGraph, deps)`: a reference reaches the first file Shopify
+    /// would serve it from (see `asset_sources`). A reference to a file that doesn't exist keeps
+    /// its target.
+    fn serving_asset(&mut self, target: usize) -> usize {
+        let module = &self.g.all[target];
+        if !matches!(module.module_type, ModuleType::Css | ModuleType::JavaScript) {
+            return target;
+        }
+        for source in asset_sources(&path::basename(&module.uri, None)) {
+            let Some(m) = self.g.asset_module(&source) else {
+                continue;
+            };
+            if self.deps.fs.stat(&self.g.all[m].uri).is_ok() {
+                return m;
+            }
+        }
+        target
     }
 
     /// `traverseLiquidSchema`. TS runs the blocks loop up to its first `@theme` (which awaits

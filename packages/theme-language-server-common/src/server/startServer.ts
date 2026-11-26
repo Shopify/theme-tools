@@ -123,7 +123,11 @@ export function startServer(
     getModeForURI,
   );
   const diagnosticsManager = new DiagnosticsManager(connection);
-  const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
+  const documentLinksProvider = new DocumentLinksProvider(
+    documentManager,
+    findThemeRootURI,
+    fileExists,
+  );
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
   const onTypeFormattingProvider = new OnTypeFormattingProvider(
     documentManager,
