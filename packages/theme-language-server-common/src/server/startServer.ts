@@ -633,10 +633,6 @@ export function startServer(
       // because that's the only thing that changed.
       documentManager.rename(oldUri, newUri);
 
-      // A rename changes the listing of both parent directories, and a move
-      // can create or remove directories above them.
-      fs.invalidateDirectoriesForRename(oldUri, newUri);
-
       // When a file is renamed, readFile and stat for both the old and new URIs are invalidated.
       fs.readFile.invalidate(oldUri);
       fs.readFile.invalidate(newUri);
@@ -645,6 +641,10 @@ export function startServer(
 
       themeGraphManager.rename(oldUri, newUri);
     }
+
+    // A rename changes the listing of both parent directories, and a move can
+    // create or remove the directories above them.
+    await fs.invalidateDirectories(params.files.flatMap(({ oldUri, newUri }) => [oldUri, newUri]));
 
     // We should complete refactors before running theme check
     await renameHandler.onDidRenameFiles(params);
@@ -677,6 +677,7 @@ export function startServer(
 
     const triggerUris = params.changes.map((change) => change.uri);
     const updates: Promise<any>[] = [];
+    const createdOrDeletedUris: string[] = [];
     for (const change of params.changes) {
       // Theme Check config changes should clear the config cache
       if (change.uri.endsWith('.theme-check.yml')) {
@@ -692,8 +693,7 @@ export function startServer(
 
       switch (change.type) {
         case FileChangeType.Created:
-          // A created file changes its directory's listing and can create missing directories.
-          fs.invalidateDirectoriesForCreate(change.uri);
+          createdOrDeletedUris.push(change.uri);
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
           themeGraphManager.create(change.uri);
@@ -715,8 +715,7 @@ export function startServer(
           break;
 
         case FileChangeType.Deleted:
-          // A deleted file changes its directory's listing and can remove empty directories.
-          fs.invalidateDirectoriesForDelete(change.uri);
+          createdOrDeletedUris.push(change.uri);
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
           themeGraphManager.delete(change.uri);
@@ -735,6 +734,11 @@ export function startServer(
         );
       }
     }
+
+    // Created and deleted files change their directory listings, and can
+    // create or remove the directories above them. Checking them together
+    // handles a rename that arrives as a delete and a create.
+    updates.push(fs.invalidateDirectories(createdOrDeletedUris));
 
     await Promise.all(updates);
 

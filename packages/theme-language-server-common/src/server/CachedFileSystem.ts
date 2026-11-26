@@ -1,10 +1,4 @@
-import {
-  AbstractFileSystem,
-  FileStat,
-  FileTuple,
-  FileType,
-  path,
-} from '@shopify/theme-check-common';
+import { AbstractFileSystem, FileStat, FileTuple, path } from '@shopify/theme-check-common';
 
 export class CachedFileSystem implements AbstractFileSystem {
   readFile: Cached<string>;
@@ -18,81 +12,45 @@ export class CachedFileSystem implements AbstractFileSystem {
   }
 
   /**
-   * Invalidates the directories that change when uri is created.
+   * Invalidates the cached directories that change when files are created,
+   * deleted or renamed.
    *
-   * The parent directory gains an entry. Creating a file can also create
-   * missing parent directories, so this walks up to the first directory that
-   * the cache knows already existed.
+   * Each file's directory gains or loses an entry. A change can also create or
+   * remove the directories above it, and the cache can't tell what existed
+   * before the change. So this asks the file system which directories exist
+   * now, and invalidates each parent listing that disagrees with it.
+   *
+   * The result depends only on what exists now, so a rename has the same
+   * effect whether it arrives as a rename or as a delete and a create, in
+   * either order.
    */
-  invalidateDirectoriesForCreate(uri: string): void {
-    this.invalidateDirectoriesAbove(uri, (dir) => this.existed(dir));
-  }
+  async invalidateDirectories(uris: string[]): Promise<void> {
+    const parents = unique(uris.flatMap(parentOf));
+    for (const dir of parents) this.readDirectory.invalidate(dir);
 
-  /**
-   * Invalidates the directories that change when uri is deleted.
-   *
-   * The parent directory loses an entry. Deleting the last file in a directory
-   * can remove it, so this walks up to the first directory that the cache
-   * knows still has other entries.
-   */
-  invalidateDirectoriesForDelete(uri: string): void {
-    this.invalidateDirectoriesAbove(uri, (dir, entry) => this.hasOtherEntries(dir, entry));
-  }
+    const dirs = unique(parents.flatMap((dir) => [dir, ...directoriesAbove(dir)]));
+    // The file system root has no parent listing to check.
+    const checks = dirs.flatMap((dir) => parentOf(dir).map((parent) => ({ dir, parent })));
 
-  /**
-   * Invalidates the directories that change when oldUri is renamed to newUri.
-   *
-   * Directories above newUri exist after the rename and directories above
-   * oldUri existed before it, so a rename within one directory only changes
-   * that directory's listing.
-   */
-  invalidateDirectoriesForRename(oldUri: string, newUri: string): void {
-    const oldDirs = directoriesAbove(oldUri);
-    const newDirs = directoriesAbove(newUri);
-    this.invalidateDirectoriesAbove(
-      oldUri,
-      (dir, entry) => newDirs.includes(dir) || this.hasOtherEntries(dir, entry),
+    // Existence is checked with stat because listing a theme root makes
+    // code-editor fetch the checksums of the whole theme.
+    for (const { dir } of checks) this.stat.invalidate(dir);
+    const existsNow = await Promise.all(
+      checks.map(({ dir }) =>
+        this.stat(dir).then(
+          () => true,
+          () => false,
+        ),
+      ),
     );
-    this.invalidateDirectoriesAbove(newUri, (dir) => oldDirs.includes(dir) || this.existed(dir));
-  }
 
-  /**
-   * Invalidates the listing of each directory above uri, up to the first one
-   * that exists both before and after the change.
-   *
-   * Each directory below that one appeared or disappeared, so its stat is
-   * invalidated too.
-   */
-  private invalidateDirectoriesAbove(
-    uri: string,
-    existsBeforeAndAfter: (dir: string, entry: string) => boolean,
-  ): void {
-    let entry = path.normalize(uri);
-    for (const dir of directoriesAbove(uri)) {
-      // The check reads the cache, so it runs before the invalidation.
-      const isLastChangedDirectory = existsBeforeAndAfter(dir, entry);
-      this.readDirectory.invalidate(dir);
-      if (isLastChangedDirectory) return;
-
-      this.stat.invalidate(dir);
-      entry = dir;
-    }
-  }
-
-  /** Whether the cache shows that dir existed. */
-  private existed(dir: string): boolean {
-    if (this.stat.peek(dir)?.type === FileType.Directory) return true;
-
-    const siblings = this.readDirectory.peek(path.dirname(dir)) ?? [];
-    return siblings.some(
-      ([uri, type]) => type === FileType.Directory && path.normalize(uri) === dir,
-    );
-  }
-
-  /** Whether the cached listing of dir has an entry other than entry. */
-  private hasOtherEntries(dir: string, entry: string): boolean {
-    const entries = this.readDirectory.peek(dir) ?? [];
-    return entries.some(([uri]) => path.normalize(uri) !== entry);
+    checks.forEach(({ dir, parent }, i) => {
+      const listing = this.readDirectory.peek(parent);
+      const isListed = listing?.some(([uri]) => path.normalize(uri) === dir);
+      // isListed is undefined when the listing hasn't resolved, which also
+      // invalidates it.
+      if (isListed !== existsNow[i]) this.readDirectory.invalidate(parent);
+    });
   }
 }
 
@@ -104,16 +62,26 @@ interface Cached<T> {
 }
 
 /**
+ * Returns the directory that contains uri as a one-item list, or an empty
+ * list for the root.
+ */
+function parentOf(uri: string): [string] | [] {
+  const dir = path.dirname(uri);
+  // dirname returns the root unchanged. Requiring a shorter URI also
+  // guarantees that walks up the tree end.
+  const uriIsAbsoluteRoot = dir.length >= uri.length;
+  return uriIsAbsoluteRoot ? [] : [dir];
+}
+
+/**
  * Lists the directories above uri, nearest first, ending at the root.
  */
 function directoriesAbove(uri: string): string[] {
-  const dir = path.dirname(uri);
-  // dirname returns the root unchanged. Requiring a shorter URI also
-  // guarantees that the recursion ends.
-  const uriIsAbsoluteRoot = dir.length >= uri.length;
-  if (uriIsAbsoluteRoot) return [];
+  return parentOf(uri).flatMap((dir) => [dir, ...directoriesAbove(dir)]);
+}
 
-  return [dir, ...directoriesAbove(dir)];
+function unique<T>(values: T[]): T[] {
+  return [...new Set(values)];
 }
 
 function cachedByUri<T>(fn: (uri: string) => Promise<T>): Cached<T> {

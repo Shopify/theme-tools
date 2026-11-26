@@ -1,173 +1,162 @@
-import { FileType, path } from '@shopify/theme-check-common';
+import { FileType, path, recursiveReadDirectory } from '@shopify/theme-check-common';
 import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test';
 import { describe, expect, it, vi } from 'vitest';
 import { CachedFileSystem } from './CachedFileSystem';
 
 describe('CachedFileSystem', () => {
   const rootUri = path.normalize('browser:/theme');
-  const sectionsUri = path.join(rootUri, 'sections');
-  const snippetsUri = path.join(rootUri, 'snippets');
-  const snippetUri = path.join(snippetsUri, 'card.liquid');
   const uri = (relativePath: string) => path.join(rootUri, relativePath);
 
-  it('invalidates cached ancestor directories when a nested file is created', async () => {
-    const fileTree: Record<string, string> = {};
-    const fs = new CachedFileSystem(new MockFileSystem(fileTree, rootUri));
+  it.each<Scenario>([
+    {
+      change: 'a file is renamed within its directory',
+      files: { 'sections/hero.liquid': '' },
+      changeFiles: (files) => move(files, 'sections/hero.liquid', 'sections/banner.liquid'),
+      uris: ['sections/hero.liquid', 'sections/banner.liquid'],
+      expected: ['sections/banner.liquid'],
+    },
+    {
+      change: 'a file is created in an existing directory',
+      files: { 'sections/a.liquid': '' },
+      changeFiles: (files) => (files['sections/b.liquid'] = ''),
+      uris: ['sections/b.liquid'],
+      expected: ['sections/a.liquid', 'sections/b.liquid'],
+    },
+    {
+      change: 'a file is deleted from a directory that keeps other files',
+      files: { 'sections/a.liquid': '', 'sections/b.liquid': '' },
+      changeFiles: (files) => delete files['sections/a.liquid'],
+      uris: ['sections/a.liquid'],
+      expected: ['sections/b.liquid'],
+    },
+    {
+      change: 'a file moves between directories that keep existing',
+      files: { 'sections/a.liquid': '', 'sections/b.liquid': '', 'snippets/c.liquid': '' },
+      changeFiles: (files) => move(files, 'sections/a.liquid', 'snippets/a.liquid'),
+      uris: ['sections/a.liquid', 'snippets/a.liquid'],
+      expected: ['sections/b.liquid', 'snippets/a.liquid', 'snippets/c.liquid'],
+    },
+    {
+      change: 'the last watched file of a nested directory is deleted with an unwatched sibling',
+      files: {
+        'snippets/keep.liquid': '',
+        'snippets/nested/card.liquid': '',
+        'snippets/nested/README.md': '',
+      },
+      changeFiles: (files) => {
+        delete files['snippets/nested/card.liquid'];
+        delete files['snippets/nested/README.md'];
+      },
+      uris: ['snippets/nested/card.liquid'],
+      expected: ['snippets/keep.liquid'],
+    },
+  ])('keeps the cached theme root listing when $change', async (scenario) => {
+    const { fs, readDirectory } = await run(scenario);
 
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([]);
-    await expect(fs.stat(snippetsUri)).rejects.toThrow();
-
-    fileTree['snippets/card.liquid'] = '';
-    fs.invalidateDirectoriesForCreate(snippetUri);
-
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([[snippetsUri, FileType.Directory]]);
-    await expect(fs.stat(snippetsUri)).resolves.toMatchObject({ type: FileType.Directory });
-  });
-
-  it('invalidates cached ancestor directories when the last nested file is deleted', async () => {
-    const fileTree: Record<string, string> = { 'snippets/card.liquid': '' };
-    const fs = new CachedFileSystem(new MockFileSystem(fileTree, rootUri));
-
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([[snippetsUri, FileType.Directory]]);
-    await expect(fs.readDirectory(snippetsUri)).resolves.toEqual([[snippetUri, FileType.File]]);
-    await expect(fs.stat(snippetsUri)).resolves.toMatchObject({ type: FileType.Directory });
-
-    delete fileTree['snippets/card.liquid'];
-    fs.invalidateDirectoriesForDelete(snippetUri);
-
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([]);
-    await expect(fs.stat(snippetsUri)).rejects.toThrow();
-  });
-
-  it('invalidates cached ancestor directories when a file moves to a new directory', async () => {
-    const fileTree: Record<string, string> = { 'sections/card.liquid': '' };
-    const fs = new CachedFileSystem(new MockFileSystem(fileTree, rootUri));
-
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([[sectionsUri, FileType.Directory]]);
-    await expect(fs.stat(snippetsUri)).rejects.toThrow();
-
-    fileTree['snippets/card.liquid'] = fileTree['sections/card.liquid'];
-    delete fileTree['sections/card.liquid'];
-    fs.invalidateDirectoriesForRename(uri('sections/card.liquid'), snippetUri);
-
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([[snippetsUri, FileType.Directory]]);
-    await expect(fs.stat(snippetsUri)).resolves.toMatchObject({ type: FileType.Directory });
-    await expect(fs.stat(sectionsUri)).rejects.toThrow();
-  });
-
-  it('keeps the cached root listing when a file is renamed within its directory', async () => {
-    const fileTree: Record<string, string> = { 'sections/hero.liquid': '' };
-    const mockFs = new MockFileSystem(fileTree, rootUri);
-    const readDirectory = vi.spyOn(mockFs, 'readDirectory');
-    const fs = new CachedFileSystem(mockFs);
-
-    await fs.readDirectory(rootUri);
-    await fs.readDirectory(sectionsUri);
-    readDirectory.mockClear();
-
-    fileTree['sections/banner.liquid'] = fileTree['sections/hero.liquid'];
-    delete fileTree['sections/hero.liquid'];
-    fs.invalidateDirectoriesForRename(uri('sections/hero.liquid'), uri('sections/banner.liquid'));
-
-    await expect(fs.readDirectory(sectionsUri)).resolves.toEqual([
-      [uri('sections/banner.liquid'), FileType.File],
-    ]);
-    await expect(fs.readDirectory(rootUri)).resolves.toEqual([[sectionsUri, FileType.Directory]]);
-    expect(readDirectory.mock.calls).toEqual([[sectionsUri]]);
+    expect(await listFiles(fs)).toEqual(scenario.expected);
+    expect(readDirectory).not.toHaveBeenCalledWith(rootUri);
   });
 
   it.each<Scenario>([
     {
-      change: 'a rename within a directory',
-      fileTree: { 'sections/a.liquid': '' },
-      cache: [],
-      invalidate: (fs) =>
-        fs.invalidateDirectoriesForRename(uri('sections/a.liquid'), uri('sections/b.liquid')),
-      readDirectory: [sectionsUri],
-      stat: [],
+      change: 'the first file of a new directory is created',
+      files: {},
+      changeFiles: (files) => (files['snippets/card.liquid'] = ''),
+      uris: ['snippets/card.liquid'],
+      expected: ['snippets/card.liquid'],
     },
     {
-      change: 'a create in a directory listed by its parent',
-      fileTree: { 'sections/a.liquid': '' },
-      cache: [['readDirectory', rootUri]],
-      invalidate: (fs) => fs.invalidateDirectoriesForCreate(uri('sections/b.liquid')),
-      readDirectory: [sectionsUri],
-      stat: [],
+      change: 'the first file of new nested directories is created',
+      files: { 'sections/a.liquid': '' },
+      changeFiles: (files) => (files['snippets/nested/card.liquid'] = ''),
+      uris: ['snippets/nested/card.liquid'],
+      expected: ['sections/a.liquid', 'snippets/nested/card.liquid'],
     },
     {
-      change: 'a create in a directory with a cached stat',
-      fileTree: { 'sections/a.liquid': '' },
-      cache: [['stat', sectionsUri]],
-      invalidate: (fs) => fs.invalidateDirectoriesForCreate(uri('sections/b.liquid')),
-      readDirectory: [sectionsUri],
-      stat: [],
+      change: 'the last file of a directory is deleted',
+      files: { 'sections/a.liquid': '', 'snippets/card.liquid': '' },
+      changeFiles: (files) => delete files['snippets/card.liquid'],
+      uris: ['snippets/card.liquid'],
+      expected: ['sections/a.liquid'],
     },
     {
-      change: 'a delete in a directory with other entries',
-      fileTree: { 'sections/a.liquid': '', 'sections/b.liquid': '' },
-      cache: [['readDirectory', sectionsUri]],
-      invalidate: (fs) => fs.invalidateDirectoriesForDelete(uri('sections/a.liquid')),
-      readDirectory: [sectionsUri],
-      stat: [],
+      change: 'the last file of a directory moves to a new directory',
+      files: { 'sections/card.liquid': '' },
+      changeFiles: (files) => move(files, 'sections/card.liquid', 'snippets/card.liquid'),
+      uris: ['sections/card.liquid', 'snippets/card.liquid'],
+      expected: ['snippets/card.liquid'],
     },
     {
-      change: 'a move between directories that keep existing',
-      fileTree: { 'sections/a.liquid': '', 'sections/b.liquid': '', 'snippets/c.liquid': '' },
-      cache: [
-        ['readDirectory', rootUri],
-        ['readDirectory', sectionsUri],
-      ],
-      invalidate: (fs) =>
-        fs.invalidateDirectoriesForRename(uri('sections/a.liquid'), uri('snippets/a.liquid')),
-      readDirectory: [sectionsUri, snippetsUri],
-      stat: [],
+      change: 'a new directory is cached before the notification',
+      files: {},
+      changeFiles: (files) => (files['snippets/card.liquid'] = ''),
+      afterChange: (fs) => fs.stat(uri('snippets')),
+      uris: ['snippets/card.liquid'],
+      expected: ['snippets/card.liquid'],
     },
     {
-      change: 'a create in a directory the cache knows nothing about',
-      fileTree: { 'sections/a.liquid': '' },
-      cache: [],
-      invalidate: (fs) => fs.invalidateDirectoriesForCreate(uri('sections/b.liquid')),
-      readDirectory: [sectionsUri, rootUri, 'browser:/'],
-      stat: [sectionsUri, rootUri, 'browser:/'],
+      change: 'a new nested directory is listed before the notification',
+      files: {},
+      changeFiles: (files) => (files['snippets/nested/card.liquid'] = ''),
+      afterChange: (fs) => fs.readDirectory(uri('snippets')),
+      uris: ['snippets/nested/card.liquid'],
+      expected: ['snippets/nested/card.liquid'],
     },
     {
-      change: 'a delete of the last cached entry',
-      fileTree: { 'sections/a.liquid': '', 'snippets/c.liquid': '' },
-      cache: [
-        ['readDirectory', rootUri],
-        ['readDirectory', sectionsUri],
-      ],
-      invalidate: (fs) => fs.invalidateDirectoriesForDelete(uri('sections/a.liquid')),
-      readDirectory: [sectionsUri, rootUri],
-      stat: [sectionsUri],
+      change: 'a file moves to a new directory cached before the notification',
+      files: { 'sections/a.liquid': '', 'sections/b.liquid': '' },
+      changeFiles: (files) => move(files, 'sections/a.liquid', 'snippets/a.liquid'),
+      afterChange: (fs) => fs.stat(uri('snippets')),
+      uris: ['sections/a.liquid', 'snippets/a.liquid'],
+      expected: ['sections/b.liquid', 'snippets/a.liquid'],
     },
-  ])(
-    'invalidates only the directories that change for $change',
-    async ({ fileTree, cache, invalidate, readDirectory, stat }) => {
-      const fs = new CachedFileSystem(new MockFileSystem(fileTree, rootUri));
-      for (const [method, dir] of cache) await fs[method](dir);
-      const invalidatedDirectories = vi.spyOn(fs.readDirectory, 'invalidate');
-      const invalidatedStats = vi.spyOn(fs.stat, 'invalidate');
+  ])('refreshes the theme root listing when $change', async (scenario) => {
+    const { fs, readDirectory } = await run(scenario);
 
-      invalidate(fs);
+    expect(await listFiles(fs)).toEqual(scenario.expected);
+    expect(readDirectory).toHaveBeenCalledWith(rootUri);
+  });
 
-      expect(unique(invalidatedDirectories.mock.calls)).toEqual(readDirectory);
-      expect(unique(invalidatedStats.mock.calls)).toEqual(stat);
-    },
-  );
+  it('refreshes a theme root listing still pending from before the change', async () => {
+    const files: MockTheme = {};
+    const { fs, readDirectory, mockFs } = setup(files);
+    let respond!: () => void;
+    const response = new Promise<void>((resolve) => (respond = resolve));
+    readDirectory.mockImplementationOnce(async (uri) => {
+      const listing = await mockFs.readDirectory(uri);
+      await response;
+      return listing;
+    });
+
+    const pending = fs.readDirectory(rootUri);
+    files['snippets/card.liquid'] = '';
+    await fs.invalidateDirectories([uri('snippets/card.liquid')]);
+    respond();
+
+    await expect(pending).resolves.toEqual([]);
+    expect(await listFiles(fs)).toEqual(['snippets/card.liquid']);
+  });
+
+  it('refreshes a directory stat cached before the directory was created', async () => {
+    const files: MockTheme = {};
+    const { fs } = setup(files);
+
+    await expect(fs.stat(uri('snippets'))).rejects.toThrow();
+    files['snippets/card.liquid'] = '';
+    await fs.readDirectory(rootUri);
+    await fs.invalidateDirectories([uri('snippets/card.liquid')]);
+
+    await expect(fs.stat(uri('snippets'))).resolves.toMatchObject({ type: FileType.Directory });
+  });
 
   it('ignores a cached result that was invalidated while it was pending', async () => {
-    const fileTree: Record<string, string> = { 'sections/a.liquid': '' };
-    const fs = new CachedFileSystem(new MockFileSystem(fileTree, rootUri));
+    const { fs } = setup({ 'sections/a.liquid': '' });
 
     const pending = fs.readDirectory(rootUri);
     fs.readDirectory.invalidate(rootUri);
     await pending;
 
-    const invalidatedDirectories = vi.spyOn(fs.readDirectory, 'invalidate');
-    fs.invalidateDirectoriesForCreate(uri('sections/b.liquid'));
-
-    expect(invalidatedDirectories).toHaveBeenCalledWith(rootUri);
+    expect(fs.readDirectory.peek(rootUri)).toBeUndefined();
   });
 
   it.each([
@@ -199,33 +188,68 @@ describe('CachedFileSystem', () => {
       dirs: ['browser:/theme/snippets', 'browser:/theme', 'browser:/'],
     },
     { uri: 'untitled:Untitled-1', dirs: ['untitled:'] },
-  ])(
-    'invalidates every directory above $uri and stops at the root when nothing is cached',
-    ({ uri, dirs }) => {
-      for (const invalidate of [
-        'invalidateDirectoriesForCreate',
-        'invalidateDirectoriesForDelete',
-      ] as const) {
-        const fs = new CachedFileSystem(new MockFileSystem({}, rootUri));
-        const readDirectory = vi.spyOn(fs.readDirectory, 'invalidate');
-        const stat = vi.spyOn(fs.stat, 'invalidate');
+  ])('checks every directory above $uri and stops at the root', async ({ uri, dirs }) => {
+    const { fs } = setup({});
+    const readDirectory = vi.spyOn(fs.readDirectory, 'invalidate');
+    const stat = vi.spyOn(fs.stat, 'invalidate');
 
-        fs[invalidate](uri);
+    await fs.invalidateDirectories([uri]);
 
-        expect(readDirectory.mock.calls.map(([dir]) => dir)).toEqual(dirs);
-        expect(stat.mock.calls.map(([dir]) => dir)).toEqual(dirs);
-      }
-    },
-  );
+    // Nothing is cached, so every listing above uri is invalidated. The root
+    // has no parent listing, so its stat isn't checked.
+    expect(unique(readDirectory.mock.calls)).toEqual(dirs);
+    expect(unique(stat.mock.calls)).toEqual(dirs.slice(0, -1));
+  });
+
+  interface Scenario {
+    change: string;
+    files: MockTheme;
+    changeFiles: (files: MockTheme) => unknown;
+    afterChange?: (fs: CachedFileSystem) => Promise<unknown>;
+    /** Theme-relative paths of the changed files, as one notification. */
+    uris: string[];
+    /** Every file listed from the theme root afterwards. */
+    expected: string[];
+  }
+
+  /**
+   * Caches every listing, changes the files, then invalidates the changed
+   * paths.
+   */
+  async function run(scenario: Scenario) {
+    const files = { ...scenario.files };
+    const { fs, readDirectory } = setup(files);
+    await listFiles(fs);
+    scenario.changeFiles(files);
+    await scenario.afterChange?.(fs);
+    readDirectory.mockClear();
+
+    await fs.invalidateDirectories(scenario.uris.map(uri));
+
+    return { fs, readDirectory };
+  }
+
+  function setup(files: MockTheme) {
+    const mockFs = new MockFileSystem(files, rootUri);
+    // Wrapped so that the directory reads MockFileSystem.stat makes aren't counted.
+    const readDirectory = vi.fn((uri: string) => mockFs.readDirectory(uri));
+    const fs = new CachedFileSystem({
+      readFile: (uri) => mockFs.readFile(uri),
+      readDirectory,
+      stat: (uri) => mockFs.stat(uri),
+    });
+    return { fs, readDirectory, mockFs };
+  }
+
+  async function listFiles(fs: CachedFileSystem) {
+    const uris = await recursiveReadDirectory(fs, rootUri, () => true);
+    return uris.map((uri) => path.relative(uri, rootUri)).sort();
+  }
 });
 
-interface Scenario {
-  change: string;
-  fileTree: MockTheme;
-  cache: ['readDirectory' | 'stat', string][];
-  invalidate: (fs: CachedFileSystem) => void;
-  readDirectory: string[];
-  stat: string[];
+function move(files: MockTheme, from: string, to: string) {
+  files[to] = files[from];
+  delete files[from];
 }
 
 function unique(calls: [string][]): string[] {
