@@ -4,6 +4,7 @@ import {
   LiquidHtmlNode,
   NodeTypes,
   toLiquidHtmlAST,
+  toTolerantLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
 import {
   DocumentOnTypeFormattingParams,
@@ -129,12 +130,11 @@ function nodeAtCursor(textDocument: TextDocument, position: Position) {
  * `<div><div>|</div>`, it's the outer `<div>`'s.
  */
 function isClosedLater(textDocument: TextDocument, offset: number): boolean {
+  // The recovering parser keeps the closing tags it recognized before a later
+  // parse error, as in `<div><p>|</p>{{ unfinished`.
   let ast: LiquidHtmlNode;
   try {
-    ast = toLiquidHtmlAST(textDocument.getText(), {
-      allowUnclosedDocumentNode: true,
-      mode: 'tolerant',
-    });
+    ast = toTolerantLiquidHtmlAST(textDocument.getText());
   } catch {
     return false;
   }

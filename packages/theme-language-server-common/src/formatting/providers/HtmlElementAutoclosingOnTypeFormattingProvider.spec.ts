@@ -117,6 +117,9 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
       '<ul>\n  <li>█{% if x %}\n</ul>',
       '<ul>\n  <li>█{{ unfinished\n</ul>',
       '<ul>\n  <li>█<span>\n</ul>',
+      '<ul>\n  <li>█{{ unfinished',
+      // the closing tag after the cursor is the unclosed outer <li>'s
+      '<li>\n  <li>█</li>{{ unfinished',
     ];
     for (const source of scenarios) {
       documentManager.open(uri, source.replace(CURSOR, ''), 1);
@@ -171,6 +174,11 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
       '{% if a %}\n  <div>\n    <p>█</p>\n{% endif %}',
       // ... while a later element of the same name is unclosed
       '<div>\n  <p>█</p>\n  <p>',
+      // ... while later syntax doesn't parse
+      '<div><p>█</p>{{ unfinished',
+      '<div><p>█</p><script>',
+      '<div><p>█</p>{% raw %}',
+      '<div>\n  <p>█</p>\n  <p>\n</div>',
     ];
     for (const source of scenarios) {
       documentManager.open(uri, source.replace(CURSOR, ''), 1);
