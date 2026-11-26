@@ -50,9 +50,17 @@ fn hardcoded_route(attr: &Attr) -> Option<&'static (&'static str, &'static str)>
         if *route == "/" {
             t.value == "/" && attr.value.len() == 1
         } else {
-            t.value.starts_with(route)
+            starts_with_route(&t.value, route)
         }
     })
+}
+
+// Matches /cart, /cart/, /cart?..., /cart#... and /cart.js but not /cartography
+fn starts_with_route(value: &str, route: &str) -> bool {
+    match value.strip_prefix(route) {
+        Some(rest) => matches!(rest.bytes().next(), None | Some(b'/' | b'?' | b'#' | b'.')),
+        None => false,
+    }
 }
 
 fn report(cx: &mut Context, (route, url): &(&str, &str), start: usize) {
@@ -95,7 +103,7 @@ impl<'a> LiquidCheck<'a> for Check {
                     if *route == "/" {
                         value == "/"
                     } else {
-                        value.starts_with(route)
+                        starts_with_route(value, route)
                     }
                 });
                 if let Some(route) = route {

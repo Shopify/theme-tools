@@ -477,3 +477,46 @@ fn looks_up_theme_files_only_in_the_theme() {
         );
     }
 }
+
+#[test]
+fn finds_liquid_doc_definitions_wherever_the_theme_is() {
+    let theme = |root: &str| {
+        [
+            (
+                format!("{root}/sections/main.liquid"),
+                "{% render 'card' %}".to_string(),
+            ),
+            (
+                format!("{root}/snippets/card.liquid"),
+                "{% doc %}\n  @param {string} title - The card title\n{% enddoc %}".to_string(),
+            ),
+        ]
+    };
+    let missing_arguments = |dir: &Path, root: &str| {
+        let (offenses, _, _) = parse(&theme_check(dir, &[root]));
+        offenses
+            .into_iter()
+            .filter(|o| o.starts_with("MissingRenderSnippetArguments "))
+            .collect::<Vec<_>>()
+    };
+    let expected = ["MissingRenderSnippetArguments 1 sections/main.liquid 0:10-0:17"];
+
+    // A space, which the theme's file uris don't encode.
+    let files = theme("my theme");
+    let files: Vec<_> = files
+        .iter()
+        .map(|(p, t)| (p.as_str(), t.as_str()))
+        .collect();
+    let dir = fixture("liquid-doc-space", &files);
+    assert_eq!(missing_arguments(&dir, "my theme"), expected);
+
+    // The config's `root`, which the theme's files are relative to.
+    let mut files = theme("theme/dist").to_vec();
+    files.push(("theme/.theme-check.yml".into(), "root: dist\n".into()));
+    let files: Vec<_> = files
+        .iter()
+        .map(|(p, t)| (p.as_str(), t.as_str()))
+        .collect();
+    let dir = fixture("liquid-doc-root", &files);
+    assert_eq!(missing_arguments(&dir, "theme"), expected);
+}

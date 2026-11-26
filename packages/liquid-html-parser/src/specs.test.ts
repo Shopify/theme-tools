@@ -23,6 +23,7 @@ interface SpecPosition {
 
 interface SpecError extends SpecPosition {
   message: string;
+  unclosed?: { type: string; name: string; blockStartPosition: SpecPosition };
 }
 
 interface Case {
@@ -120,15 +121,19 @@ function toSpecPosition(source: string, start: number, end: number): SpecPositio
 
 function toSpecError(source: string, e: LiquidHTMLASTParsingError): SpecError {
   // loc is 1-based. Its columns, like JS string indices, are in UTF-16 code units.
-  // The parser never sets it, so a spec error has no unclosed node.
-  expect(e.unclosed, 'unclosed').toBeNull();
   const lines = source.split('\n');
   const offset = ({ line, column }: { line: number; column: number }) =>
     lines.slice(0, line - 1).reduce((n, l) => n + l.length + 1, 0) + column - 1;
-  return {
+  const error: SpecError = {
     message: e.message,
     ...toSpecPosition(source, offset(e.loc!.start), offset(e.loc!.end)),
   };
+  if (e.unclosed) {
+    const { type, name, blockStartPosition } = e.unclosed;
+    const { start, end } = blockStartPosition;
+    error.unclosed = { type, name, blockStartPosition: toSpecPosition(source, start, end) };
+  }
+  return error;
 }
 
 /** Positions and lists of scalars on one line, unless the text has several, spaced as prettier does. */

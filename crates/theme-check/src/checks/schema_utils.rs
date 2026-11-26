@@ -271,13 +271,15 @@ pub fn get_blocks(valid_schema: &Value) -> Result<Blocks<'_>, CheckError> {
                 .iter()
                 .enumerate()
             {
-                if has(block, "name")? {
-                    let path = ["default", "blocks", &index.to_string(), "type"]
-                        .map(String::from)
-                        .to_vec();
-                    out.default_level_blocks
-                        .push(BlockWithPath { node: block, path });
+                // `default` may also name a block with a plain string; only objects are checked.
+                if !js::is_non_null_object(block) {
+                    continue;
                 }
+                let path = ["default", "blocks", &index.to_string(), "type"]
+                    .map(String::from)
+                    .to_vec();
+                out.default_level_blocks
+                    .push(BlockWithPath { node: block, path });
             }
         }
     }
@@ -291,7 +293,8 @@ fn categorize_preset_level_block<'v>(
     path: Vec<String>,
     depth: usize,
 ) -> CheckResult {
-    if !js::truthy(block) {
+    // Section presets may also name a block with a plain string; only objects are checked.
+    if !js::is_non_null_object(block) {
         return Ok(());
     }
     if out.preset_level_blocks.len() <= depth {

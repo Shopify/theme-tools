@@ -16,6 +16,8 @@ const isolatedTests = [
   'packages/theme-check-docs-updater/src/themeLiquidDocsManager.spec.ts',
   'packages/theme-language-server-common/src/completions/providers/ContentForParameterCompletionProvider.spec.ts',
   'packages/theme-language-server-common/src/completions/providers/ObjectCompletionProvider.spec.ts',
+  'packages/vscode-extension/src/common/commands.spec.ts',
+  'packages/vscode-extension/src/common/orphanedFilesOnBoot.spec.ts',
 ];
 
 export default defineConfig({

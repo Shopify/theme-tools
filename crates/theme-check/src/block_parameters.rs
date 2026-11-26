@@ -131,6 +131,7 @@ pub fn schema_setting_liquid_type(setting_type: &str) -> Option<&str> {
         "link_list" => "linklist",
         "collection_list" => "collection[]",
         "product_list" => "product[]",
+        "article_list" => "article[]",
         _ => return None,
     })
 }
