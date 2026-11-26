@@ -66,6 +66,12 @@ suite('My Feature', () => {
 
 Tests are auto-discovered via webpack's `require.context`.
 
+`languageFeatures.test.ts` drives the language server the way an editor does: diagnostics, hover, document links, on-type formatting, rename and document formatting. Its fixtures are written into the test workspace with `workspace.fs`, which keeps them in memory.
+
+The language server runs in its own web worker, whose console the tests can't see. `startMonitoredLanguageServer` (`languageServerWorker.ts`) restarts the server in a worker that reports its `console.error` calls, uncaught errors and error responses, and the suite fails if there are any.
+
+To run against the VS Code version an embedder ships, pin its commit: `vscode-test-web --quality=stable --commit=<sha>`.
+
 ### Node Tests (Future)
 
 Reserved for Node-based e2e tests (e.g., testing CLI integration, file system operations).
