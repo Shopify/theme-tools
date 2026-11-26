@@ -48,6 +48,14 @@ describe('Function: toRemoteAssetUrl', () => {
   ])('refuses %s', (_description, url) => {
     expect(toRemoteAssetUrl(url)).toBeUndefined();
   });
+
+  it('reads a host name with a long run of dots in linear time', () => {
+    const dots = '.'.repeat(100_000);
+    const start = performance.now();
+    expect(toRemoteAssetUrl(`http://a${dots}x/theme.css`)).toBe(`http://a${dots}x/theme.css`);
+    expect(toRemoteAssetUrl(`http://localhost${dots}/theme.css`)).toBeUndefined();
+    expect(performance.now() - start).toBeLessThan(500);
+  });
 });
 
 describe('Function: isPublicIpAddress', () => {

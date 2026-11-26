@@ -28,8 +28,15 @@ export function toRemoteAssetUrl(url: string): string | undefined {
 function isPublicHost(hostname: string): boolean {
   if (hostname.startsWith('[')) return isPublicIpAddress(hostname.slice(1, -1));
   if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return isPublicIpAddress(hostname);
-  const name = hostname.replace(/\.+$/, '');
+  const name = withoutFinalDots(hostname);
   return name !== 'localhost' && !name.endsWith('.localhost');
+}
+
+/** `name` without its final dots. A regular expression takes quadratic time on a run of dots. */
+function withoutFinalDots(name: string): string {
+  let end = name.length;
+  while (end > 0 && name[end - 1] === '.') end--;
+  return name.slice(0, end);
 }
 
 type Range = [address: string, prefixLength: number];
