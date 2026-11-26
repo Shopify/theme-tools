@@ -27,6 +27,8 @@ export const JSONMissingBlock: JSONCheckDefinition = {
         const { ast } = schema ?? {};
         if (!ast || ast instanceof Error) return;
         if (!schema) return;
+        // A template that isn't an object, like `null`, has no sections to check.
+        if (typeof schema.parsed !== 'object' || schema.parsed === null) return;
 
         const sections = schema.parsed.sections;
         if (!sections) return;
