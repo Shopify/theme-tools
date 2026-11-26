@@ -35,7 +35,7 @@ import {
 } from '../../documents';
 import { blockName, isBlock, isSection, isSectionGroup, isTemplate } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
-import { isValidSectionGroup, isValidTemplate } from './utils';
+import { escapeJsonString, isValidSectionGroup, isValidTemplate } from './utils';
 import { FindThemeRootURI } from '../../internal-types';
 
 type DocumentChange = TextDocumentEdit;
@@ -197,7 +197,7 @@ export class BlockRenameHandler implements BaseRenameHandler {
           const node = nodeAtPath(ast, ['blocks', i, 'type']);
           edits.push({
             annotationId,
-            newText: newBlockName,
+            newText: escapeJsonString(newBlockName),
             range: Range.create(
               textDocument.positionAt(offset + node!.loc!.start.offset + 1),
               textDocument.positionAt(offset + node!.loc!.end.offset - 1),
@@ -218,7 +218,7 @@ export class BlockRenameHandler implements BaseRenameHandler {
               const node = nodeAtPath(ast, [...path, 'blocks', index, 'type']);
               edits.push({
                 annotationId,
-                newText: newBlockName,
+                newText: escapeJsonString(newBlockName),
                 range: Range.create(
                   textDocument.positionAt(offset + node!.loc!.start.offset + 1),
                   textDocument.positionAt(offset + node!.loc!.end.offset - 1),
@@ -234,7 +234,7 @@ export class BlockRenameHandler implements BaseRenameHandler {
               const node = nodeAtPath(ast, [...path, 'blocks', key, 'type']);
               edits.push({
                 annotationId,
-                newText: newBlockName,
+                newText: escapeJsonString(newBlockName),
                 range: Range.create(
                   textDocument.positionAt(offset + node!.loc!.start.offset + 1),
                   textDocument.positionAt(offset + node!.loc!.end.offset - 1),
@@ -379,7 +379,7 @@ function getBlocksEditsFactory(
         const node = nodeAtPath(ast, [...path, key, 'type'])!;
         edits.push({
           annotationId,
-          newText: newBlockName,
+          newText: escapeJsonString(newBlockName),
           range: Range.create(
             textDocument.positionAt(node.loc!.start.offset + 1),
             textDocument.positionAt(node.loc!.end.offset - 1),

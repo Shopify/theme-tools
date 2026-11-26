@@ -5,6 +5,7 @@ import { ApplyWorkspaceEditParams } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager } from '../../documents';
 import { MockConnection, mockConnection } from '../../test/MockConnection';
+import { shopDirectory, shopPreviewDirectory, siblingThemes } from '../../test/siblingThemes';
 import { RenameHandler } from '../RenameHandler';
 
 describe('Module: BlockRenameHandler', () => {
@@ -394,6 +395,145 @@ describe('Module: BlockRenameHandler', () => {
 
       // Check if sendRequest was called at all
       expect(connection.spies.sendRequest).not.toHaveBeenCalled();
+    });
+
+    it('escapes the new name in JSON strings', async () => {
+      const schema = (type: string) =>
+        JSON.stringify(
+          {
+            name: 'Section',
+            blocks: [{ type }],
+            presets: [
+              { name: 'List', blocks: [{ type }] },
+              { name: 'Keyed', blocks: { 'block-id': { type } } },
+            ],
+          },
+          null,
+          2,
+        );
+      const sectionWithBlock = (type: string) => ({
+        type: 'section',
+        blocks: { 'block-id': { type } },
+        block_order: ['block-id'],
+      });
+      const jsonFiles = (type: string) => ({
+        'sections/section.liquid': `{% schema %}\n${schema(type)}\n{% endschema %}`,
+        'sections/header.json': JSON.stringify(
+          {
+            type: 'header',
+            name: 'Header',
+            sections: { 'section-id': sectionWithBlock(type) },
+            order: ['section-id'],
+          },
+          null,
+          2,
+        ),
+        'templates/index.json': JSON.stringify(
+          { sections: { 'section-id': sectionWithBlock(type) }, order: ['section-id'] },
+          null,
+          2,
+        ),
+      });
+      fs = new MockFileSystem({ 'blocks/old-name.liquid': '', ...jsonFiles('old-name') }, mockRoot);
+      documentManager = new DocumentManager(
+        fs,
+        undefined,
+        undefined,
+        async () => 'theme',
+        async () => true,
+      );
+      handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
+
+      await handler.onDidRenameFiles({
+        files: [
+          {
+            oldUri: 'mock-fs:/blocks/old-name.liquid',
+            newUri: 'mock-fs:/blocks/new%22name.liquid',
+          },
+        ],
+      });
+
+      const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+      const expectedFs = new MockFileSystem(jsonFiles('new"name'), mockRoot);
+      assert(params.edit.documentChanges);
+      expect(params.edit.documentChanges).toHaveLength(3);
+      for (const docChange of params.edit.documentChanges) {
+        assert(TextDocumentEdit.is(docChange));
+        const uri = docChange.textDocument.uri;
+        const initialDoc = await fs.readFile(uri);
+        const expectedDoc = await expectedFs.readFile(uri);
+        expect(docChange.edits).to.applyEdits(initialDoc, expectedDoc);
+      }
+    });
+
+    describe('when the name of a sibling theme starts with the name of the theme', () => {
+      const shopRoot = `${mockRoot}/${shopDirectory}`;
+      const shopPreviewRoot = `${mockRoot}/${shopPreviewDirectory}`;
+
+      beforeEach(async () => {
+        const sectionWithBlock = {
+          type: 'section',
+          blocks: { 'block-id': { type: 'old-name' } },
+          block_order: ['block-id'],
+        };
+        fs = new MockFileSystem(
+          siblingThemes({
+            'blocks/old-name.liquid': '',
+            'sections/section.liquid': `
+              {% content_for "block", id: "block-id", type: "old-name" %}
+              {% schema %}
+                { "name": "Section", "blocks": [{ "type": "old-name" }] }
+              {% endschema %}`,
+            'sections/header.json': JSON.stringify({
+              type: 'header',
+              name: 'Header',
+              sections: { 'section-id': sectionWithBlock },
+              order: ['section-id'],
+            }),
+            'templates/index.json': JSON.stringify({
+              sections: { 'section-id': sectionWithBlock },
+              order: ['section-id'],
+            }),
+          }),
+          mockRoot,
+        );
+        documentManager = new DocumentManager(
+          fs,
+          undefined,
+          undefined,
+          async () => 'theme',
+          async () => true,
+        );
+        await documentManager.preload(shopPreviewRoot);
+        handler = new RenameHandler(
+          connection,
+          capabilities,
+          documentManager,
+          async () => shopRoot,
+        );
+      });
+
+      it('only edits the files of the theme of the renamed block', async () => {
+        await handler.onDidRenameFiles({
+          files: [
+            {
+              oldUri: `${shopRoot}/blocks/old-name.liquid`,
+              newUri: `${shopRoot}/blocks/new-name.liquid`,
+            },
+          ],
+        });
+
+        const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+        assert(params.edit.documentChanges);
+        const uris = (params.edit.documentChanges as TextDocumentEdit[]).map(
+          (dc) => dc.textDocument.uri,
+        );
+        expect(uris.sort()).toEqual([
+          `${shopRoot}/sections/header.json`,
+          `${shopRoot}/sections/section.liquid`,
+          `${shopRoot}/templates/index.json`,
+        ]);
+      });
     });
   });
 });

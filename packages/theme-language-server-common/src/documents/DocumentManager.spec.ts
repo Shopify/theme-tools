@@ -39,6 +39,49 @@ describe('Module: DocumentManager', () => {
     expect(theme[0].uri).to.equal(path.normalize(fileUri));
   });
 
+  describe.each([
+    { scheme: 'file:', themesUri: 'file:///workspace/themes' },
+    { scheme: 'shopify-vfs:', themesUri: 'shopify-vfs:/themes' },
+  ])('Unit: theme(root) with $scheme URIs', ({ themesUri }) => {
+    const shopRoot = `${themesUri}/shop`;
+    const shopFile = `${shopRoot}/snippets/a.liquid`;
+
+    beforeEach(() => {
+      documentManager.open(shopFile, 'a', 0);
+      documentManager.open(`${themesUri}/shop-preview/snippets/b.liquid`, 'b', 0);
+    });
+
+    it('leaves out a sibling theme whose name starts with the name of the root', () => {
+      expect(documentManager.theme(shopRoot).map((sourceCode) => sourceCode.uri)).toEqual([
+        shopFile,
+      ]);
+    });
+
+    it('accepts a root that ends with a slash', () => {
+      expect(documentManager.theme(`${shopRoot}/`).map((sourceCode) => sourceCode.uri)).toEqual([
+        shopFile,
+      ]);
+    });
+  });
+
+  it('leaves out the files of another authority when the root is file:///', () => {
+    documentManager.open('file:///templates/index.json', '{}', 0);
+    documentManager.open('file://server/share/templates/index.json', '{}', 0);
+    expect(documentManager.theme('file:///').map((sourceCode) => sourceCode.uri)).toEqual([
+      'file:///templates/index.json',
+    ]);
+  });
+
+  it('compares a root that contains a percent sign as it is', () => {
+    // Stored as file:///workspace/shop%20/templates/index.json
+    documentManager.open('file:///workspace/shop%252520/templates/index.json', '{}', 0);
+    // Stored as file:///workspace/shop /templates/index.json, which a decoded root would match
+    documentManager.open('file:///workspace/shop%20/templates/index.json', '{}', 0);
+    expect(
+      documentManager.theme('file:///workspace/shop%20').map((sourceCode) => sourceCode.uri),
+    ).toEqual(['file:///workspace/shop%20/templates/index.json']);
+  });
+
   describe('when initialized with an abstract file system', () => {
     beforeEach(async () => {
       fs = new MockFileSystem(
