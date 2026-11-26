@@ -1,7 +1,13 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
+import { RenderMarkup } from '@shopify/liquid-html-parser';
 import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
-import { inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
+import {
+  ArgumentTypeCheck,
+  checkArgumentType,
+  getArgumentTypeMismatchMessage,
+  getValidParamTypes,
+  parseParamType,
+} from '../../liquid-doc/utils';
 import {
   findTypeMismatchParams,
   generateTypeMismatchSuggestions,
@@ -28,41 +34,59 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   },
 
   create(context) {
+    let validParamTypesPromise: Promise<Set<string>> | undefined;
+
     /**
      * Checks for type mismatches when alias is used with `for` or `with` syntax.
-     * This can be refactored at a later date to share more code with regular named arguments as they are both backed by LiquidExpression nodes.
-     *
      * E.g. {% render 'card' with 123 as title %}
      */
-    function findAndReportAliasType(
+    async function findAndReportAliasType(
       node: RenderMarkup,
       liquidDocParameters: Map<string, LiquidDocParameter>,
     ) {
-      if (
-        node.alias &&
-        node.variable?.name &&
-        node.variable.name.type !== NodeTypes.VariableLookup
-      ) {
-        const paramIsDefinedWithType = liquidDocParameters
-          .get(node.alias.value)
-          ?.type?.toLowerCase();
-        if (paramIsDefinedWithType) {
-          const providedParamType = inferArgumentType(node.variable.name);
-          if (!isTypeCompatible(paramIsDefinedWithType, providedParamType)) {
-            const suggestions = generateTypeMismatchSuggestions(
-              paramIsDefinedWithType,
-              node.variable.name.position.start,
-              node.variable.name.position.end,
-            );
+      if (!node.alias || !node.variable?.name) return;
 
-            context.report({
-              message: `Type mismatch for argument '${node.alias.value}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
-              startIndex: node.variable.name.position.start,
-              endIndex: node.variable.name.position.end,
-              suggest: suggestions,
-            });
-          }
-        }
+      const expectedType = liquidDocParameters.get(node.alias.value)?.type;
+      if (!expectedType) return;
+
+      const argument = node.variable.name;
+      if (!(await isAliasMismatch(expectedType, checkArgumentType(expectedType, argument)))) return;
+
+      context.report({
+        message: getArgumentTypeMismatchMessage(node.alias.value, expectedType, argument),
+        startIndex: argument.position.start,
+        endIndex: argument.position.end,
+        suggest: generateTypeMismatchSuggestions(
+          expectedType,
+          argument.position.start,
+          argument.position.end,
+        ),
+      });
+    }
+
+    /**
+     * Aliases check literals against every declared type, including named types
+     * and arrays, which no literal matches. With a docset, types that it does not
+     * define are left to ValidDocParamTypes so each declaration is reported once.
+     * The docset lookup uses the declared spelling, as ValidDocParamTypes does,
+     * so `Product` is reported only as an unsupported type.
+     */
+    async function isAliasMismatch(
+      expectedType: string,
+      check: ArgumentTypeCheck,
+    ): Promise<boolean> {
+      switch (check.kind) {
+        case 'incompatible':
+          return true;
+        case 'named-type':
+          if (!context.themeDocset) return true;
+          validParamTypesPromise ??= context.themeDocset
+            .liquidDrops()
+            .then((entries) => new Set(getValidParamTypes(entries).keys()));
+          return parseParamType(await validParamTypesPromise, expectedType) !== undefined;
+        case 'compatible':
+        case 'unchecked':
+          return false;
       }
     }
 
@@ -79,7 +103,7 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
 
         if (!liquidDocParameters) return;
 
-        findAndReportAliasType(node, liquidDocParameters);
+        await findAndReportAliasType(node, liquidDocParameters);
 
         const typeMismatchParams = findTypeMismatchParams(liquidDocParameters, node.args);
         reportTypeMismatches(context, typeMismatchParams, liquidDocParameters);

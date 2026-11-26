@@ -6,9 +6,9 @@ ignore:
 AssetPreload:
   enabled: true
   severity: 1
-BlockArgumentSettingCollision:
+BlockContentUsage:
   enabled: true
-  severity: 1
+  severity: 0
 BlockIdUsage:
   enabled: true
   severity: 1
@@ -62,6 +62,9 @@ ImgWidthAndHeight:
   enabled: true
   severity: 0
 JSONMissingBlock:
+  enabled: true
+  severity: 0
+JSONMissingSection:
   enabled: true
   severity: 0
 JSONSyntaxError:
@@ -171,9 +174,6 @@ UniqueSettingId:
 UniqueStaticBlockId:
   enabled: true
   severity: 0
-UnknownBlockSetting:
-  enabled: true
-  severity: 1
 UnknownFilter:
   enabled: true
   severity: 0
@@ -201,6 +201,12 @@ UnusedDocParam:
 ValidBlockArgumentTypes:
   enabled: true
   severity: 1
+ValidBlockContentSettingType:
+  enabled: true
+  severity: 0
+ValidBlockTagPlacement:
+  enabled: true
+  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0
@@ -222,6 +228,12 @@ ValidJSON:
 ValidLocalBlocks:
   enabled: true
   severity: 0
+ValidRangeDefault:
+  enabled: true
+  severity: 0
+ValidRangeStepCount:
+  enabled: true
+  severity: 0
 ValidRenderSnippetArgumentTypes:
   enabled: true
   severity: 1
@@ -237,7 +249,13 @@ ValidSchemaTranslations:
 ValidScopedCSSClass:
   enabled: true
   severity: 1
+ValidSelectDefault:
+  enabled: true
+  severity: 1
 ValidSettingsKey:
+  enabled: true
+  severity: 0
+ValidStandardEventData:
   enabled: true
   severity: 0
 ValidStaticBlockType:

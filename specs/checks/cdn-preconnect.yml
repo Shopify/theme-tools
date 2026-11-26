@@ -1,0 +1,85 @@
+check: CdnPreconnect
+severity: error
+cases:
+  - name: should report preconnect to cdn.shopify.com
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://cdn.shopify.com/"/>
+    offenses:
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [0, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com/"/>'
+  - name: should report crossorigin preconnect to cdn.shopify.com
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://cdn.shopify.com/" crossorigin/>
+    offenses:
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [0, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com/" crossorigin/>'
+  - name: should report preconnect to cdn.shopify.com without a trailing slash
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+        <link rel="preconnect" href="//cdn.shopify.com">
+    offenses:
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [0, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com" crossorigin>'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [1, 0]
+        highlight: '<link rel="preconnect" href="//cdn.shopify.com">'
+  - name: should report other URLs on the cdn.shopify.com origin
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://cdn.shopify.com?v=1">
+        <link rel="preconnect" href="//cdn.shopify.com?v=1">
+        <link rel="preconnect" href="https://cdn.shopify.com#top">
+        <link rel="preconnect" href="https://cdn.shopify.com:443/">
+        <link rel="preconnect" href="HTTPS://CDN.Shopify.com/">
+        <link rel="preconnect" href="https://cdn.shopify.com/{{ path }}">
+    offenses:
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [0, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com?v=1">'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [1, 0]
+        highlight: '<link rel="preconnect" href="//cdn.shopify.com?v=1">'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [2, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com#top">'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [3, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com:443/">'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [4, 0]
+        highlight: '<link rel="preconnect" href="HTTPS://CDN.Shopify.com/">'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [5, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com/{{ path }}">'
+  - name: should not report preconnect to other hosts
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+        <link rel="preconnect" href="https://example.com/cdn.shopify.com.html">
+        <link rel="preconnect" href="https://cdn.shopify.com.example.com">
+        <link rel="preconnect" href="https://cdn.shopify.com:8443/">
+        <link rel="preconnect" href="https://cdn.shopify.com{{ '.example.com' }}">
+        <link rel="preconnect" href="https://example.com/path //cdn.shopify.com">
+        <link rel="preconnect" href="https://example.com/{{ 'path' }}//cdn.shopify.com">
+  - name: should not report other link types
+    files:
+      file.liquid: |
+        <link rel="preload" href="https://example.com/foo.css" as="style"/>
+        <link rel="stylesheet" href="https://example.com/bar.css"/>
+        <link rel="icon"/>

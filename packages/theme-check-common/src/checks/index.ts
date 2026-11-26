@@ -22,6 +22,7 @@ import { EmptyBlockContent } from './empty-block-content';
 import { HardcodedRoutes } from './hardcoded-routes';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONMissingBlock } from './json-missing-block';
+import { JSONMissingSection } from './json-missing-section';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidFreeSettings } from './liquid-free-settings';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
@@ -60,10 +61,14 @@ import { ValidJSON } from './valid-json';
 import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument-types';
+import { ValidRangeDefault, ValidRangeDefaultSettingsSchema } from './valid-range-default';
+import { ValidRangeStepCount, ValidRangeStepCountSettingsSchema } from './valid-range-step-count';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
-import { ValidSettingsKey } from './valid-settings-key';
+import { ValidSelectDefault, ValidSelectDefaultSettingsSchema } from './valid-select-default';
+import { ValidSettingsKey, ValidSettingsKeyJSON } from './valid-settings-key';
+import { ValidStandardEventData } from './valid-standard-event-data';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
 import { VariableName } from './variable-name';
@@ -77,7 +82,7 @@ import {
   StylesheetOncePerFile,
   StylesheetTagInWrongFile,
 } from './raw-tags';
-import { BlockArgumentSettingCollision } from './block-argument-setting-collision';
+import { BlockContentUsage } from './block-content-usage';
 import { DuplicateBlockArguments } from './duplicate-block-arguments';
 import { ExcessiveSettingsCount } from './excessive-settings-count';
 import { LiquidComplexity } from './liquid-complexity';
@@ -85,9 +90,10 @@ import { LiquidNestingDepth } from './liquid-nesting-depth';
 import { LiquidSyntaxError } from './liquid-syntax-error';
 import { MaxFileSize, MaxFileSizeJSON } from './max-file-size';
 import { MissingBlockArguments } from './missing-block-arguments';
-import { UnknownBlockSetting } from './unknown-block-setting';
 import { UnrecognizedBlockArguments } from './unrecognized-block-arguments';
 import { ValidBlockArgumentTypes } from './valid-block-argument-types';
+import { ValidBlockContentSettingType } from './valid-block-content-setting-type';
+import { ValidBlockTagPlacement } from './valid-block-tag-placement';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -112,6 +118,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   HardcodedRoutes,
   ImgWidthAndHeight,
   JSONMissingBlock,
+  JSONMissingSection,
   JSONSyntaxError,
   LiquidFreeSettings,
   LiquidHTMLSyntaxError,
@@ -151,9 +158,17 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidJSON,
   ValidDocParamTypes,
   ValidLocalBlocks,
+  ValidRangeDefault,
+  ValidRangeDefaultSettingsSchema,
+  ValidRangeStepCount,
+  ValidRangeStepCountSettingsSchema,
   ValidRenderSnippetArgumentTypes,
   ValidSchema,
+  ValidSelectDefault,
+  ValidSelectDefaultSettingsSchema,
   ValidSettingsKey,
+  ValidSettingsKeyJSON,
+  ValidStandardEventData,
   ValidStaticBlockType,
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,
@@ -166,7 +181,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   SchemaSectionOrBlockOnly,
   StylesheetOncePerFile,
   StylesheetTagInWrongFile,
-  BlockArgumentSettingCollision,
+  BlockContentUsage,
   DuplicateBlockArguments,
   ExcessiveSettingsCount,
   LiquidComplexity,
@@ -175,9 +190,10 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MaxFileSize,
   MaxFileSizeJSON,
   MissingBlockArguments,
-  UnknownBlockSetting,
   UnrecognizedBlockArguments,
   ValidBlockArgumentTypes,
+  ValidBlockContentSettingType,
+  ValidBlockTagPlacement,
 ];
 
 /**

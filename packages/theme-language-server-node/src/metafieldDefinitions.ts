@@ -21,11 +21,16 @@ export async function fetchMetafieldDefinitionsForURI(uri: string) {
       env: {
         ...process.env,
         SHOPIFY_LANGUAGE_SERVER: '1',
+        // Pull with an existing login. When there is none, the CLI fails
+        // instead of opening a browser to log in. Shopify CLI checks
+        // SHOPIFY_FLAG_NO_INPUT since 4.9 and CI since 3.77.
+        SHOPIFY_FLAG_NO_INPUT: '1',
+        CI: '1',
       },
     });
   } catch (_) {
-    // CLI command can break because of incorrect version or not being logged in
-    // If this fails, the user must fetch their own metafield definitions
+    // The CLI fails when the user isn't logged in or has an old version.
+    // Metafield completions then use whatever definitions are already on disk.
   }
 }
 

@@ -125,6 +125,15 @@ SomeCheck:
     expect(config.context).to.equal('app');
   });
 
+  it('rejects configs that extend each other', async () => {
+    const filePath = await createMockYamlFile('extends: ./base.yml');
+    await createMockConfigFile(tempDir, 'extends: ./.theme-check.yml', 'base.yml');
+
+    await expect(resolveConfig(filePath)).rejects.toThrow(
+      `Cyclic extends in theme-check config: ${filePath} -> ${path.join(tempDir, 'base.yml')} -> ${filePath}`,
+    );
+  });
+
   async function createMockYamlFile(content: string): Promise<string> {
     return createMockConfigFile(tempDir, content);
   }

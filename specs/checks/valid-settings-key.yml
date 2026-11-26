@@ -1,0 +1,523 @@
+check: ValidSettingsKey
+severity: error
+cases:
+  - name: does not report an error when default setting exists
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"settings":{"existent-setting":"value"}}}
+        {% endschema %}
+  - name: reports an error when default setting does not exist
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"settings":{"non-existent-setting":"value"}}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting' does not exist in schema."
+        start: [1, 127]
+        highlight: '"non-existent-setting"'
+  - name: does not report an error when missing default settings is referenced from a block schema
+    files:
+      blocks/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"settings":{"non-existent-setting":"value"}}}
+        {% endschema %}
+  - name: does not report an error when presets setting exists
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"settings":{"existent-setting":"value"}}]}
+        {% endschema %}
+  - name: reports an error when presets setting does not exist
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"settings":{"non-existent-setting-1":"value"}},{"settings":{"non-existent-setting-2":"value"}}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-1' does not exist in schema."
+        start: [1, 128]
+        highlight: '"non-existent-setting-1"'
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-2' does not exist in schema."
+        start: [1, 176]
+        highlight: '"non-existent-setting-2"'
+  - name: does not report an error when default block setting exists in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"blocks":[{"type":"referenced","settings":{"existent-setting":"value"}}]}}
+        {% endschema %}
+  - name: default block settings > referenced blocks > does not report an error when referenced file does not exist
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"blocks":[{"type":"non-existent-file","settings":{"non-existent-setting":"value"}}]}}
+        {% endschema %}
+  - name: reports an error when default block setting does not exist in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"default":{"blocks":[{"type":"referenced","settings":{"non-existent-setting":"value"}}]}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting' does not exist in 'blocks/referenced.liquid'."
+        start: [1, 158]
+        highlight: '"non-existent-setting"'
+  - name: reports an error when default block setting does not exist in existing local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"default":{"blocks":[{"type":"local-block","settings":{"non-existent-setting-1":"value","non-existent-setting-2":"value"}}]}}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-1' does not exist in schema."
+        start: [1, 187]
+        highlight: '"non-existent-setting-1"'
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-2' does not exist in schema."
+        start: [1, 220]
+        highlight: '"non-existent-setting-2"'
+  - name: does not report an error when default block setting does not exist in non-existent local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"default":{"blocks":[{"type":"non-existent-local-block","settings":{"non-existent-setting":"value"}}]}}
+        {% endschema %}
+  - name: does not report an error when default block setting exists in local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"default":{"blocks":[{"type":"local-block","settings":{"local-setting":"value"}}]}}
+        {% endschema %}
+  - name: does not report an error when presets block setting exists in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"blocks":[{"type":"referenced","settings":{"existent-setting":"value"}}]}]}
+        {% endschema %}
+  - name: presets block settings > referenced blocks > does not report an error when referenced file does not exist
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"blocks":[{"type":"non-existent-file","settings":{"non-existent-setting":"value"}}]}]}
+        {% endschema %}
+  - name: reports an error when presets block setting does not exist in referenced file
+    files:
+      blocks/referenced.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}]}
+        {% endschema %}
+      sections/example.liquid: |
+        {% schema %}
+          {"name":"Example","settings":[{"id":"existent-setting","type":"text","label":"Example Text Setting"}],"presets":[{"blocks":[{"type":"referenced","settings":{"non-existent-setting":"value"}}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting' does not exist in 'blocks/referenced.liquid'."
+        start: [1, 159]
+        highlight: '"non-existent-setting"'
+  - name: reports an error when presets block setting does not exist in existing local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"local-block","settings":{"non-existent-setting-1":"value","non-existent-setting-2":"value"}}]}]}
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-1' does not exist in schema."
+        start: [1, 188]
+        highlight: '"non-existent-setting-1"'
+      - file: sections/example.liquid
+        message: "Setting 'non-existent-setting-2' does not exist in schema."
+        start: [1, 221]
+        highlight: '"non-existent-setting-2"'
+  - name: does not report an error when presets block setting does not exist in non-existent local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"non-existent-local-block","settings":{"non-existent-setting":"value"}}]}]}
+        {% endschema %}
+  - name: does not report an error when presets block setting exists in local block
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"local-block","settings":{"local-setting":"value"}}]}]}
+        {% endschema %}
+  - name: does not report an error when a template section setting exists in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tag": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: reports an error when a template section setting does not exist in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tagg": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'heading_tagg' does not exist in 'sections/main-page.liquid'."
+        start: [5, 8]
+        highlight: '"heading_tagg"'
+  - name: does not report an error for a template section's platform-controlled custom_css
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tag": "h1"
+              },
+              "custom_css": [
+                "h1 {color: red;}"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when the template section's file does not exist
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "missing-section",
+              "settings": {
+                "heading_tagg": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+  - name: does not check section groups
+    files:
+      sections/header-group.json: |-
+        {
+          "type": "header",
+          "name": "Header",
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tagg": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when a template block setting exists in the block schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "heading": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "text"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "text"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
+  - name: reports an error when a template block setting does not exist in the block schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "headingg": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "text"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "text"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'headingg' does not exist in 'blocks/text.liquid'."
+        start: [8, 12]
+        highlight: '"headingg"'
+  - name: does not report an error when a template local block setting exists in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "foo": {
+                  "type": "foo",
+                  "settings": {
+                    "heading": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "foo"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "foo", "name": "Foo", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}]}
+        {% endschema %}
+  - name: reports an error when a template local block setting does not exist in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "foo": {
+                  "type": "foo",
+                  "settings": {
+                    "headingg": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "foo"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "foo", "name": "Foo", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'headingg' does not exist in 'sections/main-page.liquid'."
+        start: [8, 12]
+        highlight: '"headingg"'
+  - name: reports an error when a nested template block setting does not exist in the nested block schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "parent": {
+                  "type": "parent",
+                  "blocks": {
+                    "text": {
+                      "type": "text",
+                      "settings": {
+                        "headingg": "Hello"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "text"
+                  ]
+                }
+              },
+              "block_order": [
+                "parent"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "parent"}]}
+        {% endschema %}
+      blocks/parent.liquid: |
+        {% schema %}
+        {"name": "Parent", "blocks": [{"type": "text"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'headingg' does not exist in 'blocks/text.liquid'."
+        start: [11, 16]
+        highlight: '"headingg"'
+  - name: does not report an error for app block settings
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "app": {
+                  "type": "shopify://apps/reviews/blocks/stars/0000",
+                  "settings": {
+                    "product": "{{ product }}"
+                  }
+                }
+              },
+              "block_order": [
+                "app"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "@app"}]}
+        {% endschema %}
+  - name: does not report an error when a template section's type is not a string
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "array": { "type": ["main-page"], "settings": { "heading_tagg": "h1" } },
+            "number": { "type": 404, "settings": { "heading_tagg": "h1" } }
+          },
+          "order": ["array", "number"]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+      sections/404.liquid: |
+        {% schema %}
+        {"name": "404", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when a template block's type is not a string
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": { "text": { "type": ["text"], "settings": { "headingg": "Hello" } } },
+              "block_order": ["text"]
+            }
+          },
+          "order": ["main-page"]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "@theme"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}

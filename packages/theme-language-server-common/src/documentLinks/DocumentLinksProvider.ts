@@ -1,5 +1,6 @@
 import { LiquidHtmlNode, LiquidString, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
-import { SourceCodeType } from '@shopify/theme-check-common';
+import { FileExists, SourceCodeType } from '@shopify/theme-check-common';
+import { assetSources } from '@shopify/theme-graph';
 import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
@@ -12,6 +13,7 @@ export class DocumentLinksProvider {
   constructor(
     private documentManager: DocumentManager,
     private findThemeRootURI: FindThemeRootURI,
+    private fileExists: FileExists,
   ) {}
 
   async documentLinks(uriString: string): Promise<DocumentLink[]> {
@@ -29,15 +31,20 @@ export class DocumentLinksProvider {
       return [];
     }
 
-    const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
-    return visit(sourceCode.ast, visitor);
+    const visitor = documentLinksVisitor(
+      sourceCode.textDocument,
+      URI.parse(rootUri),
+      this.fileExists,
+    );
+    return Promise.all(visit(sourceCode.ast, visitor));
   }
 }
 
 function documentLinksVisitor(
   textDocument: TextDocument,
   root: URI,
-): Visitor<SourceCodeType.LiquidHtml, DocumentLink> {
+  fileExists: FileExists,
+): Visitor<SourceCodeType.LiquidHtml, DocumentLink | Promise<DocumentLink>> {
   return {
     LiquidTag(node) {
       // {% render 'snippet' %}
@@ -63,6 +70,17 @@ function documentLinksVisitor(
         );
       }
 
+      // {% block 'name' %}
+      if (node.name === NamedTags.block && typeof node.markup !== 'string') {
+        const blockName = node.markup.name;
+        // App blocks belong to an extension, not the theme's blocks directory.
+        if (blockName.value.startsWith('shopify://apps/')) return;
+        return DocumentLink.create(
+          range(textDocument, blockName),
+          Utils.resolvePath(root, 'blocks', blockName.value + '.liquid').toString(),
+        );
+      }
+
       // {% content_for 'block', type: 'block_name' %}
       if (node.name === NamedTags.content_for && typeof node.markup !== 'string') {
         const typeArg = node.markup.args.find((arg) => arg.name === 'type');
@@ -85,13 +103,29 @@ function documentLinksVisitor(
         return;
       }
 
-      const expression = node.expression;
-      return DocumentLink.create(
-        range(textDocument, node.expression),
-        Utils.resolvePath(root, 'assets', expression.value).toString(),
-      );
+      return assetLink(textDocument, root, node.expression, fileExists);
     },
   };
+}
+
+/**
+ * Links an `asset_url` argument to the first file Shopify would serve it from,
+ * such as `assets/theme.css.liquid` for `'theme.css'`. It links to the asset's
+ * own path when none of them exist.
+ */
+async function assetLink(
+  textDocument: TextDocument,
+  root: URI,
+  asset: LiquidString,
+  fileExists: FileExists,
+): Promise<DocumentLink> {
+  const uris = assetSources(asset.value).map((source) =>
+    Utils.resolvePath(root, 'assets', source).toString(),
+  );
+  const existing = await Promise.all(uris.map(fileExists));
+  const target =
+    uris.find((_, i) => existing[i]) ?? Utils.resolvePath(root, 'assets', asset.value).toString();
+  return DocumentLink.create(range(textDocument, asset), target);
 }
 
 function range(textDocument: TextDocument, node: { position: LiquidHtmlNode['position'] }): Range {

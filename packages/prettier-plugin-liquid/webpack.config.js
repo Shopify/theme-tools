@@ -15,9 +15,13 @@ module.exports = {
     },
   },
   externals: {
+    // standalone.js is the browser build, so it loads prettier/standalone.
+    // A bare 'prettier' resolves to Prettier 3's Node entry even in browser
+    // bundles, because its "require" export comes before "browser".
+    // `root` is the global that prettier/standalone.js sets in a <script> tag.
     prettier: {
-      commonjs: 'prettier',
-      commonjs2: 'prettier',
+      commonjs: 'prettier/standalone',
+      commonjs2: 'prettier/standalone',
       amd: 'prettier/standalone',
       root: 'prettier',
     },

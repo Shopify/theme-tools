@@ -1,0 +1,326 @@
+check: ValidRangeDefault
+severity: error
+cases:
+  - name: reports no offense for a default on the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "default": 64 }
+            ]
+          }
+        {% endschema %}
+  - name: reports a default off the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "default": 60 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 60 for range setting "padding_top" is not aligned to step 8 in range [0, 160].'
+        start: [4, 90]
+        highlight: '60'
+  - name: reports a default below min
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 10, "max": 60, "step": 5, "default": 0 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 0 for range setting "gap" is outside the range [10, 60].'
+        start: [4, 82]
+        highlight: '0'
+  - name: reports a default above max
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 0, "max": 100, "step": 10, "default": 200 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 200 for range setting "gap" is outside the range [0, 100].'
+        start: [4, 83]
+        highlight: '200'
+  - name: reports no offense for a fractional default on the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "rating", "min": 1, "max": 5, "step": 0.1, "default": 4.7 }
+            ]
+          }
+        {% endschema %}
+  - name: reports a fractional default off the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 0, "max": 10, "step": 0.5, "default": 2.3 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 2.3 for range setting "gap" is not aligned to step 0.5 in range [0, 10].'
+        start: [4, 83]
+        highlight: '2.3'
+  - name: reports no offense when max is not greater than min
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 10, "max": 10, "step": 1, "default": 5 },
+              { "type": "range", "id": "width", "min": 10, "max": 0, "step": 1, "default": 20 }
+            ]
+          }
+        {% endschema %}
+  - name: reports no offense for a preset value too large to be a number
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ],
+            "presets": [{ "name": "Default", "settings": { "padding_top": 1e999 } }]
+          }
+        {% endschema %}
+  - name: uses a step of 1 when the setting has no step
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "gap", "min": 0, "max": 10, "default": 2.5 },
+              { "type": "range", "id": "width", "min": 0, "max": 10, "default": 4 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 2.5 for range setting "gap" is not aligned to step 1 in range [0, 10].'
+        start: [4, 70]
+        highlight: '2.5'
+  - name: reports no offense for a range setting without a default
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ]
+          }
+        {% endschema %}
+  - name: reports no offense for a range setting without min and max
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "default": 60 }
+            ]
+          }
+        {% endschema %}
+  - name: reports no offense for other setting types
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "text", "id": "heading", "default": "Hello" },
+              { "type": "number", "id": "count", "default": 7 }
+            ]
+          }
+        {% endschema %}
+  - name: reports each invalid default
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "default": 60 },
+              { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "default": 60 }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 60 for range setting "padding_top" is not aligned to step 8 in range [0, 160].'
+        start: [4, 90]
+        highlight: '60'
+      - file: sections/example.liquid
+        message: 'Default value 60 for range setting "padding_bottom" is not aligned to step 8 in range [0, 160].'
+        start: [5, 93]
+        highlight: '60'
+  - name: reports the default of a local block's range setting
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+            ],
+            "blocks": [
+              {
+                "type": "slide",
+                "name": "Slide",
+                "settings": [
+                  { "type": "range", "id": "speed", "min": 0, "max": 100, "step": 10, "default": 15 }
+                ]
+              }
+            ]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Default value 15 for range setting "speed" is not aligned to step 10 in range [0, 100].'
+        start: [10, 89]
+        highlight: '15'
+  - name: reports no offense for a preset value on the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ],
+            "presets": [{ "name": "Default", "settings": { "padding_top": 48 } }]
+          }
+        {% endschema %}
+  - name: reports a preset value off the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ],
+            "presets": [{ "name": "Default", "settings": { "padding_top": 60 } }]
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Value 60 for range setting "padding_top" is not aligned to step 8 in range [0, 160].'
+        start: [6, 66]
+        highlight: '60'
+  - name: reports a preset value off the step grid in a theme block
+    files:
+      blocks/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ],
+            "presets": [{ "name": "Default", "settings": { "padding_top": 60 } }]
+          }
+        {% endschema %}
+    offenses:
+      - file: blocks/example.liquid
+        message: 'Value 60 for range setting "padding_top" is not aligned to step 8 in range [0, 160].'
+        start: [6, 66]
+        highlight: '60'
+  - name: reports a section default value off the step grid
+    files:
+      sections/example.liquid: |
+        {% schema %}
+          {
+            "name": "Example",
+            "settings": [
+              { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8 }
+            ],
+            "default": { "settings": { "padding_top": 60 } }
+          }
+        {% endschema %}
+    offenses:
+      - file: sections/example.liquid
+        message: 'Value 60 for range setting "padding_top" is not aligned to step 8 in range [0, 160].'
+        start: [6, 46]
+        highlight: '60'
+  - name: reports a default off the step grid in config/settings_schema.json
+    files:
+      config/settings_schema.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 50, "max": 200, "step": 4, "default": 75 }
+            ]
+          }
+        ]
+    offenses:
+      - file: config/settings_schema.json
+        message: 'Default value 75 for range setting "logo_width" is not aligned to step 4 in range [50, 200].'
+        start: [4, 90]
+        highlight: '75'
+  - name: uses a step of 1 when a setting in config/settings_schema.json has no step
+    files:
+      config/settings_schema.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 50, "max": 200, "default": 75.5 }
+            ]
+          }
+        ]
+    offenses:
+      - file: config/settings_schema.json
+        message: 'Default value 75.5 for range setting "logo_width" is not aligned to step 1 in range [50, 200].'
+        start: [4, 79]
+        highlight: '75.5'
+  - name: reports no offense for a valid default in config/settings_schema.json
+    files:
+      config/settings_schema.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 50, "max": 200, "step": 4, "default": 74 }
+            ]
+          }
+        ]
+  - name: reports no offense in JSON files other than config/settings_schema.json
+    files:
+      config/other.json: |
+        [
+          {
+            "name": "Layout",
+            "settings": [
+              { "type": "range", "id": "logo_width", "min": 50, "max": 200, "step": 4, "default": 75 }
+            ]
+          }
+        ]

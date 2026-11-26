@@ -149,6 +149,19 @@ describe('Module: FilterCompletionProvider', async () => {
     await expect(provider).to.complete('{{ string | █ }}', stringFilters.concat(anyFilters));
   });
 
+  it.each(['{{ variant | █ }}', '{% assign style = variant %}{{ style | █ }}'])(
+    'offers string filters for enum variables: %s',
+    async (source) => {
+      await expect(provider).to.complete(
+        {
+          relativePath: 'snippets/text.liquid',
+          source: `{% doc %}\n@param {'heading' | 'small'} variant\n{% enddoc %}\n${source}`,
+        },
+        stringFilters.concat(anyFilters),
+      );
+    },
+  );
+
   it('should complete array types with array filters', async () => {
     await expect(provider).to.complete('{{ array | █ }}', arrayFilters.concat(anyFilters));
   });

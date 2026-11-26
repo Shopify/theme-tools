@@ -7,10 +7,16 @@ describe('DocumentLinksProvider', () => {
   let documentLinksProvider: DocumentLinksProvider;
   let rootUri: string;
   let uriString: string;
+  let files: Set<string>;
 
   beforeEach(() => {
+    files = new Set();
     documentManager = new DocumentManager();
-    documentLinksProvider = new DocumentLinksProvider(documentManager, async () => rootUri);
+    documentLinksProvider = new DocumentLinksProvider(
+      documentManager,
+      async () => rootUri,
+      async (uri) => files.has(uri),
+    );
   });
 
   it('should return an empty array for non-LiquidHtml documents', async () => {
@@ -43,6 +49,9 @@ describe('DocumentLinksProvider', () => {
       {% assign x = 'assign.css' | asset_url %}
       {{ 'asset.js' | asset_url }}
       {% content_for 'block', type: 'block_name' %}
+      {% block 'container' %}{% endblock %}
+      {% block '_private' %}{% endblock %}
+      {% block 'with_args', block.settings.alignment: 'center' %}{% endblock %}
     `;
 
     documentManager.open(uriString, liquidHtmlContent, 1);
@@ -56,11 +65,76 @@ describe('DocumentLinksProvider', () => {
       'file:///path/to/project/assets/assign.css',
       'file:///path/to/project/assets/asset.js',
       'file:///path/to/project/blocks/block_name.liquid',
+      'file:///path/to/project/blocks/container.liquid',
+      'file:///path/to/project/blocks/_private.liquid',
+      'file:///path/to/project/blocks/with_args.liquid',
     ];
 
     expect(result.length).toBe(expectedUrls.length);
     for (let i = 0; i < expectedUrls.length; i++) {
       expect(result[i].target).toBe(expectedUrls[i]);
     }
+  });
+
+  it('links an asset to the file Shopify serves it from', async () => {
+    rootUri = 'file:///path/to/project';
+    uriString = `${rootUri}/layout/theme.liquid`;
+    files = new Set(
+      [
+        'theme.css',
+        'theme.css.liquid',
+        'theme.js.liquid',
+        'theme.scss.liquid',
+        'plain.scss',
+        'logo.png',
+      ].map((file) => `${rootUri}/assets/${file}`),
+    );
+
+    documentManager.open(
+      uriString,
+      `
+      {{ 'theme.css' | asset_url }}
+      {{ 'theme.js' | asset_url }}
+      {{ 'theme.scss.css' | asset_url }}
+      {{ 'plain.scss.css' | asset_url }}
+      {{ 'logo.png' | asset_url }}
+      {{ 'missing.css' | asset_url }}
+    `,
+      1,
+    );
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result.map((link) => link.target)).toEqual([
+      `${rootUri}/assets/theme.css.liquid`,
+      `${rootUri}/assets/theme.js.liquid`,
+      `${rootUri}/assets/theme.scss.liquid`,
+      `${rootUri}/assets/plain.scss`,
+      `${rootUri}/assets/logo.png`,
+      `${rootUri}/assets/missing.css`,
+    ]);
+  });
+
+  it.each([
+    "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+    "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'\n endblock\n %}",
+    "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hi', items: [1, true] %}{% endblock %}",
+    "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hi', items: [1, true]\n endblock\n %}",
+  ])('should skip app block links while preserving theme block links: %s', async (appBlock) => {
+    rootUri = 'file:///path/to/project';
+    uriString = `${rootUri}/templates/index.liquid`;
+    documentManager.open(uriString, `${appBlock}{% block 'container' %}{% endblock %}`, 1);
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result.map((link) => link.target)).toEqual([`${rootUri}/blocks/container.liquid`]);
+  });
+
+  it('should not create a link for the {% partial %} tag', async () => {
+    uriString = 'file:///path/to/liquid-html-document.liquid';
+    rootUri = 'file:///path/to/project';
+
+    documentManager.open(uriString, `{% partial 'x' %}{% endpartial %}`, 1);
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result).toEqual([]);
   });
 });
