@@ -599,6 +599,36 @@ describe('LiquidVariableRenameProvider', () => {
         });
       });
     });
+
+    it('only updates render tags in the theme of the snippet', async () => {
+      const shopRoot = 'file:///themes/shop';
+      const snippetUri = `${shopRoot}/snippets/example-snippet.liquid`;
+      const shopSectionUri = `${shopRoot}/sections/section.liquid`;
+      const renderTag = `{% render 'example-snippet', name: 'Bob' %}`;
+      documentManager = new DocumentManager();
+      documentManager.open(snippetUri, textDocument.getText(), 1);
+      documentManager.open(shopSectionUri, renderTag, 1);
+      documentManager.open('file:///themes/shop-preview/sections/section.liquid', renderTag, 1);
+      provider = new RenameProvider(
+        connection,
+        capabilities,
+        documentManager,
+        async () => shopRoot,
+      );
+
+      await provider.rename({
+        textDocument: { uri: snippetUri },
+        position: Position.create(1, 11),
+        newName: 'first_name',
+      });
+
+      expect(connection.spies.sendRequest).toHaveBeenCalledOnce();
+      const [, { edit }] = connection.spies.sendRequest.mock.calls[0];
+      const uris = edit.documentChanges.map(
+        (documentChange: TextDocumentEdit) => documentChange.textDocument.uri,
+      );
+      expect(uris).toEqual([shopSectionUri]);
+    });
   });
 });
 

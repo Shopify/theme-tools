@@ -5,6 +5,7 @@ import { ApplyWorkspaceEditParams } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager } from '../../documents';
 import { MockConnection, mockConnection } from '../../test/MockConnection';
+import { shopDirectory, shopPreviewDirectory, siblingThemes } from '../../test/siblingThemes';
 import { RenameHandler } from '../RenameHandler';
 
 describe('Module: SnippetRenameHandler', () => {
@@ -148,6 +149,36 @@ describe('Module: SnippetRenameHandler', () => {
         const expectedDoc = await expectedFs.readFile(uri);
         expect(edits).to.applyEdits(initialDoc, expectedDoc);
       }
+    });
+
+    it('only edits the files of the theme of the renamed snippet', async () => {
+      const shopRoot = `${mockRoot}/${shopDirectory}`;
+      fs = new MockFileSystem(
+        siblingThemes({
+          'snippets/oldName.liquid': '',
+          'sections/section.liquid': `{% render 'oldName' %}`,
+        }),
+        mockRoot,
+      );
+      documentManager = new DocumentManager(fs);
+      await documentManager.preload(`${mockRoot}/${shopPreviewDirectory}`);
+      handler = new RenameHandler(connection, capabilities, documentManager, async () => shopRoot);
+
+      await handler.onDidRenameFiles({
+        files: [
+          {
+            oldUri: `${shopRoot}/snippets/oldName.liquid`,
+            newUri: `${shopRoot}/snippets/newName.liquid`,
+          },
+        ],
+      });
+
+      const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+      assert(params.edit.documentChanges);
+      const uris = (params.edit.documentChanges as TextDocumentEdit[]).map(
+        (dc) => dc.textDocument.uri,
+      );
+      expect(uris).toEqual([`${shopRoot}/sections/section.liquid`]);
     });
   });
 });

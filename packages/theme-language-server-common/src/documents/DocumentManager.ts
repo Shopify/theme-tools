@@ -78,9 +78,15 @@ export class DocumentManager {
     this.set(newUri, sourceCode.source, sourceCode.version);
   }
 
+  /**
+   * The source codes of the theme at `root`. A file belongs to the theme when
+   * it is in the `root` directory, so a sibling theme whose name starts with
+   * the same text (`themes/shop-preview` for `themes/shop`) is left out.
+   */
   public theme(root: UriString, includeFilesFromDisk = false): AugmentedSourceCode[] {
+    const isInTheme = isInDirectory(root);
     return [...this.sourceCodes.values()]
-      .filter((sourceCode) => sourceCode.uri.startsWith(root))
+      .filter((sourceCode) => isInTheme(sourceCode.uri))
       .filter(
         (sourceCode) => includeFilesFromDisk || sourceCode.version !== undefined,
       ) satisfies Theme;
@@ -251,4 +257,14 @@ export class DocumentManager {
       this.clearRecentRename(newUri);
     });
   }
+}
+
+/**
+ * Whether a normalized URI is `directoryUri` or inside it. `directoryUri` may
+ * end with a `/`.
+ */
+function isInDirectory(directoryUri: UriString): (uri: UriString) => boolean {
+  const directory = path.normalize(directoryUri).replace(/\/+$/, '');
+  const prefix = directory + '/';
+  return (uri) => uri === directory || uri.startsWith(prefix);
 }

@@ -39,6 +39,41 @@ describe('Module: DocumentManager', () => {
     expect(theme[0].uri).to.equal(path.normalize(fileUri));
   });
 
+  describe.each([
+    { scheme: 'file:', themesUri: 'file:///workspace/themes' },
+    { scheme: 'shopify-vfs:', themesUri: 'shopify-vfs:/themes' },
+  ])('Unit: theme(root) with $scheme URIs', ({ themesUri }) => {
+    const shopRoot = `${themesUri}/shop`;
+    const shopFile = `${shopRoot}/snippets/a.liquid`;
+
+    beforeEach(() => {
+      documentManager.open(shopFile, 'a', 0);
+      documentManager.open(`${themesUri}/shop-preview/snippets/b.liquid`, 'b', 0);
+    });
+
+    it('leaves out a sibling theme whose name starts with the name of the root', () => {
+      expect(documentManager.theme(shopRoot).map((sourceCode) => sourceCode.uri)).toEqual([
+        shopFile,
+      ]);
+    });
+
+    it('accepts a root that ends with a slash', () => {
+      expect(documentManager.theme(`${shopRoot}/`).map((sourceCode) => sourceCode.uri)).toEqual([
+        shopFile,
+      ]);
+    });
+  });
+
+  it('matches a root that is not normalized', () => {
+    documentManager.open('file:///workspace/my%20themes/shop/snippets/a.liquid', 'a', 0);
+    documentManager.open('file:///workspace/my%20themes/shop-preview/snippets/b.liquid', 'b', 0);
+    expect(
+      documentManager
+        .theme('file:///workspace/my%20themes/shop')
+        .map((sourceCode) => sourceCode.uri),
+    ).toEqual(['file:///workspace/my themes/shop/snippets/a.liquid']);
+  });
+
   describe('when initialized with an abstract file system', () => {
     beforeEach(async () => {
       fs = new MockFileSystem(

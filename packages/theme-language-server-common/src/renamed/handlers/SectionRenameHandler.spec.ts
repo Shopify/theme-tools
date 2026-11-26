@@ -5,6 +5,7 @@ import { ApplyWorkspaceEditParams } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager } from '../../documents';
 import { MockConnection, mockConnection } from '../../test/MockConnection';
+import { shopDirectory, shopPreviewDirectory, siblingThemes } from '../../test/siblingThemes';
 import { RenameHandler } from '../RenameHandler';
 
 describe('Module: SectionRenameHandler', () => {
@@ -654,6 +655,75 @@ describe('Module: SectionRenameHandler', () => {
 
       // Check if sendRequest was called at all
       expect(connection.spies.sendRequest).not.toHaveBeenCalled();
+    });
+
+    describe('when the name of a sibling theme starts with the name of the theme', () => {
+      const shopRoot = `${mockRoot}/${shopDirectory}`;
+      const shopPreviewRoot = `${mockRoot}/${shopPreviewDirectory}`;
+
+      beforeEach(async () => {
+        fs = new MockFileSystem(
+          siblingThemes({
+            'sections/old-name.liquid': `
+              {% schema %}
+                { "name": "Old name" }
+              {% endschema %}`,
+            'layout/theme.liquid': `{% section 'old-name' %}`,
+            'sections/header.json': JSON.stringify({
+              type: 'header',
+              name: 'Header',
+              sections: { 'section-id': { type: 'old-name' } },
+              order: ['section-id'],
+            }),
+            'templates/index.json': JSON.stringify({
+              sections: { 'section-id': { type: 'old-name' } },
+              order: ['section-id'],
+            }),
+            'config/settings_data.json': JSON.stringify({
+              current: { sections: { 'header-id': { type: 'old-name' } } },
+              presets: { Default: { sections: { 'header-id': { type: 'old-name' } } } },
+            }),
+          }),
+          mockRoot,
+        );
+        documentManager = new DocumentManager(
+          fs,
+          undefined,
+          undefined,
+          async () => 'theme',
+          async () => true,
+        );
+        await documentManager.preload(shopPreviewRoot);
+        handler = new RenameHandler(
+          connection,
+          capabilities,
+          documentManager,
+          async () => shopRoot,
+        );
+      });
+
+      it('only edits the files of the theme of the renamed section', async () => {
+        await handler.onDidRenameFiles({
+          files: [
+            {
+              oldUri: `${shopRoot}/sections/old-name.liquid`,
+              newUri: `${shopRoot}/sections/new-name.liquid`,
+            },
+          ],
+        });
+
+        const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+        assert(params.edit.documentChanges);
+        const uris = (params.edit.documentChanges as TextDocumentEdit[]).map(
+          (dc) => dc.textDocument.uri,
+        );
+        expect(uris.sort()).toEqual([
+          `${shopRoot}/config/settings_data.json`,
+          `${shopRoot}/layout/theme.liquid`,
+          `${shopRoot}/sections/header.json`,
+          `${shopRoot}/templates/index.json`,
+        ]);
+      });
     });
   });
 });

@@ -6,6 +6,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager } from '../../documents';
 import { MockConnection, mockConnection } from '../../test/MockConnection';
+import { shopDirectory, shopPreviewDirectory, siblingThemes } from '../../test/siblingThemes';
 import { RenameHandler } from '../RenameHandler';
 
 describe('Module: AssetRenameHandler', () => {
@@ -212,6 +213,36 @@ describe('Module: AssetRenameHandler', () => {
         const expectedDoc = await expectedFs.readFile(uri);
         expect(edits).to.applyEdits(initialDoc, expectedDoc);
       }
+    });
+
+    it('only edits the files of the theme of the renamed asset', async () => {
+      const shopRoot = `${mockRoot}/${shopDirectory}`;
+      fs = new MockFileSystem(
+        siblingThemes({
+          'assets/oldName.js': '',
+          'sections/section.liquid': `{{ 'oldName.js' | asset_url }}`,
+        }),
+        mockRoot,
+      );
+      documentManager = new DocumentManager(fs);
+      await documentManager.preload(`${mockRoot}/${shopPreviewDirectory}`);
+      handler = new RenameHandler(connection, capabilities, documentManager, async () => shopRoot);
+
+      await handler.onDidRenameFiles({
+        files: [
+          {
+            oldUri: `${shopRoot}/assets/oldName.js`,
+            newUri: `${shopRoot}/assets/newName.js`,
+          },
+        ],
+      });
+
+      const params: ApplyWorkspaceEditParams = connection.spies.sendRequest.mock.calls[0][1];
+      assert(params.edit.documentChanges);
+      const uris = (params.edit.documentChanges as TextDocumentEdit[]).map(
+        (dc) => dc.textDocument.uri,
+      );
+      expect(uris).toEqual([`${shopRoot}/sections/section.liquid`]);
     });
   });
 });
