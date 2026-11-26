@@ -138,6 +138,37 @@ cases:
     files:
       snippets/card.liquid: "<h1>This snippet has no doc comment</h1>"
       file.liquid: "{% render 'card', title: 'My Card' %}"
+  - name: should treat the implicit with alias as a provided argument
+    files:
+      snippets/image.liquid: |
+        {% doc %}
+          @param {object} image - The image to render
+        {% enddoc %}
+      file.liquid: "{% render 'image' with product.featured_image %}"
+    offenses: []
+  - name: should treat the implicit for alias as a provided argument
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} card - The card to render
+        {% enddoc %}
+      file.liquid: "{% render 'card' for products %}"
+    offenses: []
+  - name: should let an explicit with alias override the implicit snippet name
+    files:
+      snippets/image.liquid: |
+        {% doc %}
+          @param {object} image - The image to render
+        {% enddoc %}
+      file.liquid: "{% render 'image' with product.featured_image as featured_image %}"
+    offenses:
+      - file: file.liquid
+        message: "Missing required argument 'image' in render tag for snippet 'image'."
+        start: [0, 10]
+        highlight: "'image' with product.featured_image as featured_image "
+        suggest:
+          - message: "Add required argument 'image'"
+            result: "{% render 'image' with product.featured_image as featured_image, image:  %}"
   - name: should not report when LiquidDoc definition has no defined params
     files:
       snippets/card.liquid: |
