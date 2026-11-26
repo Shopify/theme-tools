@@ -2,4 +2,4 @@
 'theme-check-rs': patch
 ---
 
-Link `asset_url` references to the `.css.liquid` or `.js.liquid` asset that Shopify serves under that name, so those assets are no longer reported as dead code
+Link `asset_url` references to the file Shopify serves them from, so `.css.liquid`, `.js.liquid` and `.scss.liquid` assets are no longer reported as dead code

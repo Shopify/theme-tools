@@ -36,7 +36,7 @@ import {
   getSectionModule,
   getSnippetModule,
   getThemeBlockModule,
-  isLiquidAsset,
+  assetSources,
 } from './module';
 
 export async function traverseModule(
@@ -242,9 +242,8 @@ async function traverseLiquidModule(
 }
 
 /**
- * A reference to `theme.css` reaches `assets/theme.css.liquid` when that file
- * exists, since Shopify renders it and serves it under that name. Otherwise it
- * reaches `assets/theme.css`. The same goes for `.js`.
+ * A reference reaches the first file Shopify would serve it from. See
+ * `assetSources`. A reference to a file that doesn't exist keeps its target.
  */
 async function servingAsset(
   target: ThemeModule,
@@ -253,11 +252,11 @@ async function servingAsset(
 ): Promise<ThemeModule> {
   if (target.type !== ModuleType.Css && target.type !== ModuleType.JavaScript) return target;
 
-  const asset = path.basename(target.uri);
-  if (isLiquidAsset(asset)) return target;
+  for (const source of assetSources(path.basename(target.uri))) {
+    const module = getAssetModule(themeGraph, source)!;
+    if (await exists(deps.fs, module.uri)) return module;
+  }
 
-  const liquidAsset = getAssetModule(themeGraph, `${asset}.liquid`)!;
-  if (await exists(deps.fs, liquidAsset.uri)) return liquidAsset;
   return target;
 }
 
