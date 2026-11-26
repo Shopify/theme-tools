@@ -52,3 +52,126 @@ cases:
         message: "'nonexistent.css' does not exist."
         start: [2, 17]
         highlight: nonexistent.css
+  - name: should report a file name that leaves the assets directory instead of the size of the file
+    files:
+      secret.txt: "secret"
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "../secret.txt"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'../secret.txt' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "../secret.txt"
+  - name: should report a file name that leaves the assets directory the same way when the file does not exist
+    files:
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "../secret.txt"
+        }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "'../secret.txt' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "../secret.txt"
+  - name: should report an absolute path instead of the size of the file
+    files:
+      secret.txt: "secret"
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "/secret.txt"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'/secret.txt' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "/secret.txt"
+  - name: should report a percent-encoded path that leaves the assets directory
+    files:
+      secret.txt: "secret"
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "%2e%2e%2fsecret.txt"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'%2e%2e%2fsecret.txt' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "%2e%2e%2fsecret.txt"
+  - name: should report a file name in a subdirectory of the assets directory
+    files:
+      assets/nested/app.css: "nested"
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "nested/app.css"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'nested/app.css' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "nested/app.css"
+  - name: should report a percent-encoded path with a backslash
+    files:
+      secret.txt: "secret"
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "..%5csecret.txt"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'..%5csecret.txt' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "..%5csecret.txt"
+  - name: should report a percent-encoded name of the assets directory itself
+    files:
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "%2e"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'%2e' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "%2e"
+  - name: should report a percent-encoded name of the parent directory
+    files:
+      blocks/app.liquid: |
+        {% schema %}
+        {
+          "stylesheet": "%2e%2e"
+        }
+        {% endschema %}
+    config:
+      AssetSizeAppBlockCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: blocks/app.liquid
+        message: "'%2e%2e' must be the name of a file in the assets directory."
+        start: [2, 17]
+        highlight: "%2e%2e"

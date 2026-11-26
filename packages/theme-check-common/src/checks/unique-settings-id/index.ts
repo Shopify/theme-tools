@@ -16,7 +16,7 @@ export const UniqueSettingIds: JSONCheckDefinition = {
     docs: {
       description: 'This check is aimed at eliminating duplicate Ids in settings_schema.json',
       recommended: true,
-      // url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-schema',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unique-setting-id',
     },
     type: SourceCodeType.JSON,
     severity: Severity.ERROR,

@@ -30,6 +30,11 @@ export async function buildThemeGraph(
       const isSectionFile =
         uri.startsWith(path.join(rootUri, 'sections')) && uri.endsWith('.liquid');
 
+      // Shopify renders a contextual section group (`*.context.<name>.json`) in place of its
+      // parent in the contexts it names, while `{% sections %}` only names the parent.
+      const isContextualSectionGroupFile =
+        uri.startsWith(path.join(rootUri, 'sections')) && CONTEXTUAL_JSON.test(uri);
+
       // Theme app extension app blocks and app embed blocks are independently
       // renderable by Shopify, so treat them as graph entry points too.
       const isThemeAppExtensionBlockFile =
@@ -37,7 +42,13 @@ export async function buildThemeGraph(
         uri.startsWith(path.join(rootUri, 'blocks')) &&
         uri.endsWith('.liquid');
 
-      return isTemplateFile || isLayoutFile || isSectionFile || isThemeAppExtensionBlockFile;
+      return (
+        isTemplateFile ||
+        isLayoutFile ||
+        isSectionFile ||
+        isContextualSectionGroupFile ||
+        isThemeAppExtensionBlockFile
+      );
     }));
 
   const graph: ThemeGraph = {
@@ -54,3 +65,6 @@ export async function buildThemeGraph(
 
   return graph;
 }
+
+/** How Shopify names a contextual template or section group. */
+const CONTEXTUAL_JSON = /\.context\.[^./]+\.json$/i;

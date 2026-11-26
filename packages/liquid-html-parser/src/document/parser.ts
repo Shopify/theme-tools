@@ -25,6 +25,7 @@ import '../environment'; // side-effect: ensures builtinTags init before downstr
 import type { Environment, LiquidLineContext } from '../environment';
 import type { Position } from '../types';
 import type { RawBodyEnd } from '../tag-definitions';
+import { RawBodyEndCache } from './raw-body';
 import type { LiquidOpenWhitespace, LiquidCloseWhitespace } from './factories';
 import { parseLiquidVariableOutput as parseLiquidVariableOutputFn } from './liquid-variable-output';
 import {
@@ -191,6 +192,19 @@ export class DocumentParser
 
   tagForName(name: string) {
     return this.env.tagForName(name);
+  }
+
+  private _rawBodyEndCache: RawBodyEndCache | undefined;
+  private _rawBodyEndCacheVersion = 0;
+
+  rawBodyEndCache(): RawBodyEndCache {
+    // A tag callback can register raw tags mid-parse, which changes where bodies end.
+    const version = this.env.tagRegistryVersion;
+    if (!this._rawBodyEndCache || this._rawBodyEndCacheVersion !== version) {
+      this._rawBodyEndCache = new RawBodyEndCache(this.getSource());
+      this._rawBodyEndCacheVersion = version;
+    }
+    return this._rawBodyEndCache;
   }
 
   // document := yamlFrontmatter? node*

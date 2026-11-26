@@ -31,9 +31,53 @@ export function liquidTagTokenName(token: string): string | undefined {
 }
 
 /**
+ * Answers to earlier `findRawBodyEnd` searches in one source, under one tag
+ * registry. A tolerant parse records an unclosed raw tag and carries on, so it
+ * can search for many bodies that run to the end of the document; this keeps
+ * each of those searches from reading the rest of the source again.
+ */
+export class RawBodyEndCache {
+  private readonly lastIndexes = new Map<string, number>();
+  private readonly known = new Map<
+    string,
+    { rule: RawBodyRule; ends: Map<number, RawBodyEnd | null> }
+  >();
+
+  constructor(private readonly source: string) {}
+
+  /** Whether `source` has no `name` at or after `from`. */
+  absentFrom(name: string, from: number): boolean {
+    let index = this.lastIndexes.get(name);
+    if (index === undefined) {
+      index = this.source.lastIndexOf(name);
+      this.lastIndexes.set(name, index);
+    }
+    return index < from;
+  }
+
+  /**
+   * The ends that searches for bodies of `tagName` under `rule` found, by where
+   * a search from that position starts.
+   */
+  knownEnds(tagName: string, rule: RawBodyRule): Map<number, RawBodyEnd | null> {
+    let entry = this.known.get(tagName);
+    if (entry?.rule !== rule) {
+      entry = { rule, ends: new Map() };
+      this.known.set(tagName, entry);
+    }
+    return entry.ends;
+  }
+}
+
+/**
  * Where the body of `tagName` that starts at `bodyStart` ends under `rule`,
  * reading the source as `Liquid::Tokenizer` tokens. Returns null where Liquid
  * reports the tag as never closed, or rejects a tag nested inside it.
+ *
+ * With a `cache` for this source and registry, a search returns early when the
+ * closing name doesn't occur after the body, a nesting body reuses what an
+ * enclosing search found for it, and a search under any other rule stops where it
+ * reaches a token an earlier search read.
  */
 export function findRawBodyEnd(
   source: string,
@@ -41,12 +85,37 @@ export function findRawBodyEnd(
   tagName: string,
   rule: RawBodyRule,
   ruleFor: RawBodyRuleFor,
+  cache?: RawBodyEndCache,
 ): RawBodyEnd | null {
   const endName = `end${tagName}`;
+  // A body only closes at a tag named `end<name>`.
+  if (cache?.absentFrom(endName, bodyStart)) return null;
+  const knownEnds = cache?.knownEnds(tagName, rule);
+  const known = knownEnds?.get(bodyStart);
+  if (known !== undefined) return known;
+  const nests = rule.sameName === 'nests';
+  // Where the bodies of the nested openers still open start. Each closes at the
+  // closing tag that brings the depth back below it, as its own search would find.
+  const open: number[] = [];
+  // Under a rule that doesn't nest, each position this search reads a token from.
+  // A search from any of them reads the same tokens after it, so it ends where this one does.
+  const read: number[] = [];
+  const finish = (end: RawBodyEnd | null): RawBodyEnd | null => {
+    if (knownEnds) {
+      for (const start of open) knownEnds.set(start, null);
+      for (const start of read) knownEnds.set(start, end);
+    }
+    return end;
+  };
   let tokenStart = bodyStart;
   let depth = 1;
 
   while (tokenStart < source.length) {
+    if (knownEnds && !nests) {
+      const earlier = knownEnds.get(tokenStart);
+      if (earlier !== undefined) return finish(earlier);
+      read.push(tokenStart);
+    }
     // Text cannot name a tag. Advance straight to the next Liquid token,
     // without slicing or inspecting the intervening text as another token.
     TAG_OR_VARIABLE_START.lastIndex = tokenStart;
@@ -54,9 +123,9 @@ export function findRawBodyEnd(
       source[tokenStart] !== '{' ||
       (source[tokenStart + 1] !== '%' && source[tokenStart + 1] !== '{')
     ) {
-      const open = TAG_OR_VARIABLE_START.exec(source);
-      if (!open) return null;
-      tokenStart = open.index;
+      const next = TAG_OR_VARIABLE_START.exec(source);
+      if (!next) return finish(null);
+      tokenStart = next.index;
     }
     const tokenEnd =
       source[tokenStart + 1] === '%'
@@ -67,23 +136,27 @@ export function findRawBodyEnd(
 
     if (tag?.[1] === endName) {
       depth -= 1;
-      if (depth === 0) {
-        const tagStart = tokenStart + tag.index;
-        return {
-          tagStart,
-          tagEnd: tokenEnd,
-          wsStart: source[tagStart + 2] === '-' ? '-' : '',
-          wsEnd: token[token.length - 3] === '-' ? '-' : '',
-        };
-      }
+      const tagStart = tokenStart + tag.index;
+      const end: RawBodyEnd = {
+        tagStart,
+        tagEnd: tokenEnd,
+        wsStart: source[tagStart + 2] === '-' ? '-' : '',
+        wsEnd: token[token.length - 3] === '-' ? '-' : '',
+      };
+      if (depth === 0) return finish(end);
+      const nested = open.pop();
+      if (knownEnds && nested !== undefined) knownEnds.set(nested, end);
     } else if (tag?.[1] === tagName) {
-      if (rule.sameName === 'rejected') return null;
-      if (rule.sameName === 'nests') depth += 1;
+      if (rule.sameName === 'rejected') return finish(null);
+      if (nests) {
+        depth += 1;
+        if (knownEnds) open.push(tokenEnd);
+      }
     } else if (tag && rule.opaque.includes(tag[1])) {
       const innerRule = ruleFor(tag[1]);
       if (innerRule) {
-        const innerEnd = findRawBodyEnd(source, tokenEnd, tag[1], innerRule, ruleFor);
-        if (!innerEnd) return null;
+        const innerEnd = findRawBodyEnd(source, tokenEnd, tag[1], innerRule, ruleFor, cache);
+        if (!innerEnd) return finish(null);
         tokenStart = innerEnd.tagEnd;
         continue;
       }
@@ -91,7 +164,7 @@ export function findRawBodyEnd(
     tokenStart = tokenEnd;
   }
 
-  return null;
+  return finish(null);
 }
 
 /**

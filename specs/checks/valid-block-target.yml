@@ -358,6 +358,185 @@ cases:
           ]
         }
         {% endschema %}
+  - name: should report an undeclared local block type in a preset
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default preset",
+              "blocks": [
+                {
+                  "type": "missing_block"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/local-blocks.liquid
+        message: 'Section block type "missing_block" must be defined in "blocks" at the root of this schema.'
+        start: [14, 18]
+        highlight: '"missing_block"'
+  - name: should report an undeclared local block type in a default
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            }
+          ],
+          "default": {
+            "blocks": [
+              {
+                "type": "missing_block"
+              }
+            ]
+          }
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/local-blocks.liquid
+        message: 'Section block type "missing_block" must be defined in "blocks" at the root of this schema.'
+        start: [12, 16]
+        highlight: '"missing_block"'
+  - name: should not report declared local block types in presets and defaults
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default preset",
+              "blocks": [
+                {
+                  "type": "local_block"
+                }
+              ]
+            }
+          ],
+          "default": {
+            "blocks": [
+              {
+                "type": "local_block"
+              }
+            ]
+          }
+        }
+        {% endschema %}
+  - name: should not report @app in a default when the root declares @app next to local blocks
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            },
+            {
+              "type": "@app"
+            }
+          ],
+          "default": {
+            "blocks": [
+              {
+                "type": "@app"
+              }
+            ]
+          }
+        }
+        {% endschema %}
+  - name: should report @app in a preset of a section with local blocks
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            },
+            {
+              "type": "@app"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default preset",
+              "blocks": [
+                {
+                  "type": "@app"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/local-blocks.liquid
+        message: 'Section block type "@app" must be defined in "blocks" at the root of this schema.'
+        start: [17, 18]
+        highlight: '"@app"'
+  - name: should accept local blocks named by a plain string in a preset
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default preset",
+              "blocks": ["local_block"]
+            }
+          ]
+        }
+        {% endschema %}
+  - name: should accept local blocks named by a plain string in a default
+    files:
+      sections/local-blocks.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local block"
+            }
+          ],
+          "default": {
+            "blocks": ["local_block"]
+          }
+        }
+        {% endschema %}
   - name: should report an error when a preset defined block is not specified at root level (sections bucket)
     files:
       blocks/text.liquid: ""
@@ -2506,3 +2685,22 @@ cases:
           ]
         }
         {% endschema %}
+  - name: should report a block type that leaves the blocks directory, also when the file it names exists (sections bucket)
+    files:
+      snippets/outside.liquid: ""
+      sections/outside-section.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "../snippets/outside"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/outside-section.liquid
+        message: "Theme block 'blocks/../snippets/outside.liquid' does not exist."
+        start: [5, 14]
+        highlight: '"../snippets/outside"'

@@ -1,0 +1,290 @@
+# Contextual templates and section groups (`*.context.<name>.json`) override the file their
+# `parent` names. Shopify deep-merges the override into it, so an override's section or block
+# that is already in the parent has no `type`: it inherits it. An override can also add
+# sections, and add blocks inside inherited sections and blocks. Those have a `type`.
+cases:
+  - name: "a contextual template's section inherits its type from its parent"
+    files:
+      layout/theme.liquid: |
+        {{ content_for_layout }}
+      sections/hero.liquid: |
+        Hero
+      templates/index.json: |
+        {
+          "sections": {
+            "hero": { "type": "hero" }
+          },
+          "order": ["hero"]
+        }
+      templates/index.context.ca.json: |
+        {
+          "context": { "market": "ca" },
+          "parent": "index.json",
+          "sections": {
+            "hero": { "settings": { "heading": "Canada" } }
+          }
+        }
+    edges:
+      - source: templates/index.json
+        start: [2, 14]
+        text: '"type": "hero"'
+        target: sections/hero.liquid
+      - source: templates/index.json
+        target: layout/theme.liquid
+        type: indirect
+      - source: templates/index.context.ca.json
+        target: layout/theme.liquid
+        type: indirect
+
+  - name: 'follows the blocks a contextual template adds to inherited sections and blocks'
+    files:
+      layout/theme.liquid: |
+        {{ content_for_layout }}
+      sections/hero.liquid: |
+        {% schema %}
+        { "name": "Hero", "blocks": [{ "type": "@theme" }] }
+        {% endschema %}
+      blocks/group.liquid: |
+        Group
+      blocks/text.liquid: |
+        Text
+      blocks/promo.liquid: |
+        Promo
+      templates/index.json: |
+        {
+          "sections": {
+            "hero": {
+              "type": "hero",
+              "blocks": {
+                "group": {
+                  "type": "group",
+                  "blocks": { "text": { "type": "text" } },
+                  "block_order": ["text"]
+                }
+              },
+              "block_order": ["group"]
+            }
+          },
+          "order": ["hero"]
+        }
+      templates/index.context.ca.json: |
+        {
+          "context": { "market": "ca" },
+          "parent": "index.json",
+          "sections": {
+            "hero": {
+              "blocks": {
+                "group": {
+                  "blocks": { "badge": { "type": "promo" } },
+                  "block_order": ["text", "badge"]
+                },
+                "banner": { "type": "promo" }
+              },
+              "block_order": ["group", "banner"]
+            }
+          }
+        }
+    edges:
+      - source: sections/hero.liquid
+        start: [1, 31]
+        text: '"type": "@theme"'
+        target: blocks/group.liquid
+        type: indirect
+      - source: sections/hero.liquid
+        start: [1, 31]
+        text: '"type": "@theme"'
+        target: blocks/promo.liquid
+        type: indirect
+      - source: sections/hero.liquid
+        start: [1, 31]
+        text: '"type": "@theme"'
+        target: blocks/text.liquid
+        type: indirect
+      - source: templates/index.json
+        start: [3, 6]
+        text: '"type": "hero"'
+        target: sections/hero.liquid
+      - source: templates/index.json
+        start: [6, 10]
+        text: '"type": "group"'
+        target: blocks/group.liquid
+      - source: templates/index.json
+        start: [7, 32]
+        text: '"type": "text"'
+        target: blocks/text.liquid
+      - source: templates/index.json
+        target: layout/theme.liquid
+        type: indirect
+      - source: templates/index.context.ca.json
+        start: [7, 33]
+        text: '"type": "promo"'
+        target: blocks/promo.liquid
+      - source: templates/index.context.ca.json
+        start: [10, 20]
+        text: '"type": "promo"'
+        target: blocks/promo.liquid
+      - source: templates/index.context.ca.json
+        target: layout/theme.liquid
+        type: indirect
+
+  - name: "doesn't follow the blocks of an inherited section that accepts its own blocks"
+    files:
+      layout/theme.liquid: |
+        {{ content_for_layout }}
+      sections/slideshow.liquid: |
+        {% schema %}
+        { "name": "Slideshow", "blocks": [{ "type": "slide", "name": "Slide" }] }
+        {% endschema %}
+      templates/index.json: |
+        {
+          "sections": {
+            "slideshow": { "type": "slideshow" }
+          },
+          "order": ["slideshow"]
+        }
+      templates/index.context.ca.json: |
+        {
+          "context": { "market": "ca" },
+          "parent": "index.json",
+          "sections": {
+            "slideshow": {
+              "blocks": { "intro": { "type": "slide" } },
+              "block_order": ["intro"]
+            }
+          }
+        }
+    edges:
+      - source: templates/index.json
+        start: [2, 19]
+        text: '"type": "slideshow"'
+        target: sections/slideshow.liquid
+      - source: templates/index.json
+        target: layout/theme.liquid
+        type: indirect
+      - source: templates/index.context.ca.json
+        target: layout/theme.liquid
+        type: indirect
+
+  - name: "doesn't follow the blocks of a section its parent doesn't have"
+    files:
+      layout/theme.liquid: |
+        {{ content_for_layout }}
+      blocks/promo.liquid: |
+        Promo
+      templates/index.json: |
+        {
+          "sections": {},
+          "order": []
+        }
+      templates/index.context.ca.json: |
+        {
+          "context": { "market": "ca" },
+          "parent": "index.json",
+          "sections": {
+            "hero": {
+              "blocks": { "banner": { "type": "promo" } },
+              "block_order": ["banner"]
+            }
+          }
+        }
+    edges:
+      - source: templates/index.json
+        target: layout/theme.liquid
+        type: indirect
+      - source: templates/index.context.ca.json
+        target: layout/theme.liquid
+        type: indirect
+
+  - name: "a contextual template without sections uses its parent's layout"
+    files:
+      layout/alternate.liquid: |
+        {{ content_for_layout }}
+      sections/hero.liquid: |
+        Hero
+      templates/index.json: |
+        {
+          "layout": "alternate",
+          "sections": {
+            "hero": { "type": "hero" }
+          },
+          "order": ["hero"]
+        }
+      templates/index.context.ca.json: |
+        {
+          "context": { "market": "ca" },
+          "parent": "index.json",
+          "order": []
+        }
+    edges:
+      - source: templates/index.json
+        start: [1, 12]
+        text: '"alternate"'
+        target: layout/alternate.liquid
+        type: indirect
+      - source: templates/index.json
+        start: [3, 14]
+        text: '"type": "hero"'
+        target: sections/hero.liquid
+      - source: templates/index.context.ca.json
+        target: layout/alternate.liquid
+        type: indirect
+
+  - name: 'contextual section groups are entry points, and inherit like templates'
+    files:
+      layout/theme.liquid: |
+        {% sections 'header-group' %}
+      sections/header.liquid: |
+        {% schema %}
+        { "name": "Header", "blocks": [{ "type": "@theme" }] }
+        {% endschema %}
+      blocks/promo.liquid: |
+        Promo
+      sections/header-group.json: |
+        {
+          "type": "header",
+          "name": "Header",
+          "sections": {
+            "header": { "type": "header" }
+          },
+          "order": ["header"]
+        }
+      sections/header-group.context.ca.json: |
+        {
+          "context": { "market": "ca" },
+          "parent": "header-group.json",
+          "sections": {
+            "header": {
+              "blocks": { "banner": { "type": "promo" } },
+              "block_order": ["banner"]
+            }
+          }
+        }
+      sections/header-group.context.us.json: |
+        {
+          "context": { "market": "us" },
+          "parent": "header-group.json",
+          "order": []
+        }
+    entryPoints:
+      - layout/theme.liquid
+      - sections/header.liquid
+      - sections/header-group.context.ca.json
+      - sections/header-group.context.us.json
+    edges:
+      - source: layout/theme.liquid
+        start: [0, 0]
+        text: "{% sections 'header-group' %}"
+        target: sections/header-group.json
+      - source: sections/header-group.json
+        start: [4, 16]
+        text: '"type": "header"'
+        target: sections/header.liquid
+      - source: sections/header.liquid
+        start: [1, 33]
+        text: '"type": "@theme"'
+        target: blocks/promo.liquid
+        type: indirect
+      - source: sections/header-group.context.ca.json
+        start: [5, 30]
+        text: '"type": "promo"'
+        target: blocks/promo.liquid

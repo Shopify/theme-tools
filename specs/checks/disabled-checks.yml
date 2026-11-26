@@ -411,6 +411,75 @@ cases:
         message: "Unknown object 'bar' used."
         start: [2, 15]
         highlight: bar
+  - name: should disable the next line inside a style tag
+    checks: [MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        <style>
+          {% # theme-check-disable-next-line %}
+          {% render 'something' %}
+          {% render 'other-thing' %}
+        </style>
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [3, 12]
+        highlight: "'other-thing'"
+  - name: should disable the next line inside a script tag
+    checks: [MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        <script>
+          {% # theme-check-disable-next-line %}
+          {% render 'something' %}
+          {% render 'other-thing' %}
+        </script>
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [3, 12]
+        highlight: "'other-thing'"
+  - name: should disable the next line inside an svg tag
+    checks: [MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        <svg>
+          {% # theme-check-disable-next-line %}
+          {% render 'something' %}
+          {% render 'other-thing' %}
+        </svg>
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [3, 12]
+        highlight: "'other-thing'"
+  - name: should not disable anything after a style tag if theme check is disabled at its end
+    checks: [MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        <style>
+          {% render 'something' %}
+          {% # theme-check-disable-next-line %}
+        </style>
+        {% render 'other-thing' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something.liquid' does not exist"
+        start: [1, 12]
+        highlight: "'something'"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [4, 10]
+        highlight: "'other-thing'"
   - name: should not disable the next line if the specified rule does not exist
     checks: [UndefinedObject]
     docset: default
