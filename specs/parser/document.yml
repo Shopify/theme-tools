@@ -626,3 +626,7 @@ cases:
       message: Attempting to end parsing before LiquidTag 'if' was closed
       start: [1, 3]
       text: "{% if a %"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [1, 3], text: "{% if a %}" }

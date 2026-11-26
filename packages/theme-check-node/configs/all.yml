@@ -250,6 +250,12 @@ ValidJSON:
 ValidLocalBlocks:
   enabled: true
   severity: 0
+ValidRangeDefault:
+  enabled: true
+  severity: 0
+ValidRangeStepCount:
+  enabled: true
+  severity: 0
 ValidRenderSnippetArgumentTypes:
   enabled: true
   severity: 1
@@ -263,6 +269,9 @@ ValidSchemaTranslations:
   enabled: true
   severity: 0
 ValidScopedCSSClass:
+  enabled: true
+  severity: 1
+ValidSelectDefault:
   enabled: true
   severity: 1
 ValidSettingsKey:

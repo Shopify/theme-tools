@@ -169,3 +169,355 @@ cases:
         {% schema %}
           {"blocks":[{"type":"local-block","name":"Local block","settings":[{"id":"local-setting","type":"text","label":"Local Setting"}]}],"presets":[{"blocks":[{"type":"local-block","settings":{"local-setting":"value"}}]}]}
         {% endschema %}
+  - name: does not report an error when a template section setting exists in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tag": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: reports an error when a template section setting does not exist in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tagg": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'heading_tagg' does not exist in 'sections/main-page.liquid'."
+        start: [5, 8]
+        highlight: '"heading_tagg"'
+  - name: does not report an error for a template section's platform-controlled custom_css
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tag": "h1"
+              },
+              "custom_css": [
+                "h1 {color: red;}"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when the template section's file does not exist
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "missing-section",
+              "settings": {
+                "heading_tagg": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+  - name: does not check section groups
+    files:
+      sections/header-group.json: |-
+        {
+          "type": "header",
+          "name": "Header",
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "settings": {
+                "heading_tagg": "h1"
+              }
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when a template block setting exists in the block schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "heading": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "text"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "text"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
+  - name: reports an error when a template block setting does not exist in the block schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "headingg": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "text"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "text"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'headingg' does not exist in 'blocks/text.liquid'."
+        start: [8, 12]
+        highlight: '"headingg"'
+  - name: does not report an error when a template local block setting exists in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "foo": {
+                  "type": "foo",
+                  "settings": {
+                    "heading": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "foo"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "foo", "name": "Foo", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}]}
+        {% endschema %}
+  - name: reports an error when a template local block setting does not exist in the section schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "foo": {
+                  "type": "foo",
+                  "settings": {
+                    "headingg": "Hello"
+                  }
+                }
+              },
+              "block_order": [
+                "foo"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "foo", "name": "Foo", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'headingg' does not exist in 'sections/main-page.liquid'."
+        start: [8, 12]
+        highlight: '"headingg"'
+  - name: reports an error when a nested template block setting does not exist in the nested block schema
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "parent": {
+                  "type": "parent",
+                  "blocks": {
+                    "text": {
+                      "type": "text",
+                      "settings": {
+                        "headingg": "Hello"
+                      }
+                    }
+                  },
+                  "block_order": [
+                    "text"
+                  ]
+                }
+              },
+              "block_order": [
+                "parent"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "parent"}]}
+        {% endschema %}
+      blocks/parent.liquid: |
+        {% schema %}
+        {"name": "Parent", "blocks": [{"type": "text"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}
+    offenses:
+      - file: templates/page.json
+        message: "Setting 'headingg' does not exist in 'blocks/text.liquid'."
+        start: [11, 16]
+        highlight: '"headingg"'
+  - name: does not report an error for app block settings
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": {
+                "app": {
+                  "type": "shopify://apps/reviews/blocks/stars/0000",
+                  "settings": {
+                    "product": "{{ product }}"
+                  }
+                }
+              },
+              "block_order": [
+                "app"
+              ]
+            }
+          },
+          "order": [
+            "main-page"
+          ]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "@app"}]}
+        {% endschema %}
+  - name: does not report an error when a template section's type is not a string
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "array": { "type": ["main-page"], "settings": { "heading_tagg": "h1" } },
+            "number": { "type": 404, "settings": { "heading_tagg": "h1" } }
+          },
+          "order": ["array", "number"]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+      sections/404.liquid: |
+        {% schema %}
+        {"name": "404", "settings": [{"id": "heading_tag", "type": "text", "label": "Heading tag"}]}
+        {% endschema %}
+  - name: does not report an error when a template block's type is not a string
+    files:
+      templates/page.json: |-
+        {
+          "sections": {
+            "main-page": {
+              "type": "main-page",
+              "blocks": { "text": { "type": ["text"], "settings": { "headingg": "Hello" } } },
+              "block_order": ["text"]
+            }
+          },
+          "order": ["main-page"]
+        }
+      sections/main-page.liquid: |
+        {% schema %}
+        {"name": "Main page", "blocks": [{"type": "@theme"}]}
+        {% endschema %}
+      blocks/text.liquid: |
+        {% schema %}
+        {"name": "Text", "settings": [{"id": "heading", "type": "text", "label": "Heading"}]}
+        {% endschema %}

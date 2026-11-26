@@ -54,7 +54,32 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
           hasRootBlocksDeclaration,
         } = getBlocks(validSchema);
 
-        if (rootLevelLocalBlocks.length > 0) return;
+        if (rootLevelLocalBlocks.length > 0) {
+          // Presets may use the local blocks. `default` may use any type declared at the root,
+          // which also includes `@app`.
+          const localBlockTypes = new Set(rootLevelLocalBlocks.map(({ node }) => node.type));
+          const rootBlockTypes = new Set(validSchema.blocks?.map((block) => block?.type));
+          const configuredBlocks = [
+            ...(presetLevelBlocks[0] ?? []).map((block) => ({
+              ...block,
+              allowed: localBlockTypes,
+            })),
+            ...defaultLevelBlocks.map((block) => ({ ...block, allowed: rootBlockTypes })),
+          ];
+
+          for (const { node, path, allowed } of configuredBlocks) {
+            if (!allowed.has(node.type)) {
+              const typeNode = nodeAtPath(ast, path)! as LiteralNode;
+              reportWarning(
+                `Section block type "${node.type}" must be defined in "blocks" at the root of this schema.`,
+                offset,
+                typeNode,
+                context,
+              );
+            }
+          }
+          return;
+        }
 
         let errorsInRootLevelBlocks = false;
         await Promise.all(
