@@ -138,7 +138,7 @@ export function getAssetModule(
   themeGraph: ThemeGraph,
   asset: string,
 ): JavaScriptModule | CssModule | SvgModule | ImageModule | undefined {
-  const extension = extname(asset);
+  const extension = extname(isLiquidAsset(asset) ? asset.slice(0, -'.liquid'.length) : asset);
 
   let type: ModuleType | undefined = undefined;
 
@@ -146,7 +146,7 @@ export function getAssetModule(
     type = ModuleType.Image;
   } else if (extension === 'js') {
     type = ModuleType.JavaScript;
-  } else if (extension === 'css') {
+  } else if (extension === 'css' || extension === 'scss') {
     type = ModuleType.Css;
   } else if (extension === 'svg') {
     type = ModuleType.Svg;
@@ -163,6 +163,33 @@ export function getAssetModule(
     references: [],
     uri: path.join(themeGraph.rootUri, 'assets', asset),
   });
+}
+
+/**
+ * Shopify renders `assets/theme.css.liquid` and serves it as `theme.css`. The
+ * same goes for `.js` and `.scss`.
+ */
+export function isLiquidAsset(asset: string): boolean {
+  return ['.css.liquid', '.js.liquid', '.scss.liquid'].some((ext) => asset.endsWith(ext));
+}
+
+/**
+ * The files Shopify looks for, in order, when it serves `asset`:
+ * - `theme.css` comes from `theme.css.liquid`, then `theme.css`;
+ * - `theme.scss.css` also comes from `theme.scss.liquid`, then `theme.scss`.
+ *
+ * Other assets come from their own file.
+ */
+export function assetSources(asset: string): string[] {
+  if (!['css', 'js'].includes(extname(asset))) return [asset];
+
+  const sources = [`${asset}.liquid`, asset];
+  if (asset.endsWith('.scss.css')) {
+    const scss = asset.slice(0, -'.css'.length);
+    sources.push(`${scss}.liquid`, scss);
+  }
+
+  return sources;
 }
 
 export function getSnippetModule(themeGraph: ThemeGraph, snippet: string): LiquidModule {

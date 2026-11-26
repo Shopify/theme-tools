@@ -1,0 +1,602 @@
+check: ValidRenderSnippetArgumentTypes
+severity: warning
+cases:
+  - name: "should accept 'hello' for string"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 'hello' %}"
+    docset: default
+  - name: "should accept '' for string"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: '' %}"
+    docset: default
+  - name: should accept product for string
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: product %}"
+    docset: default
+  - name: should reject 123 for string
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param: '' %}"
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should reject true for string
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: true %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got boolean"
+        start: [0, 25]
+        highlight: "true"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param: '' %}"
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should accept 0 for number
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {number} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 0 %}"
+    docset: default
+  - name: should accept 123 for number
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {number} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+  - name: should accept -1 for number
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {number} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: -1 %}"
+    docset: default
+  - name: should accept product for number
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {number} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: product %}"
+    docset: default
+  - name: "should reject 'hello' for number"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {number} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 'hello' %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected number, got string"
+        start: [0, 25]
+        highlight: "'hello'"
+        suggest:
+          - message: "Replace with default value '0' for number"
+            result: "{% render 'card', param: 0 %}"
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should reject true for number
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {number} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: true %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected number, got boolean"
+        start: [0, 25]
+        highlight: "true"
+        suggest:
+          - message: "Replace with default value '0' for number"
+            result: "{% render 'card', param: 0 %}"
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should accept true for boolean
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: true %}"
+    docset: default
+  - name: should accept false for boolean
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: false %}"
+    docset: default
+  - name: should accept nil for boolean
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: nil %}"
+    docset: default
+  - name: should accept empty for boolean
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: empty %}"
+    docset: default
+  - name: should accept product for boolean
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: product %}"
+    docset: default
+  - name: should accept 123 for boolean
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+  - name: "should accept 'hello' for boolean"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {boolean} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 'hello' %}"
+    docset: default
+  - name: should accept product for object
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: product %}"
+    docset: default
+  - name: should accept (1..3) for object
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: (1..3) %}"
+    docset: default
+  - name: "should reject 'hello' for object"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 'hello' %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected object, got string"
+        start: [0, 25]
+        highlight: "'hello'"
+        suggest:
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should reject 123 for object
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected object, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should reject true for object
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: true %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected object, got boolean"
+        start: [0, 25]
+        highlight: "true"
+        suggest:
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should reject empty for object
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: empty %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected object, got boolean"
+        start: [0, 25]
+        highlight: empty
+        suggest:
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: should handle mixed case type annotations
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {String} text - The text
+          @param {NUMBER} count - The count
+          @param {BOOLEAN} flag - The flag
+          @param {Object} data - The data
+        {% enddoc %}
+        <div>{{ text }}{{ count }}{{ flag }}{{ data }}</div>
+      file.liquid: "{% render 'card', text: \"hello\", count: 5, flag: true, data: product %}"
+    docset: default
+  - name: should ignore variable lookups
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {String} title - The title
+        {% enddoc %}
+        <div>{{ title }}</div>
+      file.liquid: "{% render 'card', title: product_title %}"
+    docset: default
+  - name: should not report when snippet has no doc comment
+    files:
+      snippets/card.liquid: "<h1>This snippet has no doc comment</h1>"
+      file.liquid: "{% render 'card', title: 123 %}"
+    docset: default
+  - name: should not enforce unsupported types
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {Unsupported} title - The title
+        {% enddoc %}
+        <div>{{ title }}</div>
+      file.liquid: "{% render 'card', title: 123 %}"
+    docset: default
+  - name: should not report for unrecognized arguments
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {String} title - The title
+        {% enddoc %}
+        <div>{{ title }}</div>
+      file.liquid: "{% render 'card', title: \"hello\", unrecognized: 123 %}"
+    docset: default
+  - name: "should report when `with` alias is used"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {String} title - The title
+        {% enddoc %}
+        <div>{{ title }}</div>
+      file.liquid: "{% render 'card' with 12 as title %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'title': expected string, got number"
+        start: [0, 22]
+        highlight: "12"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card' with '' as title %}"
+          - message: Remove value
+            result: "{% render 'card' with  as title %}"
+  - name: "should report when `for` alias is used"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {String} title - The title
+        {% enddoc %}
+        <div>{{ title }}</div>
+      file.liquid: "{% render 'card' for 123 as title %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'title': expected string, got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card' for '' as title %}"
+          - message: Remove value
+            result: "{% render 'card' for  as title %}"
+  - name: should suggest replacing with default value for type or removing value
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param: '' %}"
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: "should allow users to fix a single argument when multiple are provided`"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} title - The title
+          @param {number} count - The count
+        {% enddoc %}
+        <div>{{ title }} {{ count }}</div>
+      file.liquid: "{% render 'card', title: 123, count: 5 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'title': expected string, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', title: '', count: 5 %}"
+          - message: Remove value
+            result: "{% render 'card', title: , count: 5 %}"
+  - name: should handle arguments with trailing commas
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123, %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param: '', %}"
+          - message: Remove value
+            result: "{% render 'card', param: , %}"
+  - name: should handle arguments with complex spacing
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} title - The title
+          @param {number} count - The count
+        {% enddoc %}
+      file.liquid: |-
+        {% render 'card',
+                title: 123,
+                count: 5
+              %}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'title': expected string, got number"
+        start: [1, 15]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: |-
+              {% render 'card',
+                      title: '',
+                      count: 5
+                    %}
+          - message: Remove value
+            result: |-
+              {% render 'card',
+                      title: ,
+                      count: 5
+                    %}
+  - name: should handle argument with no space after colon
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param:123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 24]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param:'' %}"
+          - message: Remove value
+            result: "{% render 'card', param: %}"
+  - name: should handle argument with multiple spaces after colon
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param:     123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 29]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param:     '' %}"
+          - message: Remove value
+            result: "{% render 'card', param:      %}"
+  - name: should handle argument with newlines
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: |-
+        {% render 'card', param: 
+                123 
+              %}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [1, 8]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: |-
+              {% render 'card', param: 
+                      '' 
+                    %}
+          - message: Remove value
+            result: |-
+              {% render 'card', param: 
+                       
+                    %}
+  - name: should suggest removal and replacement if expected type has a default value
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card', param: '' %}"
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: "should only suggest removal if expected type default value is ''"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {object} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card', param: 123 %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected object, got number"
+        start: [0, 25]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'card', param:  %}"
+  - name: "should handle when aliases `with` syntax is used"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card' with 123 as param %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card' with '' as param %}"
+          - message: Remove value
+            result: "{% render 'card' with  as param %}"
+  - name: "should handle when aliases `for` syntax is used"
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} param - Description
+        {% enddoc %}
+        <div>{{ param }}</div>
+      file.liquid: "{% render 'card' for 123 as param %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Type mismatch for argument 'param': expected string, got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: "Replace with default value '''' for string"
+            result: "{% render 'card' for '' as param %}"
+          - message: Remove value
+            result: "{% render 'card' for  as param %}"

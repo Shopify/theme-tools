@@ -1,4 +1,11 @@
-import { NodeTypes, type BlockMarkup, type LiquidTag } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  type BlockArgumentValue,
+  type BlockMarkup,
+  type LiquidTag,
+  type Position,
+} from '@shopify/liquid-html-parser';
+import { Problem, SourceCodeType } from '../../types';
 import type { Context } from '.';
 import {
   hasBareArrayAccess,
@@ -10,6 +17,9 @@ import {
 
 const SYNTAX_ERROR = "Syntax error in 'block' tag";
 const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
+const DOTTED_ARGUMENT =
+  "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
+const APP_BLOCK_CONTENT = "Liquid syntax error: in 'block' - app blocks do not accept content";
 const UNCLOSED_BLOCK_PARSER_ERROR = "Attempting to end parsing before LiquidTag 'block' was closed";
 const UNCLOSED_BLOCK_IN_LIQUID_PARSER_ERROR = "Unclosed block tag 'block' in {% liquid %} block";
 const BLOCK_PARSER_ERROR_MESSAGES = new Set([
@@ -19,21 +29,48 @@ const BLOCK_PARSER_ERROR_MESSAGES = new Set([
 ]);
 
 export function checkBlockTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === 'string') {
-    report(node, context, SYNTAX_ERROR);
-    return;
-  }
+  const problem = blockTagSyntaxError(node);
+  if (problem) context.report(problem);
+}
+
+export function blockTagSyntaxError(
+  node: LiquidTag,
+): Problem<SourceCodeType.LiquidHtml> | undefined {
+  if (typeof node.markup === 'string') return syntaxProblem(node.position, SYNTAX_ERROR);
 
   const markup = node.markup as BlockMarkup;
 
-  if (hasInvalidBlockName(markup.name.value)) {
-    report(node, context, "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'");
-    return;
+  /*
+   * Ruby Liquid still accepts the unsupported experimental block.settings.<id>
+   * and block.content caller forms. Theme Check intentionally rejects every
+   * dotted argument except block.name so authors move to plain arguments.
+   * Report the first one so body-form children stay outside the offense.
+   */
+  const dottedArgument = markup.args.find(isDottedArgument);
+  if (dottedArgument) {
+    return syntaxProblem(dottedArgument.position, dottedArgumentMessage(dottedArgument.name));
   }
 
-  if (hasInvalidBlockArguments(markup)) {
-    report(node, context, SYNTAX_ERROR);
-    return;
+  /*
+   * App settings map to JSON settings: only fixed scalars or flat arrays of
+   * them are allowed. Check every occurrence so a later fixed duplicate does
+   * not hide an earlier expression. block.name is metadata, not a setting.
+   */
+  if (isAppBlockPath(markup.name.value)) {
+    const dynamicArgument = markup.args.find(
+      (argument) => argument.name !== 'block.name' && !isFixedAppSetting(argument.value),
+    );
+    if (dynamicArgument) {
+      return syntaxProblem(
+        dynamicArgument.position,
+        `Liquid syntax error: in 'block' - app block settings must be fixed values; '${dynamicArgument.name}' is not a string, number, boolean or array of those`,
+      );
+    }
+    if (hasContent(node)) return syntaxProblem(node.position, APP_BLOCK_CONTENT);
+  }
+
+  if (markup.args.some(isInvalidBlockNameArgument)) {
+    return syntaxProblem(node.position, SYNTAX_ERROR);
   }
 
   /*
@@ -47,13 +84,10 @@ export function checkBlockTag(node: LiquidTag, context: Context): void {
       (arg) => arg.value.type !== 'BlockArrayLiteral' && hasBareArrayAccess(arg.value),
     )
   ) {
-    report(node, context, BARE_ARRAY_ACCESS);
-    return;
+    return syntaxProblem(node.position, BARE_ARRAY_ACCESS);
   }
 
-  if (hasSkippedCharacters(rawMarkup(node))) {
-    report(node, context, SYNTAX_ERROR);
-  }
+  if (hasSkippedCharacters(rawMarkup(node))) return syntaxProblem(node.position, SYNTAX_ERROR);
 }
 
 export function checkBlockParserError(error: Error, context: Context, source: string): void {
@@ -75,27 +109,53 @@ export function checkBlockParserError(error: Error, context: Context, source: st
   });
 }
 
-function hasInvalidBlockName(value: string): boolean {
-  return value.includes('/') || value.includes('.');
+function syntaxProblem(position: Position, message: string): Problem<SourceCodeType.LiquidHtml> {
+  return { message, startIndex: position.start, endIndex: position.end };
 }
 
-function hasInvalidBlockArguments(markup: BlockMarkup): boolean {
-  return markup.args.some((arg) => {
-    if (arg.name === 'block.content') return false;
-    if (arg.name === 'block.name') return arg.value.type !== NodeTypes.String;
-    if (arg.name.startsWith('block.settings.')) {
-      return arg.name.slice('block.settings.'.length).includes('.');
-    }
-    if (arg.name.startsWith('block.')) return true;
-
-    return false;
-  });
+function isAppBlockPath(value: string): boolean {
+  return value.startsWith('shopify://apps/');
 }
 
-function report(node: LiquidTag, context: Context, message: string): void {
-  context.report({
-    message,
-    startIndex: node.position.start,
-    endIndex: node.position.end,
-  });
+function isFixedAppSetting(value: BlockArgumentValue): boolean {
+  const elements = value.type === 'BlockArrayLiteral' ? value.elements : [value];
+  return elements.every(
+    (element) =>
+      element.type === NodeTypes.String ||
+      element.type === NodeTypes.Number ||
+      (element.type === NodeTypes.LiquidLiteral &&
+        (element.keyword === 'true' || element.keyword === 'false')),
+  );
+}
+
+function hasContent(node: LiquidTag): boolean {
+  return (node.children ?? []).some(
+    (child) => child.type !== NodeTypes.TextNode || child.value.trim() !== '',
+  );
+}
+
+function isInvalidBlockNameArgument(argument: BlockMarkup['args'][number]): boolean {
+  return argument.name === 'block.name' && argument.value.type !== NodeTypes.String;
+}
+
+function isDottedArgument(argument: BlockMarkup['args'][number]): boolean {
+  return argument.name !== 'block.name' && argument.name.includes('.');
+}
+
+/*
+ * Temporary migration guidance for the experimental block.settings.<id>
+ * caller form. Remove it once authors have migrated to plain arguments.
+ */
+function dottedArgumentMessage(name: string): string {
+  const settingId = blockSettingId(name);
+  if (!settingId) return DOTTED_ARGUMENT;
+
+  return `Liquid syntax error: in 'block' - Use '${settingId}:' instead of '${name}:' when calling a block.`;
+}
+
+function blockSettingId(name: string): string | undefined {
+  const [object, property, settingId, ...rest] = name.split('.');
+  if (object !== 'block' || property !== 'settings' || rest.length > 0) return undefined;
+
+  return settingId;
 }

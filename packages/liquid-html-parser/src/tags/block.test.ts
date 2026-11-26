@@ -16,6 +16,17 @@ function parser(markup: string): MarkupParser {
 const stubParser = {} as Parser;
 
 describe('blockTag', () => {
+  it.each([
+    "'card' ",
+    "'card',  title: 'Hello',\n color: 'red' ",
+    "'card', products: ['classic-crewneck', 'cozy-beanie'] ",
+  ])('retains the full source for absolute markup positions: %s', (markup) => {
+    const result = blockTag.parse('block', parser(markup), stubParser);
+    expect(result.source).toBe(PADDING + markup);
+    expect(result.position).toEqual({ start: OFFSET, end: OFFSET + markup.length });
+    expect(result.source.slice(result.position.start, result.position.end)).toBe(markup);
+  });
+
   it('has block kind', () => {
     expect(blockTag.kind).toBe(TagKind.Block);
   });
@@ -45,6 +56,27 @@ describe('blockTag', () => {
       name: 'key',
       value: { type: NodeTypes.VariableLookup, name: 'value' },
     });
+  });
+
+  it('parses content as an ordinary named argument', () => {
+    const result = blockTag.parse('block', parser("'name', content: captured_content"), stubParser);
+    expect(result.args).toMatchObject([
+      {
+        type: NodeTypes.NamedArgument,
+        name: 'content',
+        value: { type: NodeTypes.VariableLookup, name: 'captured_content' },
+      },
+    ]);
+  });
+
+  it('rejects filtered named arguments', () => {
+    expect(() =>
+      blockTag.parse(
+        'block',
+        parser("'card', product: collections.frontpage.products | first"),
+        stubParser,
+      ),
+    ).toThrow("Unexpected token in 'block' tag: |");
   });
 
   describe('array-literal named args (block-only)', () => {
@@ -111,7 +143,7 @@ describe('blockTag', () => {
       });
     });
 
-    it('parses a dotted block.settings.* name with an array value', () => {
+    it('preserves an unsupported dotted block.settings.* name for downstream diagnostics', () => {
       const result = blockTag.parse(
         'block',
         parser("'name', block.settings.collections: ['a', 'b']"),
@@ -216,6 +248,33 @@ describe('blockTag', () => {
     expect(() => blockTag.parse('block', parser("'-card'"), stubParser)).toThrow(
       "in 'block' - '-card' is not a valid block type",
     );
+  });
+
+  it('parses a canonical app block path', () => {
+    const path =
+      'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000';
+    const result = blockTag.parse('block', parser(`'${path}'`), stubParser);
+    expect(result.name.value).toBe(path);
+  });
+
+  it('rejects malformed app block paths', () => {
+    const uuid = '00000000-0000-4000-8000-000000000000';
+    const invalidPaths = [
+      `shopify://apps/example_app/snippets/example-block/${uuid}`,
+      `shopify://apps//blocks/example-block/${uuid}`,
+      `shopify://apps/example_app/blocks//${uuid}`,
+      'shopify://apps/example_app/blocks/example-block/not-a-uuid',
+      'shopify://apps/example_app/blocks/example-block/deadbeef',
+      `shopify://apps/example_app/blocks/example-block/${uuid}/extra`,
+      `shopify://apps-evil/example_app/blocks/example-block/${uuid}`,
+      `shopify://apps/example_app/blocks/example-block/${uuid}\n`,
+    ];
+
+    for (const path of invalidPaths) {
+      expect(() => blockTag.parse('block', parser(`'${path}'`), stubParser)).toThrow(
+        `in 'block' - '${path}' is not a valid block type`,
+      );
+    }
   });
 
   it('rejects markup without a comma before args', () => {

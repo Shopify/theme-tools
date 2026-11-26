@@ -55,10 +55,23 @@ import {
   printLiquidDocPrompt,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
-import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
+import {
+  bodyLines,
+  hasLineBreakInRange,
+  isEmpty,
+  isPreLikeNode,
+  isTextLikeNode,
+  reindent,
+} from './utils';
 
 const { builders, utils } = doc;
-const { fill, group, hardline, dedentToRoot, indent, join, line, softline } = builders;
+const { fill, group, hardline, dedentToRoot, ifBreak, indent, join, line, softline } = builders;
+
+// `replaceEndOfLine` exists at runtime on both prettier 2 and prettier 3's
+// `doc.utils`, but is missing from prettier 2's type definitions.
+const { replaceEndOfLine } = utils as typeof utils & {
+  replaceEndOfLine: (doc: Doc, replacement?: Doc) => Doc;
+};
 
 const oppositeQuotes = {
   '"': "'",
@@ -161,6 +174,14 @@ function printTextNode(
   if (node.value.match(/^\s*$/)) return '';
   const text = node.value;
 
+  if (isPreLikeNode(node)) {
+    return [
+      printOpeningTagPrefix(node, options),
+      replaceEndOfLine(text),
+      printClosingTagSuffix(node, options),
+    ];
+  }
+
   const paragraphs = text
     .split(/(\r?\n){2,}/)
     .filter(Boolean) // removes empty paragraphs (trailingWhitespace)
@@ -232,7 +253,7 @@ function printNode(
     }
 
     case NodeTypes.RawMarkup: {
-      if (node.parentNode?.name === 'doc') {
+      if (node.parentNode?.type === NodeTypes.LiquidRawTag && node.parentNode.name === 'doc') {
         return printLiquidDoc(path as AstPath<RawMarkup>, options, print, args);
       }
 
@@ -311,6 +332,18 @@ function printNode(
     }
 
     case NodeTypes.HtmlComment: {
+      const { blockStartPosition: open, blockEndPosition: close } = node;
+      // Part of a comment split at a Liquid block boundary, or one that never
+      // closes: adding the missing delimiter would change the output. On a side
+      // without one, the next parse reads the line break printed there as part
+      // of this node, so trim it to keep formatting idempotent.
+      if (open.start === open.end || close.start === close.end) {
+        let text = node.source.slice(node.position.start, node.position.end);
+        if (open.start === open.end) text = text.trimStart();
+        if (close.start === close.end) text = text.trimEnd();
+        return text;
+      }
+
       const conditionalComment = getConditionalComment(
         node.source.slice(node.position.start, node.position.end),
       );
@@ -421,12 +454,26 @@ function printNode(
       return doc;
     }
 
-    /*
-     * `block` and `section` markup share the same shape: a name (a
-     * LiquidString) followed by optional named arguments. We print them
-     * the same way `content_for` prints its markup.
-     */
-    case NodeTypes.BlockMarkup:
+    case NodeTypes.BlockMarkup: {
+      const name = path.call((p: any) => print(p), 'name');
+      if (node.args.length === 0) return name;
+
+      /*
+       * Keep the arguments in the surrounding start-tag group so they wrap
+       * whenever its closing delimiter wraps. Wrapped arguments end in a comma.
+       */
+      return [
+        name,
+        ',',
+        line,
+        join(
+          [',', line],
+          path.map((p: any) => print(p), 'args'),
+        ),
+        ifBreak(','),
+      ];
+    }
+
     case NodeTypes.SectionMarkup: {
       const doc: Doc = [path.call((p: any) => print(p), 'name')];
       if (node.args.length > 0) {

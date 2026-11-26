@@ -69,3 +69,18 @@ It should support and indend the bodies of all IE comment variations
 <!--[if gt IE 6]>
   According to the conditional comment this is IE greater than 6<br />
 <![endif]-->
+
+It should print the parts of a comment split at a Liquid block boundary as written
+{% if a %}
+  <!-- x
+{% else %}
+  y -->
+{% endif %}
+
+It should print a comment as written when a block opened inside it holds its close
+<!-- {% if x %} --> a {% endif %}
+<b>c</b>
+
+It should print a comment that never closes as written
+<p>a</p>
+<!-- b <p>c</p>

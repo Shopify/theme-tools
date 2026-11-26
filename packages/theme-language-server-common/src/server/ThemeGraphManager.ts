@@ -208,8 +208,10 @@ export class ThemeGraphManager {
     const rootUri = await this.findThemeRootURI(anyUri);
     if (!rootUri) return;
 
-    const graph = await this.graphs.get(rootUri);
+    const graph = this.graphs.get(rootUri);
     if (!graph) return;
+    // Let a build in progress finish first. A graph that failed to build is rebuilt too.
+    await graph.catch(() => {});
 
     this.graphs.delete(rootUri);
     await this.getThemeGraphForURI(rootUri);

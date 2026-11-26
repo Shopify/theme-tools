@@ -7,7 +7,7 @@ import {
   NodeTypes,
   RAW_TAGS,
 } from '@shopify/liquid-html-parser';
-import { TagEntry, ThemeDocset } from '@shopify/theme-check-common';
+import { path, TagEntry, ThemeDocset } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -18,12 +18,16 @@ import {
   TextEdit,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { FindThemeRootURI } from '../../internal-types';
 import { findLast } from '../../utils';
 import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 
 export class LiquidTagsCompletionProvider implements Provider {
-  constructor(private readonly themeDocset: ThemeDocset) {}
+  constructor(
+    private readonly themeDocset: ThemeDocset,
+    private readonly findThemeRootURI: FindThemeRootURI,
+  ) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -40,8 +44,12 @@ export class LiquidTagsCompletionProvider implements Provider {
 
     const blockParent = findParentNode(partial, ancestors);
     const tags = await this.themeDocset.tags();
-    return tags
-      .filter(({ name }) => name.startsWith(partial))
+    const matchingTags = tags.filter(({ name }) => name.startsWith(partial));
+    const blockTagAllowed =
+      matchingTags.some(({ name }) => name === NamedTags.block) &&
+      (await this.allowsBlockTag(params.textDocument.uri));
+    return matchingTags
+      .filter(({ name }) => name !== NamedTags.block || blockTagAllowed)
       .sort(sortByName)
       .map(toCompletionItem(params, node, ancestors, partial))
       .concat(
@@ -54,7 +62,25 @@ export class LiquidTagsCompletionProvider implements Provider {
           : [],
       );
   }
+
+  /**
+   * Mirrors the ValidBlockTagPlacement check: the `block` tag belongs in
+   * Liquid files under `templates/`, including nested directories, and
+   * directly under `layout/`, relative to the theme root. Placement is per
+   * file, so nested `block` tags in those files are allowed. Without a theme
+   * root, placement is unknown and `block` is not offered.
+   */
+  private async allowsBlockTag(uri: string): Promise<boolean> {
+    const rootUri = await this.findThemeRootURI(uri);
+    if (!rootUri) return false;
+
+    const relativePath = path.relative(uri, rootUri);
+    return TEMPLATE_FILE_PATTERN.test(relativePath) || LAYOUT_FILE_PATTERN.test(relativePath);
+  }
 }
+
+const TEMPLATE_FILE_PATTERN = /^templates\/(?:[^/]+\/)*[^/]+\.liquid$/;
+const LAYOUT_FILE_PATTERN = /^layout\/[^/]+\.liquid$/;
 
 function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag | undefined {
   if (!'end'.startsWith(partial)) return;
