@@ -2,6 +2,9 @@ import { allChecks, path } from '@shopify/theme-check-common';
 import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  CancellationToken,
+  CompletionItem,
+  CompletionRequest,
   DidChangeConfigurationNotification,
   DidChangeWatchedFilesNotification,
   DidRenameFilesNotification,
@@ -20,6 +23,7 @@ describe('Module: server', () => {
   const filePath = 'snippets/code.liquid';
   const fileURI = path.join(mockRoot, filePath);
   const fileContents = `{% render 'foo' %}`;
+  const renderMarkup = `{% render '`;
   let checkOnChange: boolean | null = null;
   let checkOnSave: boolean | null = null;
   let checkOnOpen: boolean | null = null;
@@ -61,6 +65,7 @@ describe('Module: server', () => {
     fileTree = { '.theme-check.yml': '', 'snippets/code.liquid': fileContents };
     logger = vi.fn();
     dependencies = getDependencies(logger, fileTree);
+    vi.spyOn(dependencies.fs, 'readDirectory');
 
     // Start the server
     startServer(connection, dependencies);
@@ -310,6 +315,33 @@ describe('Module: server', () => {
     );
   });
 
+  it('should keep the cached theme root listing when a file is renamed within its directory', async () => {
+    connection.setup();
+    await flushAsync();
+
+    fileTree['snippets/bar.liquid'] = '...';
+    connection.openDocument(filePath, renderMarkup);
+    await flushAsync();
+    expect(await snippetCompletions()).toEqual(['bar', 'code']);
+    vi.mocked(dependencies.fs.readDirectory).mockClear();
+
+    fileTree['snippets/foo.liquid'] = fileTree['snippets/bar.liquid'];
+    delete fileTree['snippets/bar.liquid'];
+    connection.triggerNotification(DidRenameFilesNotification.type, {
+      files: [
+        {
+          oldUri: path.join(mockRoot, 'snippets/bar.liquid'),
+          newUri: path.join(mockRoot, 'snippets/foo.liquid'),
+        },
+      ],
+    });
+    await flushAsync();
+
+    expect(await snippetCompletions()).toEqual(['code', 'foo']);
+    expect(dependencies.fs.readDirectory).toHaveBeenCalledWith(path.join(mockRoot, 'snippets'));
+    expect(dependencies.fs.readDirectory).not.toHaveBeenCalledWith(mockRoot);
+  });
+
   it('should trigger a re-check on did delete files notifications', async () => {
     connection.setup();
     await flushAsync();
@@ -363,6 +395,19 @@ describe('Module: server', () => {
   // do this Promise.all thing here that does both.
   function flushAsync() {
     return Promise.all([vi.advanceTimersByTimeAsync(1), sleep(1)]);
+  }
+
+  // triggerRequest drops the response, so this calls the registered handler.
+  async function snippetCompletions() {
+    const [, onCompletion] = connection.spies.onRequest.mock.calls.find(
+      ([type]) => type.method === CompletionRequest.method,
+    )!;
+    const params = {
+      textDocument: { uri: fileURI },
+      position: { line: 0, character: renderMarkup.length },
+    };
+    const completions: CompletionItem[] = await onCompletion(params, CancellationToken.None);
+    return completions.map((item) => item.label).sort();
   }
 
   function advanceAndFlush(ms: number) {
