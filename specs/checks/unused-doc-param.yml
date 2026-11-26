@@ -229,3 +229,44 @@ cases:
     references:
       - source: templates/product.liquid
         target: snippets/card.liquid
+  - name: does not report a required parameter never passed to this snippet
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} style - Example style
+        {% enddoc %}
+        {{ style }}
+      templates/product.liquid: "{% render 'card' %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+  - name: does not report never passed parameters for a snippet without callers
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+        {{ style }}
+  - name: reports an unused parameter only once when no caller passes it
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+      templates/product.liquid: "{% render 'card' %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+    offenses:
+      - file: snippets/card.liquid
+        message: The parameter 'style' is defined but not used in this file.
+        start:
+          - 1
+          - 0
+        highlight: "@param {string} [style] - Example style"
+        suggest:
+          - message: Remove unused parameter 'style'
+            result: |
+              {% doc %}
+
+              {% enddoc %}

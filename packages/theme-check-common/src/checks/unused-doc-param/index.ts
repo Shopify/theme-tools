@@ -47,9 +47,10 @@ export const UnusedDocParam: LiquidCheckDefinition = {
       },
 
       async onCodePathEnd() {
-        if (definedLiquidDocParams.size === 0) return;
-
-        const providedParams = await getProvidedParams(context);
+        const hasUsedOptionalParam = [...definedLiquidDocParams].some(
+          ([variable, node]) => !node.required && usedVariables.has(variable),
+        );
+        const providedParams = hasUsedOptionalParam ? await getProvidedParams(context) : undefined;
 
         for (const [variable, node] of definedLiquidDocParams.entries()) {
           if (!usedVariables.has(variable)) {
@@ -64,7 +65,7 @@ export const UnusedDocParam: LiquidCheckDefinition = {
                 },
               ],
             });
-          } else if (providedParams && !providedParams.has(variable)) {
+          } else if (!node.required && providedParams && !providedParams.has(variable)) {
             context.report({
               message: `The parameter '${variable}' is never passed to this snippet.`,
               startIndex: node.position.start,
@@ -77,6 +78,11 @@ export const UnusedDocParam: LiquidCheckDefinition = {
   },
 };
 
+/**
+ * The parameters that the snippet's `render` callers pass to it. Returns
+ * nothing when that can't be known: the snippet has no callers, a caller can't
+ * be read, or a caller uses `include`.
+ */
 async function getProvidedParams(context: Context<SourceCodeType.LiquidHtml>) {
   const { getReferences, fs, file, toRelativePath } = context;
   if (!getReferences || !isSnippet(file.uri)) return;
@@ -93,6 +99,9 @@ async function getProvidedParams(context: Context<SourceCodeType.LiquidHtml>) {
   const sourceUris = new Set(
     references.filter((reference) => reference.type === 'direct').map(({ source }) => source.uri),
   );
+  // A snippet without callers is OrphanedSnippet's to report.
+  if (sourceUris.size === 0) return;
+
   const providedParams = new Set<string>();
 
   for (const sourceUri of sourceUris) {
@@ -116,10 +125,7 @@ async function getProvidedParams(context: Context<SourceCodeType.LiquidHtml>) {
           return;
         }
         node.args.forEach(({ name }) => providedParams.add(name));
-        if (node.variable) {
-          const variableName = node.alias?.value ?? snippetName.split('/').pop();
-          if (variableName) providedParams.add(variableName);
-        }
+        if (node.variable) providedParams.add(node.alias?.value ?? snippetName);
       },
     });
 
