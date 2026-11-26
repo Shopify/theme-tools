@@ -1,14 +1,20 @@
-import { AbstractFileSystem, FileStat, FileTuple, path } from '@shopify/theme-check-common';
+import {
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+  FileType,
+  path,
+} from '@shopify/theme-check-common';
 
 export class CachedFileSystem implements AbstractFileSystem {
   readFile: Cached<string>;
   readDirectory: Cached<FileTuple[]>;
   stat: Cached<FileStat>;
 
-  constructor(fs: AbstractFileSystem) {
-    this.readFile = cachedByUri(fs.readFile.bind(fs));
-    this.readDirectory = cachedByUri(fs.readDirectory.bind(fs));
-    this.stat = cachedByUri(fs.stat.bind(fs));
+  constructor(private readonly uncached: AbstractFileSystem) {
+    this.readFile = cachedByUri(uncached.readFile.bind(uncached));
+    this.readDirectory = cachedByUri(uncached.readDirectory.bind(uncached));
+    this.stat = cachedByUri(uncached.stat.bind(uncached));
   }
 
   /**
@@ -17,8 +23,10 @@ export class CachedFileSystem implements AbstractFileSystem {
    *
    * Each file's directory gains or loses an entry. A change can also create or
    * remove the directories above it, and the cache can't tell what existed
-   * before the change. So this asks the file system which directories exist
-   * now, and invalidates each parent listing that disagrees with it.
+   * before the change. So this stats each directory above the files and keeps
+   * a parent listing only when it lists that directory with the type the stat
+   * returned. Any other parent listing is invalidated, including when the stat
+   * fails.
    *
    * The result depends only on what exists now, so a rename has the same
    * effect whether it arrives as a rename or as a delete and a create, in
@@ -32,25 +40,32 @@ export class CachedFileSystem implements AbstractFileSystem {
     // The file system root has no parent listing to check.
     const checks = dirs.flatMap((dir) => parentOf(dir).map((parent) => ({ dir, parent })));
 
-    // Existence is checked with stat because listing a theme root makes
-    // code-editor fetch the checksums of the whole theme.
+    // This uses stat because listing a theme root makes code-editor fetch the
+    // checksums of the whole theme. The stat skips the cache so that a failed
+    // one isn't kept for later callers.
     for (const { dir } of checks) this.stat.invalidate(dir);
-    const existsNow = await Promise.all(
+    const types = await Promise.all(
       checks.map(({ dir }) =>
-        this.stat(dir).then(
-          () => true,
-          () => false,
+        this.uncached.stat(dir).then(
+          (stat) => stat.type,
+          () => undefined,
         ),
       ),
     );
 
+    const entriesByParent = new Map<string, Map<string, FileType> | undefined>();
     checks.forEach(({ dir, parent }, i) => {
-      const listing = this.readDirectory.peek(parent);
-      const isListed = listing?.some(([uri]) => path.normalize(uri) === dir);
-      // isListed is undefined when the listing hasn't resolved, which also
-      // invalidates it.
-      if (isListed !== existsNow[i]) this.readDirectory.invalidate(parent);
+      if (!entriesByParent.has(parent)) entriesByParent.set(parent, this.cachedEntries(parent));
+      const listedType = entriesByParent.get(parent)?.get(dir);
+      const isListedCorrectly = types[i] !== undefined && listedType === types[i];
+      if (!isListedCorrectly) this.readDirectory.invalidate(parent);
     });
+  }
+
+  /** Maps each entry of the resolved cached listing of dir to its type. */
+  private cachedEntries(dir: string): Map<string, FileType> | undefined {
+    const listing = this.readDirectory.peek(dir);
+    return listing && new Map(listing.map(([uri, type]) => [path.normalize(uri), type]));
   }
 }
 

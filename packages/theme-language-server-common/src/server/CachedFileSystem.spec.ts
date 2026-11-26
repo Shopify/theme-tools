@@ -110,12 +110,53 @@ describe('CachedFileSystem', () => {
       uris: ['sections/a.liquid', 'snippets/a.liquid'],
       expected: ['sections/b.liquid', 'snippets/a.liquid'],
     },
+    {
+      change: 'a file is replaced by a directory with the same name',
+      files: { snippets: 'file' },
+      changeFiles: (files) => {
+        delete files['snippets'];
+        files['snippets/card.liquid'] = 'file';
+      },
+      uris: ['snippets/card.liquid'],
+      expected: ['snippets/card.liquid'],
+    },
+    {
+      change: 'a directory is replaced by a file with the same name',
+      files: { 'snippets/card.liquid': 'file' },
+      changeFiles: (files) => {
+        delete files['snippets/card.liquid'];
+        files['snippets'] = 'file';
+      },
+      uris: ['snippets/card.liquid'],
+      expected: ['snippets'],
+    },
   ])('refreshes the theme root listing when $change', async (scenario) => {
     const { fs, readDirectory } = await run(scenario);
 
     expect(await listFiles(fs)).toEqual(scenario.expected);
     expect(readDirectory).toHaveBeenCalledWith(rootUri);
   });
+
+  it.each(['EACCES', 'EIO'])(
+    'refreshes the theme root listing when a directory stat fails with %s',
+    async (code) => {
+      const files: MockTheme = {};
+      const { fs, mockFs, stat } = setup(files);
+      await fs.readDirectory(rootUri);
+      files['snippets/card.liquid'] = '';
+
+      let failing = true;
+      stat.mockImplementation(async (statUri) => {
+        if (failing && statUri === uri('snippets')) throw Object.assign(new Error(code), { code });
+        return mockFs.stat(statUri);
+      });
+      await fs.invalidateDirectories([uri('snippets/card.liquid')]);
+      failing = false;
+
+      expect(await listFiles(fs)).toEqual(['snippets/card.liquid']);
+      await expect(fs.stat(uri('snippets'))).resolves.toMatchObject({ type: FileType.Directory });
+    },
+  );
 
   it('refreshes a theme root listing still pending from before the change', async () => {
     const files: MockTheme = {};
@@ -233,12 +274,13 @@ describe('CachedFileSystem', () => {
     const mockFs = new MockFileSystem(files, rootUri);
     // Wrapped so that the directory reads MockFileSystem.stat makes aren't counted.
     const readDirectory = vi.fn((uri: string) => mockFs.readDirectory(uri));
+    const stat = vi.fn((uri: string) => mockFs.stat(uri));
     const fs = new CachedFileSystem({
       readFile: (uri) => mockFs.readFile(uri),
       readDirectory,
-      stat: (uri) => mockFs.stat(uri),
+      stat,
     });
-    return { fs, readDirectory, mockFs };
+    return { fs, readDirectory, stat, mockFs };
   }
 
   async function listFiles(fs: CachedFileSystem) {
