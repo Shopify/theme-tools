@@ -49,3 +49,38 @@ cases:
         start: [0, 0]
         text: "{% render 'shared' %}"
         target: snippets/shared.liquid
+  - name: "a file in templates that isn't .json or .liquid isn't a template"
+    files:
+      layout/theme.liquid: |
+        {{ content_for_layout }}
+      templates/index.json: |
+        {
+          "sections": {
+            "main": { "type": "main" }
+          },
+          "order": ["main"]
+        }
+      templates/.DS_Store: ""
+      templates/customers/.keep: ""
+      sections/main.liquid: |
+        {% render 'greeting' %}
+      snippets/greeting.liquid: |
+        Hello
+    entryPoints: [layout/theme.liquid, sections/main.liquid, templates/index.json]
+    modules:
+      - { file: layout/theme.liquid, type: Liquid, kind: layout }
+      - { file: sections/main.liquid, type: Liquid, kind: section }
+      - { file: snippets/greeting.liquid, type: Liquid, kind: snippet }
+      - { file: templates/index.json, type: JSON, kind: template }
+    edges:
+      - source: sections/main.liquid
+        start: [0, 0]
+        text: "{% render 'greeting' %}"
+        target: snippets/greeting.liquid
+      - source: templates/index.json
+        target: layout/theme.liquid
+        type: indirect
+      - source: templates/index.json
+        start: [2, 14]
+        text: '"type": "main"'
+        target: sections/main.liquid

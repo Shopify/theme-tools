@@ -1,6 +1,7 @@
 import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest';
 import os from 'node:os';
 import path from 'node:path';
+import { path as pathUtils } from '@shopify/theme-check-common';
 import {
   Config,
   Offense,
@@ -97,5 +98,33 @@ describe('Integration: themeCheckRun', () => {
     } finally {
       await workspace.clean();
     }
+  });
+
+  it('reports the same orphaned snippets with a file in templates that is not a template', async () => {
+    const orphanedSnippets = async (templates: Record<string, any>) => {
+      const workspace = await makeTempWorkspace({
+        layout: { 'theme.liquid': '{{ content_for_layout }}' },
+        sections: { 'main.liquid': "{% render 'greeting' %}" },
+        snippets: { 'greeting.liquid': 'Hello', 'orphan.liquid': 'Orphan' },
+        templates: {
+          'index.json': '{ "sections": { "main": { "type": "main" } }, "order": ["main"] }',
+          ...templates,
+        },
+      });
+      try {
+        const { offenses } = await themeCheckRun(fileURLToPath(workspace.rootUri));
+        const rootUri = pathUtils.normalize(workspace.rootUri);
+        return offenses
+          .filter(({ check }) => check === 'OrphanedSnippet')
+          .map(({ uri }) => pathUtils.relative(uri, rootUri));
+      } finally {
+        await workspace.clean();
+      }
+    };
+
+    expect(await orphanedSnippets({})).toEqual(['snippets/orphan.liquid']);
+    expect(await orphanedSnippets({ '.DS_Store': '', customers: { '.keep': '' } })).toEqual([
+      'snippets/orphan.liquid',
+    ]);
   });
 });
