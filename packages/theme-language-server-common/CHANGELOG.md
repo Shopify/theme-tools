@@ -1,5 +1,65 @@
 # @shopify/theme-language-server-common
 
+## 3.1.0
+
+### Minor Changes
+
+- 537c7059: Add support for `article_list` theme settings and infer their values as arrays of articles.
+
+### Patch Changes
+
+- db3d76c6: Open the file Shopify serves an `asset_url` from, such as `assets/theme.css.liquid` for `'theme.css'`, when following its document link
+- af2e1a78: Stop inserting a second closing tag when you type `>` on an element that is already closed, while an ancestor is unclosed and later syntax doesn't parse, as in `<div><p>|</p>{{ unfinished`.
+- 31ed480c: Queue debounced theme checks so triggers are not dropped and asynchronous runs do not overlap.
+- 06f53e08: Invalidate ancestor directory caches after watched file changes and renames.
+- cf24f8d3: The language server takes a `remoteFileSize` dependency for AssetSizeCSS and AssetSizeJavaScript. theme-language-server-node passes theme-check-node's, which is now exported, so in the editor a host name that resolves to an address that is not public gets no request either.
+- 33b1f3aa: Close the newly opened HTML element when typing `>` before an existing parent closing tag, and close `<script>` and `<style>` again. Typing `>` on an element that already has its closing tag inserts nothing, as long as the rest of the document parses.
+- a84a247b: Surface orphaned (dead) files on startup with a notification
+
+  Turn on the new `themeCheck.checkOrphanedFilesOnBoot` setting (default `false`) to have the VS Code extension check each theme for orphaned files on startup, instead of running the dead-code command manually. Each theme with orphaned files gets a dismissable notification that names the theme, with **Review** (opens the dead-code picker) and **Don't show again** actions. The check is off when `themeCheck.preloadOnBoot` is false.
+
+  Dead code now lists only theme files the theme graph can link to. It no longer reports tooling files such as `assets/package.json` and `assets/jsconfig.json`, or Liquid assets the graph doesn't follow, such as `assets/icon.svg.liquid`.
+
+- 70b74b76: Renaming a section or block to a file name with a character that JSON escapes, such as `"`, now writes the escaped name in templates, section groups, `config/settings_data.json` and `{% schema %}` tags, so these files stay valid JSON.
+- 70b74b76: A theme no longer includes the files of a sibling theme whose directory name starts with the same text, such as `themes/shop-preview` for `themes/shop`. Renaming a section, block, snippet or asset in one theme no longer edits the other one.
+- 935d6f75: Refresh only the folders that a file rename, create or delete changes, instead of every folder up to the file system root
+- 5f9228af: Update section types in `config/settings_data.json` when a section file is renamed.
+- Updated dependencies [537c7059]
+- Updated dependencies [78bbce68]
+- Updated dependencies [f3d24bf8]
+- Updated dependencies [78bbce68]
+- Updated dependencies [28669513]
+- Updated dependencies [7eea77c5]
+- Updated dependencies [7d13d63f]
+- Updated dependencies [5740888d]
+- Updated dependencies [bb74363d]
+- Updated dependencies [bbd618c8]
+- Updated dependencies [4b173ff6]
+- Updated dependencies [4eb8bb16]
+- Updated dependencies [6d33a8bb]
+- Updated dependencies [4aaa426d]
+- Updated dependencies [3155a2d1]
+- Updated dependencies [7bdc9e28]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [31551e4e]
+- Updated dependencies [c374706b]
+- Updated dependencies [0507e17e]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [9a0377db]
+- Updated dependencies [911a4513]
+- Updated dependencies [df89377a]
+- Updated dependencies [f8e75c0b]
+- Updated dependencies [4f5e9ff6]
+- Updated dependencies [db3d76c6]
+- Updated dependencies [c4299f16]
+- Updated dependencies [9f110b3f]
+- Updated dependencies [66e654a9]
+- Updated dependencies [dc25d305]
+- Updated dependencies [4b173ff6]
+  - @shopify/theme-check-common@4.1.0
+  - @shopify/liquid-html-parser@2.12.3
+  - @shopify/theme-graph@0.3.10
+
 ## 3.0.2
 
 ### Patch Changes

@@ -1,5 +1,57 @@
 # @shopify/theme-check-node
 
+## 4.1.0
+
+### Minor Changes
+
+- 66e654a9: Add the `ValidRangeDefault` and `ValidRangeStepCount` checks for `range` settings. The storefront rejects both problems with an "Invalid schema" error that breaks `shopify theme dev` and the theme editor, though `shopify theme push` accepts them.
+  - `ValidRangeDefault` reports a `default`, preset value or section `default.settings` value that is outside `[min, max]` or off the `step` grid, such as `{ "type": "range", "min": 0, "max": 160, "step": 8, "default": 60 }`.
+  - `ValidRangeStepCount` reports a range setting with more than 101 steps, such as `{ "type": "range", "min": 0, "max": 200, "step": 1 }`.
+
+  Both checks read the range settings of sections, theme blocks, local blocks and `config/settings_schema.json`. A setting without `step` has a step of 1.
+
+### Patch Changes
+
+- cf24f8d3: The language server takes a `remoteFileSize` dependency for AssetSizeCSS and AssetSizeJavaScript. theme-language-server-node passes theme-check-node's, which is now exported, so in the editor a host name that resolves to an address that is not public gets no request either.
+- cf24f8d3: `AssetSizeCSS` and `AssetSizeJavaScript` read the size of a remote file only at a public address. They send no request to a URL that is not http(s), that has a user name or password, or whose host is `localhost` or an IP address that is not public (loopback, private, link-local, carrier-grade NAT, unique local and other special-purpose ranges). They do not follow redirects: a redirect gives size 0. In theme-check-node and the Rust port, a host name that resolves to an address that is not public gets no request either, and the request goes to the address that was checked.
+- 1e0bf81e: Report cross-file LiquidDoc errors on Windows, when the theme path has a space, and when the config sets `root`
+- Updated dependencies [537c7059]
+- Updated dependencies [78bbce68]
+- Updated dependencies [f3d24bf8]
+- Updated dependencies [78bbce68]
+- Updated dependencies [28669513]
+- Updated dependencies [7eea77c5]
+- Updated dependencies [7d13d63f]
+- Updated dependencies [5740888d]
+- Updated dependencies [bb74363d]
+- Updated dependencies [bbd618c8]
+- Updated dependencies [4b173ff6]
+- Updated dependencies [4eb8bb16]
+- Updated dependencies [6d33a8bb]
+- Updated dependencies [4aaa426d]
+- Updated dependencies [3155a2d1]
+- Updated dependencies [7bdc9e28]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [31551e4e]
+- Updated dependencies [c374706b]
+- Updated dependencies [0507e17e]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [9a0377db]
+- Updated dependencies [911a4513]
+- Updated dependencies [df89377a]
+- Updated dependencies [f8e75c0b]
+- Updated dependencies [4f5e9ff6]
+- Updated dependencies [db3d76c6]
+- Updated dependencies [c4299f16]
+- Updated dependencies [9f110b3f]
+- Updated dependencies [66e654a9]
+- Updated dependencies [dc25d305]
+- Updated dependencies [4b173ff6]
+  - @shopify/theme-check-common@4.1.0
+  - @shopify/liquid-html-parser@2.12.3
+  - @shopify/theme-graph@0.3.10
+  - @shopify/theme-check-docs-updater@4.1.0
+
 ## 4.0.2
 
 ### Patch Changes

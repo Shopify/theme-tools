@@ -1,5 +1,44 @@
 # shopify/theme-graph
 
+## 0.3.10
+
+### Patch Changes
+
+- 0507e17e: Build the theme graph for themes with contextual templates and section groups (`*.context.<name>.json`). Their sections and blocks that inherit a `type` from the parent no longer stop the graph, which made `OrphanedSnippet` report every snippet. The blocks they add are linked, an override without `sections` is accepted, a contextual template uses its parent's layout, and contextual section groups are entry points.
+- 4f5e9ff6: The `theme-graph` CLI resolves custom elements such as `<my-widget>` to the asset that defines them, so an asset used only as a custom element now appears in the graph.
+- db3d76c6: Link `asset_url` references to the file Shopify serves them from, so `.css.liquid`, `.js.liquid` and `.scss.liquid` assets are no longer reported as dead code
+- c4299f16: Build the theme graph when `templates/` has a file that isn't a `.json` or `.liquid` template, such as `.DS_Store` or `customers/.keep`. The graph skips it instead of failing, which made `OrphanedSnippet` report every snippet
+- Updated dependencies [537c7059]
+- Updated dependencies [78bbce68]
+- Updated dependencies [f3d24bf8]
+- Updated dependencies [78bbce68]
+- Updated dependencies [28669513]
+- Updated dependencies [7eea77c5]
+- Updated dependencies [7d13d63f]
+- Updated dependencies [5740888d]
+- Updated dependencies [bb74363d]
+- Updated dependencies [bbd618c8]
+- Updated dependencies [4b173ff6]
+- Updated dependencies [4eb8bb16]
+- Updated dependencies [6d33a8bb]
+- Updated dependencies [4aaa426d]
+- Updated dependencies [3155a2d1]
+- Updated dependencies [7bdc9e28]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [31551e4e]
+- Updated dependencies [c374706b]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [9a0377db]
+- Updated dependencies [911a4513]
+- Updated dependencies [df89377a]
+- Updated dependencies [f8e75c0b]
+- Updated dependencies [9f110b3f]
+- Updated dependencies [66e654a9]
+- Updated dependencies [dc25d305]
+- Updated dependencies [4b173ff6]
+  - @shopify/theme-check-common@4.1.0
+  - @shopify/liquid-html-parser@2.12.3
+
 ## 0.3.9
 
 ### Patch Changes
