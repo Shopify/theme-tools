@@ -1237,3 +1237,20 @@ cases:
         message: "Theme block 'blocks/../snippets/outside.liquid' does not exist."
         start: [6, 18]
         highlight: '"../snippets/outside"'
+  - name: does not report an offense for a template that is null
+    files:
+      templates/index.json: 'null'
+  - name: does not report an offense for a template that is not an object
+    files:
+      templates/index.json: '[{ "sections": { "custom-section": { "type": "custom-section", "blocks": { "text": { "type": "missing_block" } } } } }]'
+      templates/page.json: '404'
+      templates/product.json: '"sections"'
+      templates/collection.json: 'true'
+      sections/custom-section.liquid: |
+        {% schema %}
+        {"name": "Custom Section", "blocks": [{"type": "missing_block"}]}
+        {% endschema %}
+  - name: does not report an offense for a template whose sections or section is null
+    files:
+      templates/index.json: '{ "sections": null, "order": [] }'
+      templates/page.json: '{ "sections": { "custom-section": null }, "order": ["custom-section"] }'

@@ -109,6 +109,8 @@ export const ValidSettingsKeyJSON: JSONCheckDefinition = {
         const schema = await getSchemaFromJSON(context);
         const { ast } = schema ?? {};
         if (!schema || !ast || ast instanceof Error) return;
+        // A template that isn't an object, like `null`, has no sections to check.
+        if (!isPropertyNode(schema.parsed)) return;
 
         const sections = schema.parsed.sections;
         if (!sections) return;

@@ -34,9 +34,10 @@ impl<'a> JsonCheck<'a> for Check {
     fn end(&mut self, cx: &mut Context<'a>) -> CheckResult {
         let (parsed, ast) = get_schema_from_json(cx);
         let Some(ast) = ast else { return Ok(()) };
-        let parsed = parsed.ok_or_else(|| {
-            CheckError::new("Cannot read properties of undefined (reading 'sections')")
-        })?;
+        // A template that isn't an object, like `null`, has no sections to check.
+        let Some(parsed) = parsed.filter(js::is_non_null_object) else {
+            return Ok(());
+        };
         let Some(sections) = js::get(&parsed, "sections")
             .map_err(err)?
             .filter(|s| js::truthy(s))
