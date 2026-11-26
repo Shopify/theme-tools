@@ -343,4 +343,48 @@ describe('Module: runChecks', () => {
       });
     },
   );
+
+  it('checks remote asset sizes with the injected remoteFileSize', async () => {
+    const RemoteSize: LiquidCheckDefinition = {
+      meta: { ...LiquidFilter.meta, code: 'RemoteSize', name: 'Reports a remote size' },
+      create(context) {
+        return {
+          async onCodePathEnd() {
+            const size = await context.remoteFileSize('https://cdn.example.com/app.css');
+            context.report({ message: `size ${size}`, startIndex: 0, endIndex: 0 });
+          },
+        };
+      },
+    };
+    const remoteFileSize = vi.fn(async () => 42);
+    runChecks = makeRunChecks(documentManager, diagnosticsManager, {
+      fs,
+      loadConfig: async () => ({
+        context: 'theme' as const,
+        settings: {},
+        checks: [RemoteSize],
+        rootUri,
+      }),
+      themeDocset: {
+        filters: async () => [],
+        objects: async () => [],
+        liquidDrops: async () => [],
+        tags: async () => [],
+        systemTranslations: async () => ({}),
+      },
+      jsonValidationSet: { schemas: async () => [] },
+      remoteFileSize,
+    });
+    documentManager.open(fileUri, `{{ 'any' }}`, 0);
+
+    await runChecks([fileUri]);
+
+    expect(remoteFileSize).toHaveBeenCalledWith('https://cdn.example.com/app.css');
+    expect(connection.sendDiagnostics).toHaveBeenCalledWith(
+      expect.objectContaining({
+        uri: fileUri,
+        diagnostics: [expect.objectContaining({ code: 'RemoteSize', message: 'size 42' })],
+      }),
+    );
+  });
 });

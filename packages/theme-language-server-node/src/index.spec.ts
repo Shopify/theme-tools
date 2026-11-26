@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
-import { NodeFileSystem } from '@shopify/theme-check-node';
+import { NodeFileSystem, remoteFileSize } from '@shopify/theme-check-node';
 import { describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
 import { startServer } from './index';
@@ -15,6 +15,13 @@ vi.mock('@shopify/theme-language-server-common', async (importOriginal) => ({
 describe('Module: index (server)', () => {
   it('should exist and run', () => {
     expect(startServer).to.exist;
+  });
+
+  it("checks remote asset sizes with theme-check-node's remoteFileSize", () => {
+    startServer({} as any, NodeFileSystem);
+    const dependencies = vi.mocked(startCoreServer).mock.calls.at(-1)![1];
+    // It refuses a host name that resolves to an address that is not public.
+    expect(dependencies.remoteFileSize).toBe(remoteFileSize);
   });
 });
 

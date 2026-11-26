@@ -43,6 +43,7 @@ const asyncGlob = promisify(glob);
 export * from '@shopify/theme-check-common';
 export * from './config/types';
 export { NodeFileSystem };
+export { remoteFileSize };
 
 export const loadConfig: typeof resolveConfig = async (configPath, root, options = {}) => {
   configPath ??= await findConfigPath(root);

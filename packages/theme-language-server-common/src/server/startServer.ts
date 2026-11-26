@@ -100,6 +100,7 @@ export function startServer(
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
     fetchMetafieldDefinitionsForURI,
+    remoteFileSize,
   }: Dependencies,
 ) {
   const fs = new CachedFileSystem(injectedFs);
@@ -191,6 +192,7 @@ export function startServer(
       themeDocset,
       jsonValidationSet,
       getMetafieldDefinitions,
+      remoteFileSize,
       cssLanguageService,
       themeGraphManager,
     }),
