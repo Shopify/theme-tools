@@ -9,12 +9,17 @@ import {
 import { locEnd, locStart } from './utils';
 
 /**
- * Parse a template for formatting. Throws when part of it doesn't parse, so
- * Prettier reports the error and leaves the file as it is. A tree that skips
- * a part it couldn't read would print a different template.
+ * Parse a template for formatting. Throws when part of it doesn't parse or a
+ * block or element is left open at the end, so Prettier reports the error and
+ * leaves the file as it is. Printing a tree that skips a part it couldn't read,
+ * or closes what the source left open, would write a different template.
+ *
+ * The tolerant parser still recovers inside a tag's markup, such as the
+ * trailing comma in `{{ x | split: '', }}`, because that doesn't change the
+ * tree around it.
  */
 export function parse(text: string): LiquidHtmlNode {
-  const ast = toTolerantLiquidHtmlAST(text);
+  const ast = toTolerantLiquidHtmlAST(text, { mode: 'tolerant', allowUnclosedDocumentNode: false });
   walk(ast, (node) => {
     if (node.type === NodeTypes.LiquidErrorNode) {
       throw new LiquidHTMLASTParsingError(
