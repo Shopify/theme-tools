@@ -8,8 +8,8 @@ export interface DebouncedFunction<F extends Function> {
   (...args: ArgumentTypes<F>): void;
 
   /**
-   * Mark this call as forced. Later calls may be queued, but do not replace
-   * this call while it is waiting for the timer.
+   * Mark this call as forced. Later calls do not delay it. Without a merge
+   * function, later calls do not replace its arguments either.
    */
   force(...args: ArgumentTypes<F>): void;
 }
@@ -32,16 +32,13 @@ export interface DebouncedFunction<F extends Function> {
  * @param fn a function that should be debounced
  * @param ms milliseconds after last function call for it to execute
  * @param mergeArguments how to combine pending arguments. By default, the
- * arguments from the latest call are used.
+ * arguments from the latest call are used, unless a forced call is pending.
  * @returns a debounced function
  */
 export function debounce<F extends Function>(
   fn: F,
   ms?: number,
-  mergeArguments: (previous: ArgumentTypes<F>, next: ArgumentTypes<F>) => ArgumentTypes<F> = (
-    _previous,
-    next,
-  ) => next,
+  mergeArguments?: (previous: ArgumentTypes<F>, next: ArgumentTypes<F>) => ArgumentTypes<F>,
 ): DebouncedFunction<F> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let pendingArgs: ArgumentTypes<F> | null = null;
@@ -69,7 +66,7 @@ export function debounce<F extends Function>(
   };
 
   const enqueue = (args: ArgumentTypes<F>, force: boolean) => {
-    pendingArgs = pendingArgs === null ? args : mergeArguments(pendingArgs, args);
+    pendingArgs = pendingArgs === null ? args : merge(pendingArgs, args, force);
 
     if (running) {
       if (force) forcePending = true;
@@ -84,6 +81,11 @@ export function debounce<F extends Function>(
 
     schedule();
     if (force) forcePending = true;
+  };
+
+  const merge = (previous: ArgumentTypes<F>, next: ArgumentTypes<F>, force: boolean) => {
+    if (mergeArguments) return mergeArguments(previous, next);
+    return forcePending && !force ? previous : next;
   };
 
   const debouncedFn = (...args: ArgumentTypes<F>): void => enqueue(args, false);

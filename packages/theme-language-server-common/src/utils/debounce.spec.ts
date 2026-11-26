@@ -25,6 +25,21 @@ describe('debounce', () => {
     expect(run).toHaveBeenCalledWith(['first', 'second', 'third']);
   });
 
+  it('keeps the forced arguments without a merge function', async () => {
+    vi.useFakeTimers();
+    const run = vi.fn<(values: string[]) => void>();
+    const debouncedRun = debounce(run, 100);
+
+    debouncedRun(['first']);
+    debouncedRun.force(['forced']);
+    debouncedRun(['after-force']);
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(run).toHaveBeenCalledOnce();
+    expect(run).toHaveBeenCalledWith(['forced']);
+  });
+
   it('queues calls made while an asynchronous invocation is running', async () => {
     vi.useFakeTimers();
     let finishFirstRun!: () => void;
