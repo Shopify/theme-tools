@@ -1,5 +1,56 @@
 # @shopify/theme-check-node
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [61cae020]
+  - @shopify/theme-graph@0.3.9
+  - @shopify/liquid-html-parser@2.12.2
+  - @shopify/theme-check-common@4.0.2
+  - @shopify/theme-check-docs-updater@4.0.2
+
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-graph@0.3.8
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+  - @shopify/theme-check-docs-updater@4.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- 803a88a5: Require consent for third-party Theme Checks and expose structured skipped-check diagnostics to callers.
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+  - @shopify/theme-check-common@4.0.0
+  - @shopify/theme-graph@0.3.7
+  - @shopify/theme-check-docs-updater@4.0.0
+
 ## 3.31.0
 
 ### Minor Changes

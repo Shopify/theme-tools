@@ -2,8 +2,9 @@
 
 Executable, language-neutral specs for the Liquid HTML parser: the tree it builds for a template,
 or the error it throws. Every implementation runs them. In TypeScript that's
-`packages/liquid-html-parser/src/specs.test.ts`, which runs with the rest of the vitest suite. To
-change what the parser does, change its spec first.
+`packages/liquid-html-parser/src/specs.test.ts`, which runs with the rest of the vitest suite, and
+in Rust `crates/liquid-parser/tests/specs.rs`, which `cargo test` runs. To change what the parser
+does, change its spec first.
 
 ## Format
 
@@ -37,10 +38,10 @@ cases:
 
 `parse` lists the parses the case is for. Both use their default options:
 
-| `parse`  | What it parses            | TypeScript        |
-| -------- | ------------------------- | ----------------- |
-| `html`   | Liquid and HTML           | `toLiquidHtmlAST` |
-| `liquid` | Liquid, with HTML as text | `toLiquidAST`     |
+| `parse`  | What it parses            | TypeScript        | Rust                 |
+| -------- | ------------------------- | ----------------- | -------------------- |
+| `html`   | Liquid and HTML           | `toLiquidHtmlAST` | `to_liquid_html_ast` |
+| `liquid` | Liquid, with HTML as text | `toLiquidAST`     | `to_liquid_ast`      |
 
 When the two give different results for a template, they're two cases.
 
@@ -73,11 +74,29 @@ cases:
       text: <details>
 ```
 
-The parse throws a parse error, `LiquidHTMLASTParsingError` in TypeScript, with that `message`.
-`start` and `text` are its location (`loc`), as for positions.
+The parse throws a parse error, `LiquidHTMLASTParsingError` in TypeScript and `ParseError` in
+Rust, with that `message`. `start` and `text` are its location (`loc`), as for positions.
 
 A location never goes past the template's last character, so an error at its end covers one
 character less than the tag: an unclosed `{% if a %}` covers `{% if a %`.
+
+An error about a node that was never closed also has `unclosed`: the node's `type`, its `name` as
+written in the template, and the position of its opening tag. An editor uses it to insert the
+missing close tag. The node can differ from the error's location:
+
+```yaml
+source: <a><div></a>
+error:
+  message: Attempting to close HtmlElement 'a' before HtmlElement 'div' was closed
+  start: [0, 8]
+  text: </a
+  unclosed:
+    type: HtmlElement
+    name: div
+    blockStartPosition: { start: [0, 3], text: <div> }
+```
+
+Other errors have no `unclosed`.
 
 ## Writing a case
 

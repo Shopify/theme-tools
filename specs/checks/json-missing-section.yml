@@ -171,3 +171,53 @@ cases:
   - name: should not report an offense when the JSON is invalid
     files:
       templates/index.json: '{ "sections": { "main": { "type": '
+  - name: should report a section type that leaves the sections directory, also when the file it names exists
+    files:
+      templates/index.json: |-
+        {
+          "sections": {
+            "main": {
+              "type": "../snippets/outside"
+            }
+          },
+          "order": ["main"]
+        }
+      snippets/outside.liquid: ""
+    offenses:
+      - file: templates/index.json
+        message: "Section type '../snippets/outside' does not refer to an existing section file"
+        start: [3, 14]
+        highlight: '"../snippets/outside"'
+  - name: should report a section type that leaves the sections directory the same way when the file it names does not exist
+    files:
+      templates/index.json: |-
+        {
+          "sections": {
+            "main": {
+              "type": "../snippets/outside"
+            }
+          },
+          "order": ["main"]
+        }
+    offenses:
+      - file: templates/index.json
+        message: "Section type '../snippets/outside' does not refer to an existing section file"
+        start: [3, 14]
+        highlight: '"../snippets/outside"'
+  - name: should report a percent-encoded section type that leaves the sections directory
+    files:
+      templates/index.json: |-
+        {
+          "sections": {
+            "main": {
+              "type": "%2e%2e%2fsnippets%2foutside"
+            }
+          },
+          "order": ["main"]
+        }
+      snippets/outside.liquid: ""
+    offenses:
+      - file: templates/index.json
+        message: "Section type '%2e%2e%2fsnippets%2foutside' does not refer to an existing section file"
+        start: [3, 14]
+        highlight: '"%2e%2e%2fsnippets%2foutside"'

@@ -19,7 +19,8 @@
     "packages/theme-graph",
     "packages/theme-language-server-*",
     "packages/vscode-extension",
-    "packages/release-orchestrator"
+    "packages/release-orchestrator",
+    "crates/theme-check"
   ],
   "scripts": {
     "admin:build": "sh ./scripts/dev-admin-build.sh",
@@ -36,6 +37,7 @@
     "publish:ovsx": "pnpm --dir packages/vscode-extension publish:ovsx",
     "release": "pnpm --filter release-orchestrator start",
     "postrelease": "pnpm --dir packages/prettier-plugin-liquid prerelease",
+    "rust:checks-meta": "node scripts/write-checks-meta.mjs",
     "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
     "test": "vitest",
     "test:e2e": "pnpm test:e2e:browser",
@@ -54,7 +56,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^5.9.0",
-    "vite": "^6.4.4",
+    "vite": "^6.4.5",
     "vitest": "^4.1.11",
     "vscode-languageserver-protocol": "^3.17.3",
     "vscode-languageserver-textdocument": "^1.0.8",
@@ -65,9 +67,9 @@
   "packageManager": "pnpm@10.16.1",
   "pnpm": {
     "overrides": {
-      "@playwright/browser-chromium": "1.60.0",
-      "playwright": "1.60.0",
-      "playwright-core": "1.60.0"
+      "@playwright/browser-chromium": "1.65.1",
+      "playwright": "1.65.1",
+      "playwright-core": "1.65.1"
     },
     "onlyBuiltDependencies": [
       "@playwright/browser-chromium",

@@ -61,3 +61,12 @@ cases:
       file.liquid: '{% section "ignored" %}'
     config:
       MissingTemplate: { ignoreMissing: ["*/ignored.liquid"] }
+  - name: should report a snippet name that leaves the snippets directory, also when the file it names exists
+    files:
+      snippets/snippet.liquid: "{% render '../sections/outside' %}"
+      sections/outside.liquid: ""
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'snippets/../sections/outside.liquid' does not exist"
+        start: [0, 10]
+        highlight: "'../sections/outside'"

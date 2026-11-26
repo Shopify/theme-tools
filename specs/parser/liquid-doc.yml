@@ -1651,3 +1651,77 @@ cases:
                     text: |
                       Renders a product card
                         with its image.
+  - name: should skip the blank line left by a non-breaking space after @prompt
+    source: |-
+      {% doc %}
+      @prompt 
+
+      Build it
+      {% enddoc %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% doc %}
+          @prompt 
+
+          Build it
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [4, 0], text: "{% enddoc %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% doc %}
+              @prompt 
+
+              Build it
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |
+              
+              @prompt 
+
+              Build it
+            position:
+              start: [0, 9]
+              text: |
+                
+                @prompt 
+
+                Build it
+            nodes:
+              - type: LiquidDocPromptNode
+                name: prompt
+                position:
+                  start: [1, 0]
+                  text: |
+                    @prompt 
+
+                    Build it
+                content:
+                  type: TextNode
+                  value: |
+                    
+
+                    Build it
+                  position:
+                    start: [1, 7]
+                    text: |
+                       
+
+                      Build it
