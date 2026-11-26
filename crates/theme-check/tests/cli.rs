@@ -422,3 +422,101 @@ fn the_library_reports_byte_columns() {
         assert!(e.to_string().ends_with(&format!("{broken}: broken")), "{e}");
     }
 }
+
+#[test]
+fn looks_up_theme_files_only_in_the_theme() {
+    // Each name leads from the directory a check looks in to the directory with the theme in it.
+    let names = [
+        "../../outside",
+        "%2e%2e%2f%2e%2e%2foutside",
+        "..\\..\\outside",
+    ];
+    let mut files = vec![
+        (
+            "theme/.theme-check.yml".to_string(),
+            "extends: nothing\nMissingAsset:\n  enabled: true\nValidStaticBlockType:\n  enabled: true\nJSONMissingSection:\n  enabled: true\n".to_string(),
+        ),
+        // The file system resolves `..` in a directory only when the directory exists.
+        ("theme/assets/inside.js".to_string(), String::new()),
+        ("theme/blocks/inside.liquid".to_string(), String::new()),
+    ];
+    for (i, name) in names.iter().enumerate() {
+        files.push((
+            format!("theme/snippets/asset-{i}.liquid"),
+            format!("{{{{ '{name}.js' | asset_url }}}}"),
+        ));
+        files.push((
+            format!("theme/sections/block-{i}.liquid"),
+            format!(r#"{{% content_for "block", type: "{name}", id: "static" %}}"#),
+        ));
+        files.push((
+            format!("theme/templates/index-{i}.json"),
+            json!({ "sections": { "main": { "type": name } }, "order": ["main"] }).to_string(),
+        ));
+    }
+    let files: Vec<_> = files
+        .iter()
+        .map(|(p, t)| (p.as_str(), t.as_str()))
+        .collect();
+    let dir = fixture("outside", &files);
+
+    let (without_outside_files, _, _) = parse(&theme_check(&dir, &["theme"]));
+    std::fs::write(dir.join("outside.js"), "outside").unwrap();
+    std::fs::write(dir.join("outside.liquid"), "outside").unwrap();
+    let (with_outside_files, _, _) = parse(&theme_check(&dir, &["theme"]));
+
+    assert_eq!(with_outside_files, without_outside_files);
+    for code in ["JSONMissingSection", "MissingAsset", "ValidStaticBlockType"] {
+        let reported = with_outside_files
+            .iter()
+            .filter(|o| o.starts_with(&format!("{code} ")));
+        assert_eq!(
+            reported.count(),
+            names.len(),
+            "{code}: {with_outside_files:?}"
+        );
+    }
+}
+
+#[test]
+fn finds_liquid_doc_definitions_wherever_the_theme_is() {
+    let theme = |root: &str| {
+        [
+            (
+                format!("{root}/sections/main.liquid"),
+                "{% render 'card' %}".to_string(),
+            ),
+            (
+                format!("{root}/snippets/card.liquid"),
+                "{% doc %}\n  @param {string} title - The card title\n{% enddoc %}".to_string(),
+            ),
+        ]
+    };
+    let missing_arguments = |dir: &Path, root: &str| {
+        let (offenses, _, _) = parse(&theme_check(dir, &[root]));
+        offenses
+            .into_iter()
+            .filter(|o| o.starts_with("MissingRenderSnippetArguments "))
+            .collect::<Vec<_>>()
+    };
+    let expected = ["MissingRenderSnippetArguments 1 sections/main.liquid 0:10-0:17"];
+
+    // A space, which the theme's file uris don't encode.
+    let files = theme("my theme");
+    let files: Vec<_> = files
+        .iter()
+        .map(|(p, t)| (p.as_str(), t.as_str()))
+        .collect();
+    let dir = fixture("liquid-doc-space", &files);
+    assert_eq!(missing_arguments(&dir, "my theme"), expected);
+
+    // The config's `root`, which the theme's files are relative to.
+    let mut files = theme("theme/dist").to_vec();
+    files.push(("theme/.theme-check.yml".into(), "root: dist\n".into()));
+    let files: Vec<_> = files
+        .iter()
+        .map(|(p, t)| (p.as_str(), t.as_str()))
+        .collect();
+    let dir = fixture("liquid-doc-root", &files);
+    assert_eq!(missing_arguments(&dir, "theme"), expected);
+}

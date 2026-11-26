@@ -80,6 +80,24 @@ Rust, with that `message`. `start` and `text` are its location (`loc`), as for p
 A location never goes past the template's last character, so an error at its end covers one
 character less than the tag: an unclosed `{% if a %}` covers `{% if a %`.
 
+An error about a node that was never closed also has `unclosed`: the node's `type`, its `name` as
+written in the template, and the position of its opening tag. An editor uses it to insert the
+missing close tag. The node can differ from the error's location:
+
+```yaml
+source: <a><div></a>
+error:
+  message: Attempting to close HtmlElement 'a' before HtmlElement 'div' was closed
+  start: [0, 8]
+  text: </a
+  unclosed:
+    type: HtmlElement
+    name: div
+    blockStartPosition: { start: [0, 3], text: <div> }
+```
+
+Other errors have no `unclosed`.
+
 ## Writing a case
 
 Write its `name`, `source` and `parse`, and have TypeScript fill in the result:

@@ -1203,3 +1203,37 @@ cases:
           ]
         }
         {% endschema %}
+  - name: should report a block type that leaves the blocks directory, also when the file it names exists
+    files:
+      templates/product.json: |-
+        {
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "outside": {
+                  "type": "../snippets/outside"
+                }
+              },
+              "block_order": ["outside"]
+            }
+          },
+          "order": ["custom-section"]
+        }
+      sections/custom-section.liquid: |
+        {% schema %}
+        {
+          "name": "Custom Section",
+          "blocks": [
+            {
+              "type": "../snippets/outside"
+            }
+          ]
+        }
+        {% endschema %}
+      snippets/outside.liquid: ""
+    offenses:
+      - file: templates/product.json
+        message: "Theme block 'blocks/../snippets/outside.liquid' does not exist."
+        start: [6, 18]
+        highlight: '"../snippets/outside"'

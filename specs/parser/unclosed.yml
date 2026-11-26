@@ -1530,6 +1530,10 @@ cases:
       message: Attempting to close LiquidTag 'endfor' before HtmlElement 'div' was closed
       start: [0, 16]
       text: <div>
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 16], text: <div> }
   - name: "should throw for: {% tablerow x in y %}<div>{% endtablerow %}"
     source: "{% tablerow x in y %}<div>{% endtablerow %}"
     parse: [html]
@@ -1537,6 +1541,10 @@ cases:
       message: Attempting to close LiquidTag 'endtablerow' before HtmlElement 'div' was closed
       start: [0, 21]
       text: <div>
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 21], text: <div> }
   - name: 'should throw for: {% form "cart", cart %}<div>{% endform %}'
     source: '{% form "cart", cart %}<div>{% endform %}'
     parse: [html]
@@ -1544,6 +1552,10 @@ cases:
       message: Attempting to close LiquidTag 'endform' before HtmlElement 'div' was closed
       start: [0, 23]
       text: <div>
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 23], text: <div> }
   - name: "should throw for: {% capture x %}<div>{% endcapture %}"
     source: "{% capture x %}<div>{% endcapture %}"
     parse: [html]
@@ -1551,6 +1563,10 @@ cases:
       message: Attempting to close LiquidTag 'endcapture' before HtmlElement 'div' was closed
       start: [0, 15]
       text: <div>
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 15], text: <div> }
   - name: should produce HtmlDanglingMarkerClose for </section> in if
     source: "{% if cond %}</section>{% endif %}"
     parse: [html]
@@ -1659,6 +1675,10 @@ cases:
       message: Attempting to end parsing before HtmlElement 'div' was closed
       start: [0, 0]
       text: <div
+      unclosed:
+        type: HtmlElement
+        name: div
+        blockStartPosition: { start: [0, 0], text: <div> }
   - name: should throw for unclosed form at branch boundary
     source: '{% if cond %}{% form "cart" %}{% else %}{% endif %}'
     parse: [html]
@@ -1666,6 +1686,10 @@ cases:
       message: Attempting to open LiquidBranch 'else' before LiquidTag 'form' was closed
       start: [0, 13]
       text: '{% form "cart" %}'
+      unclosed:
+        type: LiquidTag
+        name: form
+        blockStartPosition: { start: [0, 13], text: '{% form "cart" %}' }
   - name: should parse unclosed element with attributes
     source: '{% if cond %}<div class="foo" id="bar">{% endif %}'
     parse: [html]

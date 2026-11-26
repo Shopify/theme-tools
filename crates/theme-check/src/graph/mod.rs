@@ -225,10 +225,14 @@ impl ThemeGraph {
 
     /// `getAssetModule(themeGraph, asset)`: `None` for unsupported extensions.
     fn asset_module(&mut self, asset: &str) -> Option<usize> {
-        let module_type = match extname(asset) {
+        let served = match is_liquid_asset(asset) {
+            true => &asset[..asset.len() - ".liquid".len()],
+            false => asset,
+        };
+        let module_type = match extname(served) {
             "jpg" | "jpeg" | "png" | "gif" | "webp" | "heic" | "ico" => ModuleType::Image,
             "js" => ModuleType::JavaScript,
-            "css" => ModuleType::Css,
+            "css" | "scss" => ModuleType::Css,
             "svg" => ModuleType::Svg,
             _ => return None,
         };
@@ -249,6 +253,29 @@ impl ThemeGraph {
 }
 
 /// utils `extname(uri)`: `uri.split('.').pop()`
+/// `isLiquidAsset(asset)`: Shopify renders `assets/theme.css.liquid` and serves it as
+/// `theme.css`. The same goes for `.js` and `.scss`.
+fn is_liquid_asset(asset: &str) -> bool {
+    [".css.liquid", ".js.liquid", ".scss.liquid"]
+        .iter()
+        .any(|ext| asset.ends_with(ext))
+}
+
+/// `assetSources(asset)`: the files Shopify looks for, in order, when it serves `asset`.
+/// `theme.css` comes from `theme.css.liquid`, then `theme.css`. `theme.scss.css` also comes from
+/// `theme.scss.liquid`, then `theme.scss`. Other assets come from their own file.
+fn asset_sources(asset: &str) -> Vec<String> {
+    if !matches!(extname(asset), "css" | "js") {
+        return vec![asset.to_string()];
+    }
+    let mut sources = vec![format!("{asset}.liquid"), asset.to_string()];
+    if let Some(scss) = asset.strip_suffix(".css").filter(|a| a.ends_with(".scss")) {
+        sources.push(format!("{scss}.liquid"));
+        sources.push(scss.to_string());
+    }
+    sources
+}
+
 fn extname(uri: &str) -> &str {
     uri.rsplit('.').next().unwrap_or("")
 }
@@ -295,6 +322,9 @@ pub fn build_theme_graph(
                 uri.starts_with(&templates)
                     || (uri.starts_with(&layout) && uri.ends_with(".liquid"))
                     || (uri.starts_with(&sections) && uri.ends_with(".liquid"))
+                    // Shopify renders a contextual section group in place of its parent in the
+                    // contexts it names, while `{% sections %}` only names the parent.
+                    || (uri.starts_with(&sections) && is_contextual_json(uri))
                     || (app && uri.starts_with(&blocks) && uri.ends_with(".liquid"))
             })?
         }
@@ -361,6 +391,24 @@ fn type_property<'n, 'a>(
         Some(JsonNode::Literal(_)) => Err(undefined_read("find")),
         None => Err(undefined_read("children")),
     }
+}
+
+/// `v?.[key]`: `None` on `undefined` and `null`.
+fn optional_get<'v>(v: Option<&'v Value>, key: &str) -> Option<&'v Value> {
+    match v {
+        None | Some(Value::Null) => None,
+        Some(v) => js::get(v, key).ok().flatten(),
+    }
+}
+
+/// build.ts `CONTEXTUAL_JSON`, `/\.context\.[^./]+\.json$/i`: how Shopify names a contextual
+/// template or section group.
+fn is_contextual_json(uri: &str) -> bool {
+    let uri = uri.to_ascii_lowercase();
+    let Some((rest, name)) = uri.strip_suffix(".json").and_then(|s| s.rsplit_once('.')) else {
+        return false;
+    };
+    !name.is_empty() && !name.contains('/') && rest.ends_with(".context")
 }
 
 fn keys<'p>(path: &'p [String]) -> Vec<PathSeg<'p>> {
@@ -567,8 +615,12 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         });
 
+        let mut served = HashMap::new();
         let mut seen = HashSet::new();
         for &(target, source_range, target_range) in &refs {
+            let target = *served
+                .entry(target)
+                .or_insert_with(|| self.serving_asset(target));
             self.bind(m, target, Some(source_range), target_range, RefType::Direct);
             if seen.insert(target) {
                 self.queue.push_back(target);
@@ -611,6 +663,25 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         }
         Ok(false)
+    }
+
+    /// `servingAsset(target, themeGraph, deps)`: a reference reaches the first file Shopify
+    /// would serve it from (see `asset_sources`). A reference to a file that doesn't exist keeps
+    /// its target.
+    fn serving_asset(&mut self, target: usize) -> usize {
+        let module = &self.g.all[target];
+        if !matches!(module.module_type, ModuleType::Css | ModuleType::JavaScript) {
+            return target;
+        }
+        for source in asset_sources(&path::basename(&module.uri, None)) {
+            let Some(m) = self.g.asset_module(&source) else {
+                continue;
+            };
+            if self.deps.fs.stat(&self.g.all[m].uri).is_ok() {
+                return m;
+            }
+        }
+        target
     }
 
     /// `traverseLiquidSchema`. TS runs the blocks loop up to its first `@theme` (which awaits
@@ -815,30 +886,45 @@ impl<'d, 'a> Builder<'d, 'a> {
         let pos = |byte: usize| sc.position(byte).index as usize;
 
         let template = parse_json(sc.source).ok_or_else(|| undefined_read("sections"))?;
-        let sections =
-            js::get(&template, "sections")?.ok_or("Cannot convert undefined or null to object")?;
+        let parent = self.contextual_parent(m, &template)?;
+        let parent = parent.as_ref();
         let mut with_blocks = Vec::new();
-        for (key, section) in js::entries(sections)? {
-            let section_type = js::get(&section, "type")?;
+        // `template.sections ?? {}`: a contextual override may leave out `sections`.
+        let sections = match js::get(&template, "sections")? {
+            None | Some(Value::Null) => Vec::new(),
+            Some(sections) => js::entries(sections)?,
+        };
+        for (key, section) in sections {
             let path = vec!["sections".to_string(), key.into_owned()];
-            let target = self.g.section_module(&js::opt_to_string(section_type));
-            let type_property =
-                type_property(ast.at_path(&keys(&path)))?.ok_or_else(|| undefined_read("loc"))?;
-            self.link(
-                m,
-                target,
-                Some((pos(type_property.span.start), pos(type_property.span.end))),
-                RefType::Direct,
-            );
+            // An override's section that overrides the parent's has no `type`: it inherits it.
+            let section_type = match type_property(ast.at_path(&keys(&path)))? {
+                Some(type_property) => {
+                    let section_type = js::get(&section, "type")?;
+                    let target = self.g.section_module(&js::opt_to_string(section_type));
+                    self.link(
+                        m,
+                        target,
+                        Some((pos(type_property.span.start), pos(type_property.span.end))),
+                        RefType::Direct,
+                    );
+                    section_type.cloned()
+                }
+                None => {
+                    let parent_section = optional_get(optional_get(parent, "sections"), &path[1]);
+                    optional_get(parent_section, "type").cloned()
+                }
+            };
             // `traverseSectionReferences` binds after `await acceptsLocalBlocks(...)`.
             if js::get(&section, "blocks")?.is_some_and(truthy) {
-                with_blocks.push((path, section));
+                with_blocks.push((path, section, section_type));
             }
         }
 
         if self.g.all[m].kind == ModuleKind::Template {
-            // The layout reference is always 'indirect'.
-            let layout = js::get(&template, "layout")?;
+            // The layout reference is always 'indirect'. A contextual template inherits its
+            // parent's.
+            let own_layout = js::get(&template, "layout")?;
+            let layout = own_layout.or_else(|| optional_get(parent, "layout"));
             let layout_name = match layout {
                 Some(Value::Bool(false)) => None,
                 None => Some("theme".to_string()),
@@ -846,7 +932,7 @@ impl<'d, 'a> Builder<'d, 'a> {
             };
             if let Some(name) = layout_name {
                 let target = self.g.layout_module(&name);
-                let source_range = match layout {
+                let source_range = match own_layout {
                     None => None,
                     Some(_) => {
                         let node = ast
@@ -859,14 +945,50 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         }
 
-        for (path, section) in with_blocks {
-            if self.accepts_local_blocks(js::get(&section, "type")?.and_then(Value::as_str))? {
+        for (path, section, section_type) in with_blocks {
+            // Without the section's type, there's no telling whether these are theme blocks.
+            let Some(Value::String(section_type)) = section_type else {
+                continue;
+            };
+            if self.accepts_local_blocks(Some(&section_type))? {
                 continue;
             }
             let blocks = js::get(&section, "blocks")?.unwrap();
             self.block_references(m, ast, &pos, &path, blocks)?;
         }
         Ok(())
+    }
+
+    /// `getContextualParent`: the file a contextual template or section group
+    /// (`*.context.<name>.json`) overrides, named by its `parent`. Shopify deep-merges the override
+    /// into it, so the override's sections and blocks that are already in the parent inherit
+    /// their `type` from it. `None` without a `parent`, or when the parent can't be read.
+    fn contextual_parent(&self, m: usize, json: &Value) -> Result<Option<Value>, String> {
+        let Some(Value::String(parent)) = optional_get(Some(json), "parent") else {
+            return Ok(None);
+        };
+        let dir = match self.g.all[m].kind {
+            ModuleKind::Template => "templates",
+            _ => "sections",
+        };
+        let uri = path::join(&self.deps.root_uri, &[dir, parent]);
+        let text;
+        let local;
+        let sc: &SourceCode = match self.theme_files.get(uri.as_str()) {
+            Some(&i) => &self.deps.theme[i],
+            None => {
+                let Ok(read) = self.deps.fs.read_file(&uri) else {
+                    return Ok(None);
+                };
+                text = read;
+                local = to_source_code(&uri, &text);
+                &local
+            }
+        };
+        if sc.json_ast().is_none() {
+            return Ok(None);
+        }
+        Ok(parse_json(sc.source))
     }
 
     /// `traverseSectionReferences`' loop and `traverseBlockReferences`: depth first.
@@ -879,18 +1001,20 @@ impl<'d, 'a> Builder<'d, 'a> {
         blocks: &Value,
     ) -> Result<(), String> {
         for (key, block) in js::entries(blocks)? {
-            let block_type = js::get(&block, "type")?;
-            let target = self.g.theme_block_module(&js::opt_to_string(block_type));
             let mut path = parent.to_vec();
             path.extend(["blocks".to_string(), key.into_owned()]);
-            let type_property =
-                type_property(ast.at_path(&keys(&path)))?.ok_or_else(|| undefined_read("loc"))?;
-            self.link(
-                m,
-                target,
-                Some((pos(type_property.span.start), pos(type_property.span.end))),
-                RefType::Direct,
-            );
+            // An override's block that overrides the parent's has no `type`, but the blocks it
+            // adds inside still link.
+            if let Some(type_property) = type_property(ast.at_path(&keys(&path)))? {
+                let block_type = js::get(&block, "type")?;
+                let target = self.g.theme_block_module(&js::opt_to_string(block_type));
+                self.link(
+                    m,
+                    target,
+                    Some((pos(type_property.span.start), pos(type_property.span.end))),
+                    RefType::Direct,
+                );
+            }
             if let Some(children) = truthy_get(&block, "blocks")? {
                 self.block_references(m, ast, pos, &path, children)?;
             }

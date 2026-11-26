@@ -1,4 +1,4 @@
-import { AbstractFileSystem } from '@shopify/theme-check-common';
+import { AbstractFileSystem, path } from '@shopify/theme-check-common';
 
 export class CachedFileSystem implements AbstractFileSystem {
   readFile: Cached<AbstractFileSystem['readFile']>;
@@ -9,6 +9,24 @@ export class CachedFileSystem implements AbstractFileSystem {
     this.readFile = cachedByUri(fs.readFile.bind(fs));
     this.readDirectory = cachedByUri(fs.readDirectory.bind(fs));
     this.stat = cachedByUri(fs.stat.bind(fs));
+  }
+
+  /**
+   * Invalidates readDirectory and stat for every directory above uri.
+   *
+   * Creating or deleting a file can create or remove several directories at
+   * once, which changes the listing above the highest one.
+   */
+  invalidateDirectories(uri: string): void {
+    const dir = path.dirname(uri);
+    // dirname returns the root unchanged. Requiring a shorter URI also
+    // guarantees that the recursion ends.
+    const uriIsAbsoluteRoot = dir.length >= uri.length;
+    if (uriIsAbsoluteRoot) return;
+
+    this.readDirectory.invalidate(dir);
+    this.stat.invalidate(dir);
+    this.invalidateDirectories(dir);
   }
 }
 

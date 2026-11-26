@@ -1,5 +1,7 @@
 use crate::context::{CheckDef, CheckError, CheckResult, Context, Create, LiquidCheck, Severity};
 use crate::json::truthy;
+use crate::path;
+use crate::schema::is_section;
 use liquid_ast::Span;
 use liquid_ast::{Node, NodeKind, NodeRef};
 use serde_json::Value;
@@ -130,9 +132,18 @@ impl<'a> LiquidCheck<'a> for Check<'a> {
             return Ok(());
         }
         let locale = cx.default_locale();
+        let section_key_prefix = is_section(cx.uri())
+            .then(|| format!("sections.{}.", path::basename(cx.uri(), Some(".liquid"))));
         for &(key, start, end) in &self.nodes {
             if key_exists(key, default_translations)?
                 || key_exists(key, self.schema_locales)?
+                || match section_key_prefix
+                    .as_deref()
+                    .and_then(|prefix| key.strip_prefix(prefix))
+                {
+                    Some(section_key) => key_exists(section_key, self.schema_locales)?,
+                    None => false,
+                }
                 || system_translations.is_some_and(|s| s.contains_key(key))
             {
                 continue;

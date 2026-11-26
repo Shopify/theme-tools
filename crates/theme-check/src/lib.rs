@@ -493,7 +493,6 @@ impl Cancelable<'_> {
         let offenses = node::check_theme(
             &config,
             &theme,
-            &root,
             &root_uri,
             Mode::Theme,
             &fs::Uris(fs),

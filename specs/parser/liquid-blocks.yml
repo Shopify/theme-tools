@@ -955,6 +955,10 @@ cases:
       message: Attempting to end parsing before LiquidTag 'if' was closed
       start: [0, 0]
       text: "{% if true %}"
+      unclosed:
+        type: LiquidTag
+        name: if
+        blockStartPosition: { start: [0, 0], text: "{% if true %}" }
   - name: should throw for orphaned endfor at top level
     source: "{% endfor %}"
     parse: [html]

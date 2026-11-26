@@ -9,23 +9,23 @@
 
 Official VS Code extension for [Shopify Liquid storefronts](https://shopify.dev/docs/storefronts/themes) and [Theme App Extensions](https://shopify.dev/docs/apps/online-store/theme-app-extensions).
 
-![](https://github.com/Shopify/theme-check-vscode/blob/feature/readme-revamp/images/demo.gif?raw=true)
+![Shopify Liquid extension demo](https://raw.githubusercontent.com/Shopify/theme-tools/main/packages/vscode-extension/images/demo.gif)
 
 [Features](#features) | [User guide](#user-guide) | [Installation](#installation) | [Configuration](#configuration) | [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=shopify.theme-check-vscode).
 
 ## Features
 
-* 🎨 Syntax highlighting
-* 💅 Code formatting
-* 💡 Code completion and documentation on hover
-  * 💧 Liquid tag, filter and object
-  * 🏷️ HTML tag, attribute and value
-  * 🖌️ Theme, section and block settings
-  * 🌐 Theme translation
-  * 🖼️ Render tag snippet
-* 🔎 Code navigation
-* 🎎 Auto-closing pairs
-* ✅ Theme checks and fixes
+- 🎨 Syntax highlighting
+- 💅 Code formatting
+- 💡 Code completion and documentation on hover
+  - 💧 Liquid tag, filter and object
+  - 🏷️ HTML tag, attribute and value
+  - 🖌️ Theme, section and block settings
+  - 🌐 Theme translation
+  - 🖼️ Render tag snippet
+- 🔎 Code navigation
+- 🎎 Auto-closing pairs
+- ✅ Theme checks and fixes
 
 ## User guide
 

@@ -618,3 +618,23 @@ cases:
         message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
         start: [0, 17]
         highlight: "block.bad: true"
+  - name: reports only placement for an app block without settings in a section
+    checks: [LiquidSyntaxError, ValidBlockTagPlacement]
+    files:
+      sections/foo.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}"
+    offenses:
+      - check: ValidBlockTagPlacement
+        file: sections/foo.liquid
+        message: "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+        start: [0, 0]
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}"
+  - name: reports only placement for an app block with fixed settings in a section
+    checks: [LiquidSyntaxError, ValidBlockTagPlacement]
+    files:
+      sections/foo.liquid: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hello', enabled: true %}{% endblock %}"
+    offenses:
+      - check: ValidBlockTagPlacement
+        file: sections/foo.liquid
+        message: "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+        start: [0, 0]
+        highlight: "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hello', enabled: true %}{% endblock %}"

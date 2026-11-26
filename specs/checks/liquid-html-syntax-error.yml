@@ -1725,3 +1725,74 @@ cases:
         message: "Attempting to close LiquidTag 'if' before it was opened without a matching 'if'"
         start: [0, 5]
         highlight: "{% endif %}"
+  - name: should not report a false positive for a loop lookup with spaces in a quoted bracket key
+    files:
+      file.liquid: "{%- for value in product.options_by_name['hello world'].values -%}{{ value }}{%- endfor -%}"
+    docset: default
+  - name: does not remove closing brackets from nested quoted loop lookups
+    files:
+      file.liquid: "{% for item in products[settings['selected collection']] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: keeps quoted lookup keys in named loop arguments
+    files:
+      file.liquid: "{% for item in products limit: settings['item count'] %}{{ item }}{% endfor %}"
+    docset:
+      tags:
+        - name: for
+          parameters:
+            - {name: limit, positional: false, description: '...', required: false, types: []}
+  - name: preserves dotted lookups inside loop brackets
+    files:
+      file.liquid: "{% for item in products[settings.collection] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: does not remove closing brackets from nested loop lookups
+    files:
+      file.liquid: "{% for item in products[settings[collection]] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: ignores closing brackets and commas inside quoted loop lookup keys
+    files:
+      file.liquid: "{% for item in products[settings['selected ], collection']] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: removes invalid loop arguments without truncating nested lookups
+    files:
+      file.liquid: "{% for item in products[settings['selected collection']] reversed limit1: settings['item count'] %}{{ item }}{% endfor %}"
+    docset:
+      tags:
+        - name: for
+          parameters:
+            - {name: reversed, positional: true, description: '...', required: false, types: []}
+    offenses:
+      - file: file.liquid
+        message: 'Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit1: settings[''item count'']'
+        start: [0, 57]
+        highlight: "reversed limit1: settings['item count']"
+        fix: "{% for item in products[settings['selected collection']] reversed %}{{ item }}{% endfor %}"
+  - name: reports characters the parser skips inside a named loop argument
+    files:
+      file.liquid: "{% for i in products limit!: 2 %}{{ i }}{% endfor %}"
+    docset:
+      tags:
+        - name: for
+          parameters:
+            - {name: limit, positional: false, description: '...', required: false, types: []}
+    offenses:
+      - file: file.liquid
+        message: 'Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit!: 2'
+        start: [0, 21]
+        highlight: "limit!: 2"
+        fix: "{% for i in products  %}{{ i }}{% endfor %}"
+  - name: reports characters the parser skips inside a named tablerow argument
+    files:
+      file.liquid: "{% tablerow i in products cols: 2 limit@:2 %}{{ i }}{% endtablerow %}"
+    docset:
+      tags:
+        - name: tablerow
+          parameters:
+            - {name: cols, positional: false, description: '...', required: false, types: []}
+            - {name: limit, positional: false, description: '...', required: false, types: []}
+    offenses:
+      - file: file.liquid
+        message: 'Arguments must be provided in the format `tablerow in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit@:2'
+        start: [0, 26]
+        highlight: "cols: 2 limit@:2"
+        fix: "{% tablerow i in products cols: 2 %}{{ i }}{% endtablerow %}"

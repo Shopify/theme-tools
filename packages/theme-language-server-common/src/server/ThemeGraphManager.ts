@@ -154,17 +154,8 @@ export class ThemeGraphManager {
     const graph = await this.getThemeGraphForURI(rootUri);
     if (!graph) return [];
 
-    const files = await recursiveReadDirectory(
-      this.fs,
-      rootUri,
-      ([uri]) =>
-        ['assets', 'blocks', 'layout', 'sections', 'snippets', 'templates'].some((dir) =>
-          uri.startsWith(path.join(rootUri, dir)),
-        ) &&
-        (uri.endsWith('.liquid') ||
-          uri.endsWith('.json') ||
-          uri.endsWith('.js') ||
-          uri.endsWith('.css')),
+    const files = await recursiveReadDirectory(this.fs, rootUri, ([uri]) =>
+      isDeadCodeCandidate(rootUri, uri),
     );
 
     const unusedFiles = new Set<string>();
@@ -270,4 +261,27 @@ export class ThemeGraphManager {
       },
     };
   }
+}
+
+/**
+ * Theme files the graph links to. Only these can be reported as orphaned.
+ */
+const THEME_FILES: Record<string, string[]> = {
+  // The graph links `theme.css` to `theme.css.liquid`, but follows no other
+  // Liquid asset such as `icon.svg.liquid`. Tooling files such as
+  // `assets/package.json` aren't theme files.
+  assets: ['.css', '.js', '.css.liquid', '.js.liquid', '.scss.liquid'],
+  blocks: ['.liquid'],
+  layout: ['.liquid'],
+  sections: ['.liquid', '.json'],
+  snippets: ['.liquid'],
+  templates: ['.liquid', '.json'],
+};
+
+function isDeadCodeCandidate(rootUri: string, uri: string): boolean {
+  return Object.entries(THEME_FILES).some(
+    ([directory, extensions]) =>
+      uri.startsWith(path.join(rootUri, directory) + '/') &&
+      extensions.some((extension) => uri.endsWith(extension)),
+  );
 }

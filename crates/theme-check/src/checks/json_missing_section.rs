@@ -1,3 +1,4 @@
+use super::file_utils::does_file_exist;
 use crate::context::{CheckDef, CheckResult, Context, Create, JsonCheck, Severity};
 use crate::json::{JsonNode, Lit};
 
@@ -42,7 +43,7 @@ impl<'a> JsonCheck<'a> for Check {
                 continue;
             };
             if SECTION_TYPES_WITH_PLATFORM_DEFAULTS.contains(&section_type.as_ref())
-                || cx.file_exists(&cx.to_uri(&format!("sections/{section_type}.liquid")))
+                || does_file_exist(cx, &format!("sections/{section_type}.liquid"))
             {
                 continue;
             }

@@ -1,6 +1,7 @@
 //! `utils/block.ts`, `utils/object.ts` (`deepGet`) and the JS value helpers the schema checks
 //! share. Schemas are `any` in TS, so these follow JS semantics (and throws) on odd shapes.
 
+use super::file_utils::does_file_exist;
 use crate::context::{CheckError, CheckResult, Context};
 use crate::js;
 use crate::json::{JsonNode, PathSeg};
@@ -270,13 +271,15 @@ pub fn get_blocks(valid_schema: &Value) -> Result<Blocks<'_>, CheckError> {
                 .iter()
                 .enumerate()
             {
-                if has(block, "name")? {
-                    let path = ["default", "blocks", &index.to_string(), "type"]
-                        .map(String::from)
-                        .to_vec();
-                    out.default_level_blocks
-                        .push(BlockWithPath { node: block, path });
+                // `default` may also name a block with a plain string; only objects are checked.
+                if !js::is_non_null_object(block) {
+                    continue;
                 }
+                let path = ["default", "blocks", &index.to_string(), "type"]
+                    .map(String::from)
+                    .to_vec();
+                out.default_level_blocks
+                    .push(BlockWithPath { node: block, path });
             }
         }
     }
@@ -290,7 +293,8 @@ fn categorize_preset_level_block<'v>(
     path: Vec<String>,
     depth: usize,
 ) -> CheckResult {
-    if !js::truthy(block) {
+    // Section presets may also name a block with a plain string; only objects are checked.
+    if !js::is_non_null_object(block) {
         return Ok(());
     }
     if out.preset_level_blocks.len() <= depth {
@@ -389,7 +393,7 @@ pub fn validate_block_file_existence(cx: &Context, block_type: Option<&Value>) -
     if is_str(block_type, "@theme") || is_str(block_type, "@app") {
         return true;
     }
-    cx.file_exists(&cx.to_uri(&format!("blocks/{}.liquid", s(block_type))))
+    does_file_exist(cx, &format!("blocks/{}.liquid", s(block_type)))
 }
 
 /// `validateNestedBlocks(context, parentNode, nestedBlocks, currentPath, offset, ast)`
