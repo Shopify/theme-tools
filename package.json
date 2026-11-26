@@ -37,6 +37,7 @@
     "publish:ovsx": "pnpm --dir packages/vscode-extension publish:ovsx",
     "release": "pnpm --filter release-orchestrator start",
     "postrelease": "pnpm --dir packages/prettier-plugin-liquid prerelease",
+    "rust:checks-meta": "node scripts/write-checks-meta.mjs",
     "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
     "test": "vitest",
     "test:e2e": "pnpm test:e2e:browser",
