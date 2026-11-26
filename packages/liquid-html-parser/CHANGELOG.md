@@ -1,5 +1,14 @@
 # @shopify/liquid-html-parser
 
+## 2.12.3
+
+### Patch Changes
+
+- 4eb8bb16: Parse block tags glued to an HTML tag name (`<a{% if x %}{% endif %}…>`) in time linear in the length of the name. Before, each glued block with an empty body looked ahead to the end of the HTML tag again, so the parse time grew with the square of the number of such blocks. The parsed nodes are unchanged.
+- 6d33a8bb: Remove redundant endPos update when skipping newlines in LiquidDoc prompt content
+- 33b1f3aa: Name the node that was never closed in a parse error's `unclosed` again. The hand-written parser had left it `null`, so the language server inserted the wrong closing tag when you typed `>`.
+- 911a4513: Parse the body of a `style` tag inside `{% liquid %}` as Liquid statements. Before, it was one text node, so checks such as `UnusedAssign` missed the variables used there.
+
 ## 2.12.2
 
 ### Patch Changes

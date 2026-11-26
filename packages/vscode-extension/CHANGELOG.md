@@ -1,5 +1,70 @@
 ## theme-check-vscode
 
+## 3.12.0
+
+### Minor Changes
+
+- a84a247b: Surface orphaned (dead) files on startup with a notification
+
+  Turn on the new `themeCheck.checkOrphanedFilesOnBoot` setting (default `false`) to have the VS Code extension check each theme for orphaned files on startup, instead of running the dead-code command manually. Each theme with orphaned files gets a dismissable notification that names the theme, with **Review** (opens the dead-code picker) and **Don't show again** actions. The check is off when `themeCheck.preloadOnBoot` is false.
+
+  Dead code now lists only theme files the theme graph can link to. It no longer reports tooling files such as `assets/package.json` and `assets/jsconfig.json`, or Liquid assets the graph doesn't follow, such as `assets/icon.svg.liquid`.
+
+### Patch Changes
+
+- 239f4af7: The VS Code formatter now supports ESM Prettier config exports and falls back with a warning when a config cannot be loaded.
+- Updated dependencies [537c7059]
+- Updated dependencies [db3d76c6]
+- Updated dependencies [af2e1a78]
+- Updated dependencies [78bbce68]
+- Updated dependencies [31ed480c]
+- Updated dependencies [f3d24bf8]
+- Updated dependencies [78bbce68]
+- Updated dependencies [28669513]
+- Updated dependencies [7eea77c5]
+- Updated dependencies [06f53e08]
+- Updated dependencies [7d13d63f]
+- Updated dependencies [3b09bb5e]
+- Updated dependencies [5740888d]
+- Updated dependencies [bb74363d]
+- Updated dependencies [bbd618c8]
+- Updated dependencies [4b173ff6]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [4eb8bb16]
+- Updated dependencies [6d33a8bb]
+- Updated dependencies [4aaa426d]
+- Updated dependencies [3155a2d1]
+- Updated dependencies [c5964a8a]
+- Updated dependencies [7bdc9e28]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [a84a247b]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [31551e4e]
+- Updated dependencies [61d7ddcd]
+- Updated dependencies [261febd6]
+- Updated dependencies [c374706b]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [70b74b76]
+- Updated dependencies [70b74b76]
+- Updated dependencies [935d6f75]
+- Updated dependencies [9a0377db]
+- Updated dependencies [5f9228af]
+- Updated dependencies [e695a12b]
+- Updated dependencies [911a4513]
+- Updated dependencies [df89377a]
+- Updated dependencies [f8e75c0b]
+- Updated dependencies [89983f25]
+- Updated dependencies [9f110b3f]
+- Updated dependencies [66e654a9]
+- Updated dependencies [dc25d305]
+- Updated dependencies [4b173ff6]
+  - @shopify/theme-check-common@4.1.0
+  - @shopify/theme-language-server-common@3.1.0
+  - @shopify/prettier-plugin-liquid@1.11.7
+  - @shopify/theme-language-server-node@3.1.0
+  - @shopify/liquid-html-parser@2.12.3
+  - @shopify/theme-language-server-browser@3.1.0
+
 ## 3.11.16
 
 ### Patch Changes

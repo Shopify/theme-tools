@@ -1,5 +1,36 @@
 # @shopify/theme-check-browser
 
+## 4.1.0
+
+### Patch Changes
+
+- Updated dependencies [537c7059]
+- Updated dependencies [78bbce68]
+- Updated dependencies [f3d24bf8]
+- Updated dependencies [78bbce68]
+- Updated dependencies [28669513]
+- Updated dependencies [7eea77c5]
+- Updated dependencies [7d13d63f]
+- Updated dependencies [5740888d]
+- Updated dependencies [bb74363d]
+- Updated dependencies [bbd618c8]
+- Updated dependencies [4b173ff6]
+- Updated dependencies [4aaa426d]
+- Updated dependencies [3155a2d1]
+- Updated dependencies [7bdc9e28]
+- Updated dependencies [31551e4e]
+- Updated dependencies [c374706b]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [9a0377db]
+- Updated dependencies [911a4513]
+- Updated dependencies [df89377a]
+- Updated dependencies [f8e75c0b]
+- Updated dependencies [9f110b3f]
+- Updated dependencies [66e654a9]
+- Updated dependencies [dc25d305]
+- Updated dependencies [4b173ff6]
+  - @shopify/theme-check-common@4.1.0
+
 ## 4.0.2
 
 ### Patch Changes

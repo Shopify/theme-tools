@@ -1,5 +1,20 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.11.7
+
+### Patch Changes
+
+- 3b09bb5e: Fix standalone build importing `prettier` instead of `prettier/standalone`, which caused browser bundlers (webpack, rollup, vite) consuming `standalone.js` to try to resolve Node builtins (`module`, `url`, `path`) from prettier's main entry
+- 61d7ddcd: Report a syntax error instead of formatting a template that doesn't parse, or that leaves a block or element open at the end. Before, the formatter skipped the part it couldn't read and closed what was left open, so it could write a different template, such as one with a second `{% endcapture %}` that no longer renders.
+- 261febd6: Respect `liquidSingleQuote` when formatting Liquid strings inside HTML attribute values.
+- e695a12b: Stop adding indentation to a multiline attribute value on every format when the value starts on its own line
+- 89983f25: Avoid printing an extra `>` before a preserved-content element when it follows another inline element.
+- Updated dependencies [4eb8bb16]
+- Updated dependencies [6d33a8bb]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [911a4513]
+  - @shopify/liquid-html-parser@2.12.3
+
 ## 1.11.6
 
 ### Patch Changes

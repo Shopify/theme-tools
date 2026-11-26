@@ -1,5 +1,55 @@
 # @shopify/theme-check-common
 
+## 4.1.0
+
+### Minor Changes
+
+- 537c7059: Add support for `article_list` theme settings and infer their values as arrays of articles.
+- f3d24bf8: Validate section setting keys in JSON templates.
+- 31551e4e: `MatchingTranslations` now reports pluralized entries in the storefront default locale that are missing `other`. The storefront falls back to `other` when a count has no matching key, and raises an error when `other` is missing too.
+- c374706b: Report optional LiquidDoc parameters that are used in a snippet but never passed by its callers.
+- 66e654a9: Add the `ValidRangeDefault` and `ValidRangeStepCount` checks for `range` settings. The storefront rejects both problems with an "Invalid schema" error that breaks `shopify theme dev` and the theme editor, though `shopify theme push` accepts them.
+  - `ValidRangeDefault` reports a `default`, preset value or section `default.settings` value that is outside `[min, max]` or off the `step` grid, such as `{ "type": "range", "min": 0, "max": 160, "step": 8, "default": 60 }`.
+  - `ValidRangeStepCount` reports a range setting with more than 101 steps, such as `{ "type": "range", "min": 0, "max": 200, "step": 1 }`.
+
+  Both checks read the range settings of sections, theme blocks, local blocks and `config/settings_schema.json`. A setting without `step` has a step of 1.
+
+- dc25d305: Add `ValidSelectDefault` check that warns when a `select` or `radio` setting's `default` value is not one of its declared `options`. The check also validates the values that presets and section `default` give to settings and to their blocks' settings, the defaults of local block settings, and the defaults in `config/settings_schema.json`.
+
+### Patch Changes
+
+- 78bbce68: Stop crashing on blocks named by a plain string in a section's presets or `default`, and accept `@app` in the `default` of a section with local blocks
+- 78bbce68: Validate local section block references in presets and default configurations.
+- 28669513: Report `CdnPreconnect` for every `href` on the `https://cdn.shopify.com` origin, including `href="https://cdn.shopify.com"` and `href="//cdn.shopify.com"` without a path, and stop reporting other hosts that only contain `cdn.shopify.com`.
+- 7eea77c5: Recognise contextual Liquid objects in snippets based on the files that render them.
+- 7d13d63f: Fix `theme-check-disable-next-line` not suppressing offenses when the following tag is nested inside a raw HTML tag (`<style>`, `<script>`, `<svg>`). Previously, the sibling-node lookup only checked for a `children` array, but nodes inside raw HTML tags are stored under a `nodes` property on the `RawMarkup` body, so the disable comment was silently ineffective in that context.
+- 5740888d: Accept fixed-value settings on canonical inline app block tags.
+
+  `LiquidSyntaxError` allows plain setting arguments whose values are strings, numbers, booleans or flat arrays of those. Dynamic sources remain supported as strings such as `'{{ closest.product.title }}'`. Expressions, `nil`/`null`, `empty`/`blank`, namespaced setting arguments and body content remain invalid. Theme block arguments are unchanged.
+
+- bb74363d: Only report `HardcodedRoutes` when the route matches whole path segments, so `/cartography` is no longer flagged as `/cart`. A route followed by a format extension, such as `/cart.js` or `/cart/add.js`, is still reported.
+- bbd618c8: Apply `ignore` patterns from `.theme-check.yml` when the theme root is inside a dot-directory, such as `.worktrees/` or `~/.cache/`
+- 4b173ff6: Stop `JSONMissingBlock` from throwing on a JSON template that isn't an object, such as a `templates/index.json` that contains `null`
+- 4aaa426d: Stop `LiquidHTMLSyntaxError` from splitting loop lookups with spaces in quoted keys, such as `product.options_by_name['hello world']`, and from deleting part of them in its fix.
+- 3155a2d1: Missing render snippet arguments now recognizes the implicit variable provided by `with` and `for` when no `as` alias is specified.
+- 7bdc9e28: Update minimatch to 11.0.9. In `ignore` and `ignoreMissing` patterns with braces, an escaped backslash (`\\`) stays a literal backslash, and a numeric range without a step, such as `{1..200000}`, matches all of its values.
+- cf24f8d3: `AssetSizeCSS` and `AssetSizeJavaScript` read the size of a remote file only at a public address. They send no request to a URL that is not http(s), that has a user name or password, or whose host is `localhost` or an IP address that is not public (loopback, private, link-local, carrier-grade NAT, unique local and other special-purpose ranges). They do not follow redirects: a redirect gives size 0. In theme-check-node and the Rust port, a host name that resolves to an address that is not public gets no request either, and the request goes to the address that was checked.
+- 9a0377db: Stop `TranslationKeyExists` from reporting `sections.<section-name>.<key>` translations that are defined in the section's own schema `locales`.
+- 911a4513: Parse the body of a `style` tag inside `{% liquid %}` as Liquid statements. Before, it was one text node, so checks such as `UnusedAssign` missed the variables used there.
+- df89377a: Add missing `docs.url` links so editors surface a "learn more" link on these diagnostics:
+  `LiquidComplexity`, `LiquidNestingDepth`, `LiquidSyntaxError`, `ExcessiveSettingsCount`,
+  `MaxFileSize` (Liquid and JSON variants), `SchemaSectionOrBlockOnly`, `SchemaOncePerFile`,
+  `JavascriptTagInWrongFile`, `JavascriptOncePerFile`, `StylesheetTagInWrongFile`,
+  `StylesheetOncePerFile`, and `UniqueSettingId`.
+- f8e75c0b: Checks that look up a theme file by a name from theme content (`MissingAsset`, `ValidStaticBlockType`, `JSONMissingSection`, `MissingTemplate`, `JSONMissingBlock`, `ValidBlockTarget`, `AssetSizeJavaScript` and `AssetSizeCSS`) look only in the directory the path names, such as `assets`, `blocks` or `sections`. A name that leaves that directory, also in its percent-encoded form, now gets the same result whether or not a file exists at that path, and the check does not read the file system for it.
+- 9f110b3f: Stop `UndefinedObject` from reporting `continue` in `{% for ... offset: continue %}`. It is a Liquid keyword there, not a variable.
+- 4b173ff6: Stop `ValidSettingsKey` from throwing on a JSON template that isn't an object, such as a `templates/index.json` that contains `null`
+- Updated dependencies [4eb8bb16]
+- Updated dependencies [6d33a8bb]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [911a4513]
+  - @shopify/liquid-html-parser@2.12.3
+
 ## 4.0.2
 
 ### Patch Changes

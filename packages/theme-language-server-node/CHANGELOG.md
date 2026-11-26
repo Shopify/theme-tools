@@ -1,5 +1,30 @@
 # @shopify/theme-language-server-node
 
+## 3.1.0
+
+### Patch Changes
+
+- cf24f8d3: The language server takes a `remoteFileSize` dependency for AssetSizeCSS and AssetSizeJavaScript. theme-language-server-node passes theme-check-node's, which is now exported, so in the editor a host name that resolves to an address that is not public gets no request either.
+- c5964a8a: Fetch metafield definitions only when the user is already logged in to Shopify CLI. Opening a theme no longer opens a browser to log in.
+- Updated dependencies [537c7059]
+- Updated dependencies [db3d76c6]
+- Updated dependencies [af2e1a78]
+- Updated dependencies [31ed480c]
+- Updated dependencies [06f53e08]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [33b1f3aa]
+- Updated dependencies [a84a247b]
+- Updated dependencies [cf24f8d3]
+- Updated dependencies [70b74b76]
+- Updated dependencies [70b74b76]
+- Updated dependencies [935d6f75]
+- Updated dependencies [5f9228af]
+- Updated dependencies [1e0bf81e]
+- Updated dependencies [66e654a9]
+  - @shopify/theme-language-server-common@3.1.0
+  - @shopify/theme-check-node@4.1.0
+  - @shopify/theme-check-docs-updater@4.1.0
+
 ## 3.0.2
 
 ### Patch Changes
