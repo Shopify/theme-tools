@@ -324,10 +324,10 @@ pub fn get_file_size(url: &str) -> f64 {
 /// URL. curl gets all of them and races them, as it does the addresses of a name. It doesn't
 /// follow redirects.
 fn head_content_length(url: &str, addresses: &[IpAddr]) -> f64 {
-    // `--connect-to` sends the connection to `PINNED_HOST`, and `--resolve` gives that host the
-    // checked addresses. When `curl_port` reads another port than curl does, `--resolve` doesn't
-    // apply, and `PINNED_HOST` doesn't resolve, so no connection is made.
-    let Some(port) = curl_port(url) else {
+    // `--connect-to` sends the connection to `PINNED_HOST` at `port`, whatever host and port curl
+    // reads in the URL, and `--resolve` gives `PINNED_HOST` at `port` the checked addresses. So
+    // curl looks up no name and connects only to a checked address.
+    let Some(port) = url_port(url) else {
         return 0.0;
     };
     if addresses.is_empty() {
@@ -340,7 +340,7 @@ fn head_content_length(url: &str, addresses: &[IpAddr]) -> f64 {
             IpAddr::V6(v6) => format!("[{v6}]"),
         })
         .collect();
-    let connect_to = format!("::{PINNED_HOST}:");
+    let connect_to = format!("::{PINNED_HOST}:{port}");
     let resolve = format!("{PINNED_HOST}:{port}:{}", addresses.join(","));
     let Ok(out) = std::process::Command::new("curl")
         .args([
@@ -395,13 +395,16 @@ fn head_content_length(url: &str, addresses: &[IpAddr]) -> f64 {
     }
 }
 
-/// A host that never resolves (RFC 6761). curl connects to it through `--resolve` only.
+/// The host that curl connects to, which `--resolve` maps to the checked addresses. It is in a
+/// domain that never resolves (RFC 6761).
 const PINNED_HOST: &str = "remote-asset.invalid";
 
-/// The port that curl connects to for `url`, an http(s) URL from `serialize_for_curl`.
-fn curl_port(url: &str) -> Option<u16> {
-    let (scheme, rest) = url.split_once("://")?;
-    let authority = &rest[..rest.find(['/', '?', '#']).unwrap_or(rest.len())];
+/// The port of `url`, an http(s) URL from `serialize_for_curl`, read as `remote_asset_host` reads
+/// its authority: `URL`'s reading, which can differ from curl's.
+fn url_port(url: &str) -> Option<u16> {
+    let (scheme, rest) = url.split_once(':')?;
+    let rest = rest.trim_start_matches(['/', '\\']);
+    let authority = &rest[..rest.find(['/', '\\', '?', '#']).unwrap_or(rest.len())];
     let host_port = authority.rsplit_once('@').map_or(authority, |(_, h)| h);
     let port = match host_port.rsplit_once(']') {
         Some((_, after)) => after.strip_prefix(':'),
@@ -666,7 +669,18 @@ mod tests {
     }
 
     #[test]
-    fn curl_ports() {
+    fn connects_at_the_port_that_url_reads() {
+        let (port, requests) = server();
+        let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
+        // `URL` reads the same URL as `http://assets.example.test:{port}/asset.css`.
+        let url = format!("http:///assets.example.test:{port}/asset.css");
+
+        assert_eq!(head_content_length(&url, &[loopback]), 123456.0);
+        assert_eq!(*requests.lock().unwrap(), ["/asset.css"]);
+    }
+
+    #[test]
+    fn url_ports() {
         for (url, port) in [
             ("http://cdn.example.com/a.css", Some(80)),
             ("https://cdn.example.com/a.css", Some(443)),
@@ -677,10 +691,17 @@ mod tests {
             ("http://:@cdn.example.com#x:1", Some(80)),
             ("https://[2606:4700::1111]/a.css", Some(443)),
             ("https://[2606:4700::1111]:8443/a.css", Some(8443)),
+            ("http:///cdn.example.com:81/a.css", Some(81)),
+            ("http:/cdn.example.com:81/a.css", Some(81)),
+            ("http:\\\\cdn.example.com:81\\a.css", Some(81)),
+            (
+                "http://cdn.example.com\\@other.example.com:81/a.css",
+                Some(80),
+            ),
             ("http://cdn.example.com:99999/a.css", None),
             ("ftp://cdn.example.com/a.css", None),
         ] {
-            assert_eq!(curl_port(url), port, "{url}");
+            assert_eq!(url_port(url), port, "{url}");
         }
     }
 }
