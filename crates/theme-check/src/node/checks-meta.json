@@ -707,7 +707,8 @@
     "name": "Prevent duplicate Ids in setting_schema",
     "docs": {
       "description": "This check is aimed at eliminating duplicate Ids in settings_schema.json",
-      "recommended": true
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unique-setting-id"
     },
     "type": "JSON",
     "severity": 0,
