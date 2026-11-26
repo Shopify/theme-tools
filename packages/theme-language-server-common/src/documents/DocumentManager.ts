@@ -79,9 +79,10 @@ export class DocumentManager {
   }
 
   /**
-   * The source codes of the theme at `root`. A file belongs to the theme when
-   * it is in the `root` directory, so a sibling theme whose name starts with
-   * the same text (`themes/shop-preview` for `themes/shop`) is left out.
+   * The source codes of the theme at `root`, a normalized URI like the URIs of
+   * the documents. A file belongs to the theme when it is in the `root`
+   * directory, so a sibling theme whose name starts with the same text
+   * (`themes/shop-preview` for `themes/shop`) is left out.
    */
   public theme(root: UriString, includeFilesFromDisk = false): AugmentedSourceCode[] {
     const isInTheme = isInDirectory(root);
@@ -260,11 +261,10 @@ export class DocumentManager {
 }
 
 /**
- * Whether a normalized URI is `directoryUri` or inside it. `directoryUri` may
- * end with a `/`.
+ * Whether a URI is `directoryUri` or inside it. Both URIs are compared as
+ * given, and `directoryUri` may end with a `/`.
  */
 function isInDirectory(directoryUri: UriString): (uri: UriString) => boolean {
-  const directory = path.normalize(directoryUri).replace(/\/+$/, '');
-  const prefix = directory + '/';
-  return (uri) => uri === directory || uri.startsWith(prefix);
+  const prefix = directoryUri.endsWith('/') ? directoryUri : directoryUri + '/';
+  return (uri) => uri === directoryUri || uri.startsWith(prefix);
 }

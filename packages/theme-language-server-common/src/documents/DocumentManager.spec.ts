@@ -64,14 +64,22 @@ describe('Module: DocumentManager', () => {
     });
   });
 
-  it('matches a root that is not normalized', () => {
-    documentManager.open('file:///workspace/my%20themes/shop/snippets/a.liquid', 'a', 0);
-    documentManager.open('file:///workspace/my%20themes/shop-preview/snippets/b.liquid', 'b', 0);
+  it('leaves out the files of another authority when the root is file:///', () => {
+    documentManager.open('file:///templates/index.json', '{}', 0);
+    documentManager.open('file://server/share/templates/index.json', '{}', 0);
+    expect(documentManager.theme('file:///').map((sourceCode) => sourceCode.uri)).toEqual([
+      'file:///templates/index.json',
+    ]);
+  });
+
+  it('compares a root that contains a percent sign as it is', () => {
+    // Stored as file:///workspace/shop%20/templates/index.json
+    documentManager.open('file:///workspace/shop%252520/templates/index.json', '{}', 0);
+    // Stored as file:///workspace/shop /templates/index.json, which a decoded root would match
+    documentManager.open('file:///workspace/shop%20/templates/index.json', '{}', 0);
     expect(
-      documentManager
-        .theme('file:///workspace/my%20themes/shop')
-        .map((sourceCode) => sourceCode.uri),
-    ).toEqual(['file:///workspace/my themes/shop/snippets/a.liquid']);
+      documentManager.theme('file:///workspace/shop%20').map((sourceCode) => sourceCode.uri),
+    ).toEqual(['file:///workspace/shop%20/templates/index.json']);
   });
 
   describe('when initialized with an abstract file system', () => {
