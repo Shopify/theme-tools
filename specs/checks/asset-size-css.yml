@@ -82,3 +82,14 @@ cases:
           <head>
           </head>
         </html>
+  - name: should not report the size of a file outside the assets directory
+    files:
+      outside.css: "* { color: green !important; }"
+      templates/index.liquid: |
+        <html>
+          <head>
+            <link href="{{ '../outside.css' | asset_url }}" rel="stylesheet">
+          </head>
+        </html>
+    config:
+      AssetSizeCSS: { thresholdInBytes: 1 }

@@ -46,3 +46,38 @@ cases:
     files:
       snippets/snippet.liquid: "{{ 'foo.scss.css' | asset_url }} "
       assets/foo.scss.liquid: 'html { & body { color: {{ "blue" }}; } }'
+  - name: should report an asset path that leaves the assets directory, also when the file it names exists
+    files:
+      snippets/snippet.liquid: "{{ '../outside.js' | asset_url }}"
+      outside.js: console.log("hi");
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/../outside.js' does not exist"
+        start: [0, 3]
+        highlight: "'../outside.js'"
+  - name: should report an asset path that leaves the assets directory the same way when the file it names does not exist
+    files:
+      snippets/snippet.liquid: "{{ '../outside.js' | asset_url }}"
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/../outside.js' does not exist"
+        start: [0, 3]
+        highlight: "'../outside.js'"
+  - name: should report an asset path that leaves the assets directory when a compiled .js.liquid file exists there
+    files:
+      snippets/snippet.liquid: "{{ '../outside.js' | asset_url }}"
+      outside.js.liquid: 'console.log("{{ "hi" }}");'
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/../outside.js' does not exist"
+        start: [0, 3]
+        highlight: "'../outside.js'"
+  - name: should report a percent-encoded asset path that leaves the assets directory
+    files:
+      snippets/snippet.liquid: "{{ '%2e%2e%2foutside.js' | asset_url }}"
+      outside.js: console.log("hi");
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/%2e%2e%2foutside.js' does not exist"
+        start: [0, 3]
+        highlight: "'%2e%2e%2foutside.js'"

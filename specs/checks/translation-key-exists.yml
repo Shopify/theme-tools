@@ -83,6 +83,51 @@ cases:
         message: "'this.does.not.exist' does not have a matching entry in 'locales/en.default.json' or 'code.liquid'"
         start: [1, 3]
         highlight: '"this.does.not.exist"'
+  - name: should ignore section-scoped keys included in the section schema
+    files:
+      locales/en.default.json: '{}'
+      sections/test-section.liquid: |-
+        {{ 'sections.test-section.title' | t }}
+        {{ 'sections.test-section.description.desktop' | t }}
+        {{ 'sections.test-section.does_not_exist' | t }}
+        {% schema %}
+          {
+            "locales": {
+              "en": {
+                "title": "Title",
+                "description": {
+                  "desktop": "Lorem ipsum"
+                }
+              }
+            }
+          }
+        {% endschema %}
+    docset: default
+    offenses:
+      - file: sections/test-section.liquid
+        message: "'sections.test-section.does_not_exist' does not have a matching entry in 'locales/en.default.json' or 'sections/test-section.liquid'"
+        start: [2, 3]
+        highlight: "'sections.test-section.does_not_exist'"
+  - name: should only resolve section-scoped keys in section files
+    files:
+      locales/en.default.json: '{}'
+      snippets/test-section.liquid: |-
+        {{ 'sections.test-section.title' | t }}
+        {% schema %}
+          {
+            "locales": {
+              "en": {
+                "title": "Title"
+              }
+            }
+          }
+        {% endschema %}
+    docset: default
+    offenses:
+      - file: snippets/test-section.liquid
+        message: "'sections.test-section.title' does not have a matching entry in 'locales/en.default.json' or 'snippets/test-section.liquid'"
+        start: [0, 3]
+        highlight: "'sections.test-section.title'"
   - name: should not crash if the schema locales does not exist
     files:
       code.liquid: |-
