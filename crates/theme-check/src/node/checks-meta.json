@@ -800,7 +800,7 @@
     "code": "UnusedDocParam",
     "name": "Prevent unused doc parameters",
     "docs": {
-      "description": "This check exists to ensure any parameters defined in the `doc` tag are used within the snippet.",
+      "description": "This check ensures parameters defined in the `doc` tag are used within the snippet and passed by its callers.",
       "recommended": true,
       "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unused-doc-param"
     },
