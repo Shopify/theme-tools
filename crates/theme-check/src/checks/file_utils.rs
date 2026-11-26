@@ -320,35 +320,28 @@ pub fn get_file_size(url: &str) -> f64 {
     )
 }
 
-/// node-fetch's `HEAD` request to `url`, at the first of `addresses` that accepts a connection,
-/// as Node tries each address of a name. It doesn't follow redirects.
+/// node-fetch's `HEAD` request to `url`, at one of `addresses`, whatever host curl reads in the
+/// URL. curl gets all of them and races them, as it does the addresses of a name. It doesn't
+/// follow redirects.
 fn head_content_length(url: &str, addresses: &[IpAddr]) -> f64 {
-    for &address in addresses {
-        match head_content_length_at(url, address) {
-            Outcome::Unreachable => continue,
-            Outcome::Size(size) => return size,
-        }
-    }
-    0.0
-}
-
-/// What a request to one address gave: no connection, or the size, which is 0 when the request
-/// failed after it connected.
-enum Outcome {
-    Unreachable,
-    Size(f64),
-}
-
-/// curl's exit codes for a connection that was not made: "couldn't connect" and a timeout.
-const CURL_CONNECTION_FAILED: [i32; 2] = [7, 28];
-
-/// node-fetch's `HEAD` request to `url`, with curl connected to `address`, whatever host curl
-/// reads in the URL.
-fn head_content_length_at(url: &str, address: IpAddr) -> Outcome {
-    let connect_to = match address {
-        IpAddr::V4(v4) => format!("::{v4}:"),
-        IpAddr::V6(v6) => format!("::[{v6}]:"),
+    // `--connect-to` sends the connection to `PINNED_HOST`, and `--resolve` gives that host the
+    // checked addresses. When `curl_port` reads another port than curl does, `--resolve` doesn't
+    // apply, and `PINNED_HOST` doesn't resolve, so no connection is made.
+    let Some(port) = curl_port(url) else {
+        return 0.0;
     };
+    if addresses.is_empty() {
+        return 0.0;
+    }
+    let addresses: Vec<String> = addresses
+        .iter()
+        .map(|address| match address {
+            IpAddr::V4(v4) => v4.to_string(),
+            IpAddr::V6(v6) => format!("[{v6}]"),
+        })
+        .collect();
+    let connect_to = format!("::{PINNED_HOST}:");
+    let resolve = format!("{PINNED_HOST}:{port}:{}", addresses.join(","));
     let Ok(out) = std::process::Command::new("curl")
         .args([
             "-q",
@@ -362,6 +355,8 @@ fn head_content_length_at(url: &str, address: IpAddr) -> Outcome {
             "*",
             "--connect-to",
             &connect_to,
+            "--resolve",
+            &resolve,
         ])
         .args([
             "-A",
@@ -376,37 +371,50 @@ fn head_content_length_at(url: &str, address: IpAddr) -> Outcome {
         .args(["-w", "%{http_code}\n%{header_json}", "--url", url])
         .output()
     else {
-        return Outcome::Size(0.0);
+        return 0.0;
     };
-    if out
-        .status
-        .code()
-        .is_some_and(|code| CURL_CONNECTION_FAILED.contains(&code))
-    {
-        return Outcome::Unreachable;
-    }
     if !out.status.success() {
-        return Outcome::Size(0.0);
+        return 0.0;
     }
     let text = String::from_utf8_lossy(&out.stdout);
     let (status, headers) = text.split_once('\n').unwrap_or((&text, ""));
     if !status.parse::<u16>().is_ok_and(|s| (200..300).contains(&s)) {
-        return Outcome::Size(0.0);
+        return 0.0;
     }
     // `headers.get('Content-Length')`: repeated headers are joined with ", ".
     let headers: Value = serde_json::from_str(headers).unwrap_or(Value::Null);
-    Outcome::Size(
-        match headers.get("content-length").and_then(Value::as_array) {
-            Some(values) => js::parse_float(
-                &values
-                    .iter()
-                    .filter_map(Value::as_str)
-                    .collect::<Vec<_>>()
-                    .join(", "),
-            ),
-            None => 0.0,
+    match headers.get("content-length").and_then(Value::as_array) {
+        Some(values) => js::parse_float(
+            &values
+                .iter()
+                .filter_map(Value::as_str)
+                .collect::<Vec<_>>()
+                .join(", "),
+        ),
+        None => 0.0,
+    }
+}
+
+/// A host that never resolves (RFC 6761). curl connects to it through `--resolve` only.
+const PINNED_HOST: &str = "remote-asset.invalid";
+
+/// The port that curl connects to for `url`, an http(s) URL from `serialize_for_curl`.
+fn curl_port(url: &str) -> Option<u16> {
+    let (scheme, rest) = url.split_once("://")?;
+    let authority = &rest[..rest.find(['/', '?', '#']).unwrap_or(rest.len())];
+    let host_port = authority.rsplit_once('@').map_or(authority, |(_, h)| h);
+    let port = match host_port.rsplit_once(']') {
+        Some((_, after)) => after.strip_prefix(':'),
+        None => host_port.rsplit_once(':').map(|(_, port)| port),
+    };
+    match port {
+        Some(port) if !port.is_empty() => port.parse().ok(),
+        _ => match scheme.to_ascii_lowercase().as_str() {
+            "http" => Some(80),
+            "https" => Some(443),
+            _ => None,
         },
-    )
+    }
 }
 
 /// Enough of the WHATWG URL serializer for curl, which rejects spaces and controls: strip leading
@@ -641,5 +649,38 @@ mod tests {
         );
         assert_eq!(head_content_length(&url, &[unreachable]), 0.0);
         assert_eq!(*requests.lock().unwrap(), ["/asset.css", "/asset.css"]);
+    }
+
+    #[test]
+    fn does_not_wait_for_an_address_that_drops_the_connection() {
+        let (port, requests) = server();
+        // A documentation address, which no host answers: its connection hangs, or fails at once.
+        let dropped: IpAddr = "2001:db8::1".parse().unwrap();
+        let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
+        let url = format!("http://assets.example.test:{port}/asset.css");
+
+        let start = std::time::Instant::now();
+        assert_eq!(head_content_length(&url, &[dropped, loopback]), 123456.0);
+        assert!(start.elapsed() < std::time::Duration::from_secs(5));
+        assert_eq!(*requests.lock().unwrap(), ["/asset.css"]);
+    }
+
+    #[test]
+    fn curl_ports() {
+        for (url, port) in [
+            ("http://cdn.example.com/a.css", Some(80)),
+            ("https://cdn.example.com/a.css", Some(443)),
+            ("HTTPS://cdn.example.com", Some(443)),
+            ("http://cdn.example.com:8080/a.css", Some(8080)),
+            ("https://cdn.example.com:/a.css", Some(443)),
+            ("http://@cdn.example.com:81?a=b:c", Some(81)),
+            ("http://:@cdn.example.com#x:1", Some(80)),
+            ("https://[2606:4700::1111]/a.css", Some(443)),
+            ("https://[2606:4700::1111]:8443/a.css", Some(8443)),
+            ("http://cdn.example.com:99999/a.css", None),
+            ("ftp://cdn.example.com/a.css", None),
+        ] {
+            assert_eq!(curl_port(url), port, "{url}");
+        }
     }
 }
