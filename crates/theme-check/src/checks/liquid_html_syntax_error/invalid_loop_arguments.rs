@@ -2,12 +2,15 @@
 
 use super::utils::{
     does_fragment_contain_unsupported_parentheses, fragment_key, get_fragments_in_markup, index_of,
+    WS,
 };
 use crate::checks::liquid_syntax_error::block::Problem;
 use crate::checks::utils::is_loop_tag_name;
 use crate::docset::ThemeDocset;
 use crate::fixes::Fix;
-use liquid_ast::{ForMarkup, LiquidTag, Markup, Node};
+use liquid_ast::{ForMarkup, LiquidTag, Markup, NamedArgument, Node};
+use regex::Regex;
+use std::sync::LazyLock;
 
 pub fn detect_invalid_loop_arguments(
     node: &LiquidTag,
@@ -113,6 +116,9 @@ struct ArgumentFragment<'a> {
 /// such as `settings['item count']`, which the fragment pattern would split at the space. So only
 /// the text around them, such as `reversed` or anything the parser skipped, goes through the
 /// pattern.
+///
+/// The parser also skips characters inside an argument, reading `limit!: 2` as `limit: 2`. An
+/// argument whose text isn't exactly `<name>: <value>` goes through the pattern too.
 fn parsed_argument_fragments<'a>(
     markup: &'a ForMarkup,
     source: &'a str,
@@ -132,7 +138,11 @@ fn parsed_argument_fragments<'a>(
             }
         };
 
-    for arg in &markup.args {
+    for arg in markup
+        .args
+        .iter()
+        .filter(|arg| is_exact_named_argument(source, arg))
+    {
         add_text_until(&mut fragments, text_start, arg.span.start);
         fragments.push(ArgumentFragment {
             value: &source[arg.span.start..arg.span.end],
@@ -145,6 +155,18 @@ fn parsed_argument_fragments<'a>(
 
     fragments
 }
+
+fn is_exact_named_argument(source: &str, arg: &NamedArgument) -> bool {
+    let value = arg.value.span();
+    source[arg.span.start..value.start]
+        .strip_prefix(arg.name.as_ref())
+        .is_some_and(|colon| COLON.is_match(colon))
+        && value.end == arg.span.end
+}
+
+/// A colon with JS `\s` whitespace around it.
+static COLON: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!("^[{WS}]*:[{WS}]*$")).unwrap());
 
 fn is_supported_tag_argument(
     tags: Option<&ThemeDocset>,

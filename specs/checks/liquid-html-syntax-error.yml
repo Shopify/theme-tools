@@ -1767,3 +1767,32 @@ cases:
         start: [0, 57]
         highlight: "reversed limit1: settings['item count']"
         fix: "{% for item in products[settings['selected collection']] reversed %}{{ item }}{% endfor %}"
+  - name: reports characters the parser skips inside a named loop argument
+    files:
+      file.liquid: "{% for i in products limit!: 2 %}{{ i }}{% endfor %}"
+    docset:
+      tags:
+        - name: for
+          parameters:
+            - {name: limit, positional: false, description: '...', required: false, types: []}
+    offenses:
+      - file: file.liquid
+        message: 'Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit!: 2'
+        start: [0, 21]
+        highlight: "limit!: 2"
+        fix: "{% for i in products  %}{{ i }}{% endfor %}"
+  - name: reports characters the parser skips inside a named tablerow argument
+    files:
+      file.liquid: "{% tablerow i in products cols: 2 limit@:2 %}{{ i }}{% endtablerow %}"
+    docset:
+      tags:
+        - name: tablerow
+          parameters:
+            - {name: cols, positional: false, description: '...', required: false, types: []}
+            - {name: limit, positional: false, description: '...', required: false, types: []}
+    offenses:
+      - file: file.liquid
+        message: 'Arguments must be provided in the format `tablerow in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit@:2'
+        start: [0, 26]
+        highlight: "cols: 2 limit@:2"
+        fix: "{% tablerow i in products cols: 2 %}{{ i }}{% endtablerow %}"

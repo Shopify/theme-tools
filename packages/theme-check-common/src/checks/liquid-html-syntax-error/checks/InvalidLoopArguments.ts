@@ -1,5 +1,6 @@
 import {
   ForMarkup,
+  LiquidNamedArgument,
   LiquidTag,
   LiquidTagFor,
   LiquidTagTablerow,
@@ -119,6 +120,9 @@ interface ArgumentFragment {
  * The parser already found the collection and the named arguments. Their values can be lookups
  * such as `settings['item count']`, which the fragment pattern would split at the space. So only
  * the text around them, such as `reversed` or anything the parser skipped, goes through the pattern.
+ *
+ * The parser also skips characters inside an argument, reading `limit!: 2` as `limit: 2`. An
+ * argument whose text isn't exactly `<name>: <value>` goes through the pattern too.
  */
 function parsedArgumentFragments(markup: ForMarkup): ArgumentFragment[] {
   const { source } = markup;
@@ -133,6 +137,8 @@ function parsedArgumentFragments(markup: ForMarkup): ArgumentFragment[] {
   };
 
   for (const arg of markup.args) {
+    if (!isExactNamedArgument(source, arg)) continue;
+
     addTextUntil(arg.position.start);
     fragments.push({
       value: source.slice(arg.position.start, arg.position.end),
@@ -144,6 +150,15 @@ function parsedArgumentFragments(markup: ForMarkup): ArgumentFragment[] {
   addTextUntil(markup.position.end);
 
   return fragments;
+}
+
+function isExactNamedArgument(source: string, arg: LiquidNamedArgument) {
+  const nameAndColon = source.slice(arg.position.start, arg.value.position.start);
+  return (
+    nameAndColon.startsWith(arg.name) &&
+    /^\s*:\s*$/.test(nameAndColon.slice(arg.name.length)) &&
+    arg.value.position.end === arg.position.end
+  );
 }
 
 function isSupportedTagArgument(
