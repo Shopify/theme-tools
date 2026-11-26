@@ -11,17 +11,22 @@ export class CachedFileSystem implements AbstractFileSystem {
     this.stat = cachedByUri(fs.stat.bind(fs));
   }
 
+  /**
+   * Invalidates readDirectory and stat for every directory above uri.
+   *
+   * Creating or deleting a file can create or remove several directories at
+   * once, which changes the listing above the highest one.
+   */
   invalidateDirectories(uri: string): void {
-    let directoryUri = path.dirname(uri);
+    const dir = path.dirname(uri);
+    // dirname returns the root unchanged. Requiring a shorter URI also
+    // guarantees that the recursion ends.
+    const uriIsAbsoluteRoot = dir.length >= uri.length;
+    if (uriIsAbsoluteRoot) return;
 
-    while (true) {
-      this.readDirectory.invalidate(directoryUri);
-      this.stat.invalidate(directoryUri);
-
-      const parentUri = path.dirname(directoryUri);
-      if (parentUri === directoryUri) return;
-      directoryUri = parentUri;
-    }
+    this.readDirectory.invalidate(dir);
+    this.stat.invalidate(dir);
+    this.invalidateDirectories(dir);
   }
 }
 
