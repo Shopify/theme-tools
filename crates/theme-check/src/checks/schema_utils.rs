@@ -271,13 +271,11 @@ pub fn get_blocks(valid_schema: &Value) -> Result<Blocks<'_>, CheckError> {
                 .iter()
                 .enumerate()
             {
-                if has(block, "name")? {
-                    let path = ["default", "blocks", &index.to_string(), "type"]
-                        .map(String::from)
-                        .to_vec();
-                    out.default_level_blocks
-                        .push(BlockWithPath { node: block, path });
-                }
+                let path = ["default", "blocks", &index.to_string(), "type"]
+                    .map(String::from)
+                    .to_vec();
+                out.default_level_blocks
+                    .push(BlockWithPath { node: block, path });
             }
         }
     }

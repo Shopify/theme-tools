@@ -51,6 +51,30 @@ impl<'a> LiquidCheck<'a> for Check {
 
         let b = get_blocks(valid_schema)?;
         if !b.root_level_local_blocks.is_empty() {
+            let local_block_types: Vec<_> = b
+                .root_level_local_blocks
+                .iter()
+                .map(|block| block.ty())
+                .collect();
+            let references = b
+                .preset_level_blocks
+                .first()
+                .into_iter()
+                .flatten()
+                .chain(&b.default_level_blocks);
+            for block in references {
+                if !local_block_types.contains(&block.ty()) {
+                    report_warning(
+                        cx,
+                        format!(
+                            "Section block type \"{}\" must be defined in \"blocks\" at the root of this schema.",
+                            s(block.ty())
+                        ),
+                        offset,
+                        node_at(ast, &block.path),
+                    )?;
+                }
+            }
             return Ok(());
         }
         let root = &b.root_level_theme_blocks;
