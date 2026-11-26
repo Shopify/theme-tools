@@ -32,28 +32,8 @@ const MARKUP_FRAGMENTS_PATTERN = new RegExp(
 );
 
 export function getFragmentsInMarkup(markup: string) {
-  // Hide separators inside bracket lookups from the fragment regex without
-  // changing offsets. Quotes prevent literal brackets from changing the depth.
-  let depth = 0;
-  let quote: string | undefined;
-  const masked = markup
-    .split('')
-    .map((character) => {
-      if (quote) {
-        if (character === quote) quote = undefined;
-      } else if (character === '"' || character === "'") {
-        quote = character;
-      } else if (character === '[') {
-        depth++;
-      } else if (character === ']') {
-        depth = Math.max(0, depth - 1);
-      }
-      return depth > 0 && /[\s,]/.test(character) ? '_' : character;
-    })
-    .join('');
-
-  return [...masked.matchAll(MARKUP_FRAGMENTS_PATTERN)].map((match) => ({
-    value: markup.slice(match.index, match.index + match[0].length),
+  return [...markup.matchAll(MARKUP_FRAGMENTS_PATTERN)].map((match) => ({
+    value: match[0],
     index: match.index,
   }));
 }

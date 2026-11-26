@@ -1753,13 +1753,17 @@ cases:
     files:
       file.liquid: "{% for item in products[settings['selected ], collection']] %}{{ item }}{% endfor %}"
     docset: default
-  - name: removes invalid loop arguments without truncating a nested lookup
+  - name: removes invalid loop arguments without truncating nested lookups
     files:
-      file.liquid: "{% for item in products[settings['selected collection']] bogus %}{{ item }}{% endfor %}"
-    docset: default
+      file.liquid: "{% for item in products[settings['selected collection']] reversed limit1: settings['item count'] %}{{ item }}{% endfor %}"
+    docset:
+      tags:
+        - name: for
+          parameters:
+            - {name: reversed, positional: true, description: '...', required: false, types: []}
     offenses:
       - file: file.liquid
-        message: 'Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: bogus'
+        message: 'Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit1: settings[''item count'']'
         start: [0, 57]
-        highlight: bogus
-        fix: "{% for item in products[settings['selected collection']]  %}{{ item }}{% endfor %}"
+        highlight: "reversed limit1: settings['item count']"
+        fix: "{% for item in products[settings['selected collection']] reversed %}{{ item }}{% endfor %}"
