@@ -109,7 +109,19 @@ function printAttribute<T extends Extract<LiquidHtmlNode, { attributePosition: P
 ): Doc {
   const node = path.getValue();
   const attrGroupId = Symbol('attr-group-id');
-  // Preserve the source layout of attribute values, but apply Liquid string quote options.
+  // We paste attribute values from source instead of formatting them. Doing it
+  // well needs a different rule per attribute:
+  //  - class: maybe one class per line when too long
+  //  - srcset, sizes: split on commas
+  //  - style: break on semicolons
+  //  - href: no spaces (URL)
+  //  - alt: paragraph
+  //  - others: keywords?
+  // That's too hard to get right, so for now we keep the source as is.
+  //
+  // The one exception is Liquid string quotes, which follow liquidSingleQuote.
+  // Swapping a string's quotes keeps its length and can't change rendered
+  // output, since Liquid strings have no escape sequences.
   const value = formatAttributeValueQuotes(node, options);
   const preferredQuote = options.singleQuote ? `'` : `"`;
   const attributeValueContainsQuote = !!node.value.find(

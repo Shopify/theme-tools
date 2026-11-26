@@ -124,3 +124,21 @@ It should respect liquidSingleQuote false inside HTML attribute values
 liquidSingleQuote: false
 singleQuote: true
 <div class='{{ 'test' }}'></div>
+
+It should respect liquidSingleQuote inside HTML attribute values when attributes break
+printWidth: 1
+<div class="{{ "test" }}" data-value="{{product|upcase}} {{ "test" }}"></div>
+
+It should respect liquidSingleQuote inside Liquid tags in HTML attribute values
+printWidth: 1
+<div class="a {% if x == "b" %}{{ "c" | t: d: "e" }}{% endif %} f"></div>
+
+It should respect liquidSingleQuote inside multiline HTML attribute values
+printWidth: 1
+<div
+  class="
+    a
+    {{ "test" }}
+    {% if x == "b" %}c{% endif %}
+  "
+></div>
