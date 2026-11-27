@@ -101,6 +101,17 @@ They target the next node in the tree. Unparseable code can't be ignored and wil
 ></div>
 ```
 
+To leave several sibling nodes untouched, wrap them in `prettier-ignore-start` and `prettier-ignore-end` comments. Everything between the two comments is printed as is. Without `prettier-ignore-end`, the range goes until the end of the parent node.
+
+```liquid
+<!-- prettier-ignore-start -->
+<div   class="custom-layout">
+    {{ some_variable | complicated_filter: foo: bar }}
+</div>
+{%  render 'component', foo: bar %}
+<!-- prettier-ignore-end -->
+```
+
 ## Whitespace handling
 
 You'll quickly notice that the default value for `--htmlWhitespaceSensitivity` is set to `css` (like [Prettier's](https://prettier.io/blog/2018/11/07/1.15.0#whitespace-sensitive-formatting)).
