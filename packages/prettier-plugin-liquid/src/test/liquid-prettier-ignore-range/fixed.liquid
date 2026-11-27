@@ -1,0 +1,45 @@
+It should keep the source between html prettier-ignore-start and prettier-ignore-end
+<div class="before">{{ a }}</div>
+<!-- prettier-ignore-start -->
+<div   class="custom-layout">
+    {{ some_variable | complicated_filter: foo: bar }}
+      {% render 'component', foo: bar %}
+</div>
+<p>{{   b }}</p>
+<!-- prettier-ignore-end -->
+<div class="after">{{ c }}</div>
+
+It should keep the source between liquid inline prettier-ignore comments
+{% # prettier-ignore-start %}
+{%if   a%}<b>{{x}}</b>{%endif%}
+{%  cycle a,b,c %}
+{% # prettier-ignore-end %}
+{% if a -%}
+  <b>{{ x }}</b>
+{%- endif %}
+
+It should keep the source between liquid comment tag prettier-ignore comments
+{% comment %} prettier-ignore-start {% endcomment %}
+{%if   a%}<b>{{x}}</b>{%endif%}
+{% comment %} prettier-ignore-end {% endcomment %}
+{% if a -%}
+  <b>{{ x }}</b>
+{%- endif %}
+
+It should support ranges inside elements
+<section>
+  <div>
+    <!-- prettier-ignore-start -->
+    <b>{{   x }}</b>   <i>{{   y }}</i>
+    <!-- prettier-ignore-end -->
+    <u>{{ z }}</u>
+  </div>
+</section>
+
+It should ignore until the end of the parent when there is no prettier-ignore-end
+<div>
+  <!-- prettier-ignore-start -->
+  <b>{{   x }}</b>
+  <i>{{   y }}</i>
+</div>
+<u>{{ z }}</u>

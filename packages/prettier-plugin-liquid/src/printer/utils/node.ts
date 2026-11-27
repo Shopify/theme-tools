@@ -162,7 +162,69 @@ export function isPrettierIgnoreNode(
 }
 
 export function hasPrettierIgnore(node: LiquidHtmlNode) {
-  return isPrettierIgnoreNode(node) || isPrettierIgnoreNode(node.prev);
+  return (
+    isPrettierIgnoreNode(node) || isPrettierIgnoreNode(node.prev) || isInPrettierIgnoreRange(node)
+  );
+}
+
+/** The text of a comment node, or undefined when the node isn't a comment. */
+function commentText(node: LiquidHtmlNode | undefined): string | undefined {
+  if (!node) return;
+  if (node.type === NodeTypes.HtmlComment) return node.body;
+  if (node.type === NodeTypes.LiquidTag && node.name === '#' && typeof node.markup === 'string') {
+    return node.markup;
+  }
+  if (node.type === NodeTypes.LiquidRawTag && node.name === 'comment') return node.body.value;
+}
+
+export function isPrettierIgnoreRangeStart(node: LiquidHtmlNode | undefined): boolean {
+  const text = commentText(node);
+  return text !== undefined && /^\s*prettier-ignore-start\s*$/.test(text);
+}
+
+export function isPrettierIgnoreRangeEnd(node: LiquidHtmlNode | undefined): boolean {
+  const text = commentText(node);
+  return text !== undefined && /^\s*prettier-ignore-end\s*$/.test(text);
+}
+
+/**
+ * Whether the node is between a `prettier-ignore-start` comment and the next
+ * `prettier-ignore-end` comment (or the end of its parent) among its siblings.
+ * The comments themselves are not in the range.
+ */
+export function isInPrettierIgnoreRange(node: LiquidHtmlNode): boolean {
+  return !isPrettierIgnoreRangeEnd(node) && isPrettierIgnoreRangeOpenAfter(node.prev);
+}
+
+/** Memoized, since every sibling asks about the ones before it. */
+const rangeOpenAfter = new WeakMap<LiquidHtmlNode, boolean>();
+
+/** Whether a prettier-ignore range is open right after `node`. */
+function isPrettierIgnoreRangeOpenAfter(node: LiquidHtmlNode | undefined): boolean {
+  const unknown: LiquidHtmlNode[] = [];
+  let open = false;
+  for (let prev = node; prev; prev = prev.prev) {
+    const cached = rangeOpenAfter.get(prev);
+    if (cached !== undefined) {
+      open = cached;
+      break;
+    }
+    unknown.push(prev);
+  }
+  for (let i = unknown.length - 1; i >= 0; i--) {
+    const current = unknown[i];
+    if (isPrettierIgnoreRangeStart(current)) open = true;
+    else if (isPrettierIgnoreRangeEnd(current)) open = false;
+    rangeOpenAfter.set(current, open);
+  }
+  return open;
+}
+
+/** The last node of the prettier-ignore range that contains `node`. */
+export function lastNodeOfPrettierIgnoreRange(node: LiquidHtmlNode): LiquidHtmlNode {
+  let last = node;
+  while (last.next && !isPrettierIgnoreRangeEnd(last.next)) last = last.next;
+  return last;
 }
 
 function getPrettierIgnoreAttributeCommentData(value: string): boolean {

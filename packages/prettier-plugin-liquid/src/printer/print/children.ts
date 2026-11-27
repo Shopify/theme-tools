@@ -16,6 +16,8 @@ import {
   forceNextEmptyLine,
   hasPrettierIgnore,
   isEmpty,
+  isInPrettierIgnoreRange,
+  lastNodeOfPrettierIgnoreRange,
   isLiquidNode,
   hasNoCloseMarker,
   isTextLikeNode,
@@ -46,6 +48,12 @@ function printChild(
   const child = childPath.getValue();
 
   if (hasPrettierIgnore(child)) {
+    // Inside a prettier-ignore-start/end range, the first node prints the
+    // source of the whole range, whitespace included, and the others nothing.
+    const isInRange = isInPrettierIgnoreRange(child);
+    if (isInRange && child.prev && isInPrettierIgnoreRange(child.prev)) return '';
+    const last = isInRange ? lastNodeOfPrettierIgnoreRange(child) : child;
+
     const isPrevBorrowingOpeningMarker =
       child.prev && needsToBorrowNextOpeningTagStartMarker(child.prev);
     const bodyStartOffset = isPrevBorrowingOpeningMarker
@@ -54,13 +62,13 @@ function printChild(
     const bodyStart = locStart(child) + bodyStartOffset;
 
     const isNextBorrowingClosingMarker =
-      child.next && needsToBorrowPrevClosingTagEndMarker(child.next);
+      last.next && needsToBorrowPrevClosingTagEndMarker(last.next);
 
     // This could be "minus the `>` because the next tag borrows it"
     const bodyEndOffset = isNextBorrowingClosingMarker
-      ? printClosingTagEndMarker(child, options).length
+      ? printClosingTagEndMarker(last, options).length
       : 0;
-    const bodyEnd = locEnd(child) - bodyEndOffset;
+    const bodyEnd = locEnd(last) - bodyEndOffset;
 
     let rawContent = options.originalText.slice(bodyStart, bodyEnd);
 
@@ -76,14 +84,14 @@ function printChild(
     //
     // For idempotence to be maintained, we need to strip the '\n  '
     // from the raw source.
-    if (child.type === NodeTypes.HtmlElement && isNextBorrowingClosingMarker) {
+    if (last.type === NodeTypes.HtmlElement && isNextBorrowingClosingMarker) {
       rawContent = rawContent.trimEnd();
     }
 
     return [
       printOpeningTagPrefix(child, options),
       ...replaceEndOfLine(rawContent),
-      printClosingTagSuffix(child, options),
+      printClosingTagSuffix(last, options),
     ];
   }
 
@@ -95,6 +103,9 @@ function printBetweenLine(
   nextNode: LiquidHtmlNode | undefined,
 ) {
   if (!prevNode || !nextNode) return '';
+
+  // The source between nodes of a prettier-ignore range is printed as is.
+  if (isInPrettierIgnoreRange(prevNode) && isInPrettierIgnoreRange(nextNode)) return '';
 
   const spaceBetweenLinesIsHandledSomewhereElse =
     (needsToBorrowNextOpeningTagStartMarker(prevNode) &&
