@@ -244,6 +244,9 @@ ValidDocParamTypes:
 ValidHTMLTranslation:
   enabled: true
   severity: 1
+ValidImageTagWidths:
+  enabled: true
+  severity: 1
 ValidJSON:
   enabled: true
   severity: 0

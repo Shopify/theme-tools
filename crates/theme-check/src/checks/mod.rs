@@ -82,6 +82,7 @@ mod valid_content_for_argument_types;
 mod valid_content_for_arguments;
 mod valid_doc_param_types;
 mod valid_html_translation;
+mod valid_image_tag_widths;
 mod valid_json;
 mod valid_local_blocks;
 mod valid_range_default;
@@ -156,6 +157,7 @@ pub static ALL_CHECKS: &[&CheckDef] = &[
     &unused_doc_param::UNUSED_DOC_PARAM,
     &valid_block_target::VALID_BLOCK_TARGET,
     &valid_html_translation::VALID_HTML_TRANSLATION,
+    &valid_image_tag_widths::VALID_IMAGE_TAG_WIDTHS,
     &valid_content_for_arguments::VALID_CONTENT_FOR_ARGUMENTS,
     &valid_content_for_argument_types::VALID_CONTENT_FOR_ARGUMENT_TYPES,
     &valid_scoped_css_class::VALID_SCOPED_CSS_CLASS,

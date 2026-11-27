@@ -836,6 +836,19 @@
     "targets": []
   },
   {
+    "code": "ValidImageTagWidths",
+    "name": "Valid image_tag widths",
+    "docs": {
+      "description": "This check warns when the image_tag filter's widths go beyond the width requested by the image_url filter before it. image_tag cannot serve images wider than the image_url width, so the larger widths in the srcset never get a bigger image.",
+      "recommended": true,
+      "url": "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-image-tag-widths"
+    },
+    "type": "LiquidHtml",
+    "severity": 1,
+    "schema": {},
+    "targets": []
+  },
+  {
     "code": "ValidContentForArguments",
     "name": "Prevent the use of invalid arguments to the content_for tag",
     "docs": {

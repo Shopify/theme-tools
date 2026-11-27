@@ -1,0 +1,67 @@
+check: ValidImageTagWidths
+severity: warning
+cases:
+  - name: reports image_tag widths larger than the image_url width
+    files:
+      sections/banner.liquid: |
+        {{ image | image_url: width: 1500 | image_tag: widths: '375, 750, 1500, 3000' }}
+    offenses:
+      - file: sections/banner.liquid
+        message: The image_tag widths go up to 3000, but the image_url width is 1500. image_tag can't serve images wider than 1500px, so raise the image_url width to at least 3000.
+        start: [0, 47]
+        highlight: "widths: '375, 750, 1500, 3000'"
+  - name: reports when the widths are spread over several lines among other arguments
+    files:
+      sections/banner.liquid: |
+        {{ section.settings.image | image_url: width: 1500 | image_tag:
+          loading: 'lazy',
+          widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
+          alt: section.settings.image.alt | escape
+        }}
+    offenses:
+      - file: sections/banner.liquid
+        message: The image_tag widths go up to 3840, but the image_url width is 1500. image_tag can't serve images wider than 1500px, so raise the image_url width to at least 3840.
+        start: [2, 2]
+        highlight: "widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'"
+  - name: reports in assign and echo markup
+    files:
+      snippets/image.liquid: |
+        {% assign img = image | image_url: width: 1000 | image_tag: widths: '500, 1500' %}
+        {% liquid
+          echo image | image_url: width: 800 | image_tag: widths: '400, 1200'
+        %}
+    offenses:
+      - file: snippets/image.liquid
+        message: The image_tag widths go up to 1500, but the image_url width is 1000. image_tag can't serve images wider than 1000px, so raise the image_url width to at least 1500.
+        start: [0, 60]
+        highlight: "widths: '500, 1500'"
+      - file: snippets/image.liquid
+        message: The image_tag widths go up to 1200, but the image_url width is 800. image_tag can't serve images wider than 800px, so raise the image_url width to at least 1200.
+        start: [2, 50]
+        highlight: "widths: '400, 1200'"
+  - name: accepts widths up to the image_url width
+    files:
+      sections/banner.liquid: |
+        {{ image | image_url: width: 3840 | image_tag: widths: '375, 750, 1500, 3840' }}
+        {{ image | image_url: width: 4000 | image_tag: widths: '375, 750' }}
+  - name: ignores an image_url width that isn't a number
+    files:
+      sections/banner.liquid: |
+        {{ image | image_url: width: max_width | image_tag: widths: '375, 3000' }}
+        {{ image | image_url: width: image.width | image_tag: widths: '375, 3000' }}
+  - name: ignores an image_url without a width
+    files:
+      sections/banner.liquid: |
+        {{ image | image_url: height: 500 | image_tag: widths: '375, 3000' }}
+  - name: ignores widths that aren't a string
+    files:
+      sections/banner.liquid: |
+        {{ image | image_url: width: 1500 | image_tag: widths: image_widths }}
+  - name: ignores an image_tag without widths
+    files:
+      sections/banner.liquid: |
+        {{ image | image_url: width: 1500 | image_tag: loading: 'lazy' }}
+  - name: ignores an image_tag that doesn't follow an image_url
+    files:
+      sections/banner.liquid: |
+        {{ image_url_variable | image_tag: widths: '375, 3000' }}
