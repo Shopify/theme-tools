@@ -27,7 +27,6 @@ export async function makeConfig(): Promise<any> {
       ['(', ')'],
       ['"', '"'],
       ["'", "'"],
-      ['<', '>'],
     ],
     autoCloseBefore: '%-:.,=}])<>\'"` \n\t',
     surroundingPairs: [
