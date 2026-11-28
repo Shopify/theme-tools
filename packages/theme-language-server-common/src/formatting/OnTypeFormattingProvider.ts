@@ -1,5 +1,6 @@
 import { DocumentOnTypeFormattingParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
+import { AngleBracketAutoclosingOnTypeFormattingProvider } from './providers/AngleBracketAutoclosingOnTypeFormattingProvider';
 import { BracketsAutoclosingOnTypeFormattingProvider } from './providers/BracketsAutoclosingOnTypeFormattingProvider';
 import { HtmlElementAutoclosingOnTypeFormattingProvider } from './providers/HtmlElementAutoclosingOnTypeFormattingProvider';
 import { BaseOnTypeFormattingProvider, SetCursorPosition } from './types';
@@ -13,6 +14,7 @@ export class OnTypeFormattingProvider {
   ) {
     this.providers = [
       new BracketsAutoclosingOnTypeFormattingProvider(),
+      new AngleBracketAutoclosingOnTypeFormattingProvider(),
       new HtmlElementAutoclosingOnTypeFormattingProvider(setCursorPosition),
     ];
   }
