@@ -26,7 +26,7 @@ export const embed2: Printer2<LiquidHtmlNode>['embed'] = (path, _print, textToDo
   const node = path.getValue();
   switch (node.type) {
     case NodeTypes.RawMarkup: {
-      const parser = ParserMap[node.kind];
+      const parser = getParser(node, options as any);
       if (parser && node.value.trim() !== '') {
         const body = doc.utils.stripTrailingHardline(
           textToDoc(node.value, {
@@ -53,7 +53,7 @@ export const embed3: Printer3<LiquidHtmlNode>['embed'] = (path, options) => {
     const node = path.node as LiquidHtmlNode;
     switch (node.type) {
       case NodeTypes.RawMarkup: {
-        const parser = ParserMap[node.kind];
+        const parser = getParser(node, options as any);
         if (parser && node.value.trim() !== '') {
           return textToDoc(node.value, {
             ...options,
@@ -75,6 +75,39 @@ export const embed3: Printer3<LiquidHtmlNode>['embed'] = (path, options) => {
     }
   };
 };
+
+function isSchema(node: RawMarkup): boolean {
+  const parentNode = node.parentNode;
+  return !!parentNode && parentNode.type === NodeTypes.LiquidRawTag && parentNode.name === 'schema';
+}
+
+// The jsonc parser landed in Prettier 3.2. Earlier versions don't have it,
+// so we look for it among the plugins Prettier passes in.
+function hasJsoncParser(options: { plugins?: unknown[] }): boolean {
+  return (
+    Array.isArray(options.plugins) &&
+    options.plugins.some(
+      (plugin: any) => !!plugin && typeof plugin === 'object' && !!plugin.parsers?.jsonc,
+    )
+  );
+}
+
+// With jsoncSchema, the {% schema %} body is formatted as JSONC, so trailing
+// commas follow the trailingComma option instead of always being removed.
+export function getParser(
+  node: RawMarkup,
+  options: { jsoncSchema?: boolean; plugins?: unknown[] },
+): string | null {
+  if (
+    node.kind === RawMarkupKinds.json &&
+    options.jsoncSchema &&
+    isSchema(node) &&
+    hasJsoncParser(options)
+  ) {
+    return 'jsonc';
+  }
+  return ParserMap[node.kind];
+}
 
 function shouldIndentBody(node: RawMarkup, options: { indentSchema?: boolean }): boolean {
   const parentNode = node.parentNode;
