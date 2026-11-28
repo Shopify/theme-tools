@@ -78,6 +78,7 @@ Prettier for Liquid supports the following options.
 | `captureWhitespaceSensitivity` | `strict` | Specify the default whitespace sensitivity of the `capture` Liquid tag. Valid options: `"strict"` \| `"ignore"`.                                                 |
 | `singleLineLinkTags`           | `false`  | If set to `true`, will print `<link>` tags on a single line to remove clutter                                                                                    |
 | `indentSchema`                 | `false`  | If set to `true`, will indent the contents of the `{% schema %}` tag                                                                                             |
+| `jsoncSchema`                  | `false`  | If set to `true`, formats the contents of the `{% schema %}` tag as JSONC, so trailing commas follow `trailingComma`. Needs Prettier 3.2 or later (since v1.12.0). |
 
 ## Ignoring code
 

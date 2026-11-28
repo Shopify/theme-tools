@@ -61,6 +61,14 @@ const options: SupportOptions = {
     description: 'Indent the contents of the {% schema %} tag',
     since: '0.1.0',
   },
+  jsoncSchema: {
+    type: 'boolean',
+    category: 'LIQUID',
+    default: false,
+    description:
+      'Format the contents of the {% schema %} tag as JSONC, so trailing commas follow the trailingComma option. Needs Prettier 3.2 or later; ignored on older versions.',
+    since: '1.12.0',
+  },
   liquidDocParamDash: {
     type: 'boolean',
     category: 'LIQUID',
